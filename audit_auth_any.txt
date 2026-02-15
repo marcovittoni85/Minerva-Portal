@@ -1,0 +1,6 @@
+﻿
+Path                                                      LineNumber Line                     
+----                                                      ---------- ----                     
+C:\minerva\minerva-portal\minerva-portal\src\app\page.tsx         17             href="/login"
+
+

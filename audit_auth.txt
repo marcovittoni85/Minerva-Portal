@@ -1,0 +1,6 @@
+﻿
+Path                                                                LineNumber Line                                    
+----                                                                ---------- ----                                    
+C:\minerva\minerva-portal\minerva-portal\src\lib\supabase-server.ts          4 export async function supabaseServer() {
+
+

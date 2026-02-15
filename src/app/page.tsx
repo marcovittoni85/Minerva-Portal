@@ -1,65 +1,154 @@
-import Image from "next/image";
+﻿"use client";
 
-export default function Home() {
+import React, { useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+
+export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  const router = useRouter();
+
+  // Inizializzazione client rapida
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (authError) {
+        setError("IDENTITÀ NON RICONOSCIUTA");
+        setLoading(false);
+      } else {
+        router.push("/portal");
+        router.refresh();
+      }
+    } catch (err) {
+      setError("SISTEMA MOMENTANEAMENTE OFFLINE");
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="min-h-screen bg-[#001220] flex items-center justify-center px-6 font-sans relative overflow-hidden">
+      
+      {/* --- SFONDO --- */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-blue-600/5 rounded-full blur-[150px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#D4AF37]/5 rounded-full blur-[150px]" />
+      </div>
+
+      <div className="w-full max-w-[420px] z-10">
+        
+        {/* --- BRANDING --- */}
+        <div className="text-center mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1 }}
+          >
+            <h1 className="text-5xl md:text-6xl font-black text-white tracking-tighter mb-4">
+              MINERVA <span className="text-[#D4AF37]">PARTNERS</span>
+            </h1>
+            <p className="text-[#D4AF37] text-[10px] md:text-[11px] uppercase tracking-[0.5em] font-bold opacity-80">
+              L'eccellenza senza compromessi
+            </p>
+          </motion.div>
+        </div>
+
+        {/* --- BOX DI ACCESSO --- */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.8 }}
+          className="bg-white/[0.02] backdrop-blur-3xl border border-white/10 p-10 rounded-[2.5rem] shadow-2xl relative"
+        >
+          <form onSubmit={handleLogin} className="space-y-8">
+            
+            <div className="space-y-2">
+              <label className="block text-[9px] uppercase tracking-[0.3em] text-white/30 font-black ml-1">
+                Identità Istituzionale
+              </label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white placeholder:text-white/5 focus:outline-none focus:border-[#D4AF37]/30 transition-all text-sm font-medium"
+                placeholder="partner@minervapartners.it"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-[9px] uppercase tracking-[0.3em] text-white/30 font-black ml-1">
+                Chiave d'Accesso
+              </label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white placeholder:text-white/5 focus:outline-none focus:border-[#D4AF37]/30 transition-all text-sm font-medium"
+                placeholder="••••••••"
+              />
+            </div>
+
+            {/* MESSAGGIO ERRORE */}
+            <AnimatePresence>
+              {error && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9 }} 
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-red-400 text-[10px] font-bold text-center bg-red-400/5 py-3 rounded-xl border border-red-400/20 uppercase tracking-[0.2em]"
+                >
+                  {error}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="space-y-6 pt-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-white text-[#001220] py-5 rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] hover:bg-[#D4AF37] hover:text-black transition-all shadow-xl disabled:opacity-50"
+              >
+                {loading ? "VERIFICA AUTORIZZAZIONE..." : "AUTENTICAZIONE PARTNER"}
+              </button>
+
+              <div className="text-center">
+                <Link 
+                  href="/forgot-password" 
+                  className="text-[9px] uppercase tracking-[0.2em] text-white/20 hover:text-[#D4AF37] transition-colors font-bold"
+                >
+                  Richiedi ripristino credenziali
+                </Link>
+              </div>
+            </div>
+          </form>
+        </motion.div>
+
+        {/* --- FOOTER --- */}
+        <div className="mt-16 text-center">
+          <p className="text-white/10 text-[9px] uppercase tracking-[1em] font-medium">
+            CONFEDERAZIONE DEL VALORE
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }
