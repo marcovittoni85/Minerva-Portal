@@ -2,37 +2,39 @@ import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!, 
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export async function POST(req: Request) {
   try {
+    // Inizializziamo il client SOLO qui dentro, non all'inizio del file
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error("Configurazione Supabase mancante sul server.");
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const { email, name } = await req.json();
     
     const resendApiKey = process.env.RESEND_API_KEY;
     if (!resendApiKey) throw new Error("RESEND_API_KEY mancante.");
     const resend = new Resend(resendApiKey);
 
-    // 1. CREIAMO (O RECUPERIAMO) L'UTENTE PRIMA DI GENERARE IL LINK
-    // Questo evita l'errore "Invalid login credentials"
+    // 1. Crea utente
     const { data: userData, error: userError } = await supabase.auth.admin.createUser({
       email,
       email_confirm: true,
       user_metadata: { full_name: name }
     });
 
-    // Se l'utente esiste già, non è un errore, procediamo a generare il link
     if (userError && !userError.message.includes("already registered")) {
         throw userError;
     }
 
-    // 2. GENERIAMO IL LINK DI INVITO (Magic Link di tipo 'invite' o 'magiclink')
+    // 2. Genera link
     const { data, error: authError } = await supabase.auth.admin.generateLink({
       type: 'invite', 
       email,
-      options: { redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/portal/activate` }
+      options: { redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.minervapartners.it'}/portal/activate` }
     });
 
     if (authError || !data?.properties?.action_link) {
@@ -41,7 +43,7 @@ export async function POST(req: Request) {
 
     const inviteLink = data.properties.action_link;
 
-    // 3. INVIO EMAIL LUXURY
+    // 3. Invia Email
     await resend.emails.send({
       from: "Minerva Partners <board@minervapartners.it>",
       to: email,
@@ -53,7 +55,6 @@ export async function POST(req: Request) {
           <div style="margin: 40px 0;">
             <a href="${inviteLink}" style="background-color: #D4AF37; color: #001220; padding: 15px 30px; text-decoration: none; font-weight: bold; text-transform: uppercase; font-size: 11px; letter-spacing: 2px; border-radius: 2px;">Attiva Account Partner</a>
           </div>
-          <p style="font-size: 10px; color: #444; margin-top: 50px;">Comunicazione Strettamente Riservata</p>
         </div>
       `
     });
