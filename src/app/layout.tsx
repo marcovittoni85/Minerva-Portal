@@ -12,10 +12,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// UNICO BLOCCO METADATA - Nessun duplicato ammesso
 export const metadata: Metadata = {
   title: "Minerva Partners Board",
-  description: "Private Marketplace - Confederazione del Valore",
+  description: "Private Marketplace",
   icons: {
     icon: "/icon.png", 
     apple: "/icon.png",
@@ -29,9 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="it">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#001220] text-white`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#001220] text-white`}>
         {children}
       </body>
     </html>
