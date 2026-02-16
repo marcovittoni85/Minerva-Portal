@@ -1,60 +1,90 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import { Loader2, Clock, CheckCircle, AlertCircle } from "lucide-react";
 
 export default function RequestAccessButton({ dealId }: { dealId: string }) {
   const supabase = supabaseBrowser();
-  const [state, setState] = useState<"loading" | "has_access" | "pending" | "rejected" | "none">("loading");
-  const [msg, setMsg] = useState<string | null>(null);
+  const [status, setStatus] = useState<"loading" | "none" | "pending" | "approved" | "rejected">("loading");
+  const [loading, setLoading] = useState(false);
 
-  async function load() {
-    setMsg(null);
-    const { data: me } = await supabase.auth.getUser();
-    const uid = me.user?.id;
-    if (!uid) return setState("none");
+  useEffect(() => {
+    async function checkStatus() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-    const { data: acc, error: e1 } = await supabase.from("deal_access").select("access_level").eq("deal_id", dealId).eq("user_id", uid).maybeSingle();
-    if (!e1 && acc) return setState("has_access");
+      // 1. Controlla se ha già l'accesso approvato
+      const { data: access } = await supabase
+        .from("deal_access")
+        .select("*")
+        .eq("deal_id", dealId)
+        .eq("user_id", user.id)
+        .maybeSingle();
 
-    const { data: req, error: e2 } = await supabase.from("deal_access_requests").select("status").eq("deal_id", dealId).eq("user_id", uid).order("requested_at", { ascending: false }).limit(1).maybeSingle();
-    if (!e2 && req) {
-      if (req.status === "pending") return setState("pending");
-      if (req.status === "rejected") return setState("rejected");
-    }
-    setState("none");
-  }
-
-  useEffect(() => { load(); }, [dealId]);
-
-  async function request() {
-    setMsg(null);
-    const { data: me } = await supabase.auth.getUser();
-    const uid = me.user?.id;
-    if (!uid) return setMsg("Non autenticato.");
-
-    const { error } = await supabase.from("deal_access_requests").insert({ deal_id: dealId, user_id: uid, status: "pending" });
-    if (error) {
-      if ((error as any).code === "23505" || error.message?.includes("duplicate key")) {
-        setState("pending");
-        return setMsg("Richiesta già inviata.");
+      if (access) {
+        setStatus("approved");
+        return;
       }
-      return setMsg(error.message);
-    }
-    setState("pending");
-    setMsg("Richiesta inviata.");
-  }
 
-  if (state === "loading") return <span className="text-xs text-slate-500">…</span>;
-  if (state === "has_access") return <Link className="text-sm font-semibold text-green-600 underline" href={`/portal/deals/${dealId}`}>Apri Dossier</Link>;
-  if (state === "pending") return <span className="text-xs font-semibold text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">⏳ In attesa di approvazione</span>;
-  if (state === "rejected") return <span className="text-xs font-semibold text-red-500 bg-red-50 px-3 py-1.5 rounded-lg border border-red-200">Richiesta rifiutata</span>;
+      // 2. Controlla se c'è una richiesta pendente
+      const { data: request } = await supabase
+        .from("deal_access_requests")
+        .select("status")
+        .eq("deal_id", dealId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (request) {
+        setStatus(request.status as any);
+      } else {
+        setStatus("none");
+      }
+    }
+    checkStatus();
+  }, [dealId, supabase]);
+
+  const handleRequest = async () => {
+    setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    const { error } = await supabase
+      .from("deal_access_requests")
+      .insert({ deal_id: dealId, user_id: user?.id, status: "pending" });
+
+    if (!error) {
+      setStatus("pending");
+    }
+    setLoading(false);
+  };
+
+  if (status === "loading") return <div className="h-8 w-24 bg-white/5 animate-pulse rounded" />;
+  
+  if (status === "approved") return (
+    <div className="flex items-center text-green-400 text-[9px] uppercase tracking-widest font-bold">
+      <CheckCircle className="w-3 h-3 mr-2" /> Accesso Autorizzato
+    </div>
+  );
+
+  if (status === "pending") return (
+    <div className="flex items-center text-[#D4AF37] text-[9px] uppercase tracking-widest font-bold bg-[#D4AF37]/5 px-3 py-2 rounded border border-[#D4AF37]/20">
+      <Clock className="w-3 h-3 mr-2 animate-pulse" /> Richiesta in Sospeso
+    </div>
+  );
+
+  if (status === "rejected") return (
+    <div className="flex items-center text-red-400 text-[9px] uppercase tracking-widest font-bold">
+      <AlertCircle className="w-3 h-3 mr-2" /> Richiesta Rifiutata
+    </div>
+  );
 
   return (
-    <div className="inline-flex flex-col items-end gap-2">
-      <button onClick={request} className="rounded-xl border border-[#D4AF37]/30 px-4 py-2 text-sm font-medium text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-colors">Richiedi accesso</button>
-      {msg && <div className="text-xs text-red-500">{msg}</div>}
-    </div>
+    <button
+      onClick={handleRequest}
+      disabled={loading}
+      className="bg-[#D4AF37] text-[#001220] px-4 py-2 text-[9px] font-bold tracking-[0.2em] uppercase hover:bg-[#FBE8A6] transition-all disabled:opacity-50 flex items-center"
+    >
+      {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Richiedi Accesso"}
+    </button>
   );
 }
