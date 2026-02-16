@@ -2,31 +2,40 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { GeometricBackground } from "@/components/GeometricBackground";
 import { ArrowRight, Shield, Diamond, Users } from "lucide-react";
 
-// Animazioni corrette per non far arrabbiare TypeScript
-const fadeInUp = {
-  hidden: { opacity: 0, y: 30 },
+// Tipizziamo esplicitamente le varianti per accontentare il compilatore
+const fadeInUp: Variants = {
+  hidden: { 
+    opacity: 0, 
+    y: 30 
+  },
   visible: { 
     opacity: 1, 
-    y: 0, 
-    transition: { duration: 0.8, ease: "easeOut" } 
+    y: 0,
+    transition: { 
+      duration: 0.8, 
+      ease: "easeOut" 
+    }
   }
 };
 
-const staggerContainer = {
+const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.2, delayChildren: 0.3 }
+    transition: { 
+      staggerChildren: 0.2, 
+      delayChildren: 0.3 
+    }
   }
 };
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen flex flex-col font-sans">
+    <div className="relative min-h-screen flex flex-col font-sans bg-[#001220]">
       <GeometricBackground />
 
       <main className="flex-grow flex flex-col items-center justify-center p-6 relative z-10 text-center">
@@ -36,24 +45,33 @@ export default function Home() {
           animate="visible"
           className="max-w-4xl mx-auto space-y-12"
         >
+          {/* Logo con effetto respiro */}
           <motion.div variants={fadeInUp} className="flex justify-center relative">
             <motion.div
-              animate={{ scale: [1, 1.02, 1], filter: ["brightness(1)", "brightness(1.2)", "brightness(1)"] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              animate={{ 
+                scale: [1, 1.02, 1], 
+                filter: ["brightness(1)", "brightness(1.1)", "brightness(1)"] 
+              }}
+              transition={{ 
+                duration: 4, 
+                repeat: Infinity, 
+                ease: "easeInOut" 
+              }}
               className="relative"
             >
-                <div className="absolute inset-0 bg-[#D4AF37] blur-[50px] opacity-20 rounded-full z-0"></div>
-                <Image
-                  src="/icon.webp"
-                  alt="Minerva Partners Logo"
-                  width={220}
-                  height={220}
-                  priority
-                  className="drop-shadow-[0_0_30px_rgba(212,175,55,0.3)] relative z-10"
-                />
+              <div className="absolute inset-0 bg-[#D4AF37] blur-[50px] opacity-20 rounded-full z-0"></div>
+              <Image
+                src="/icon.webp"
+                alt="Minerva Partners Logo"
+                width={220}
+                height={220}
+                priority
+                className="drop-shadow-[0_0_30px_rgba(212,175,55,0.3)] relative z-10"
+              />
             </motion.div>
           </motion.div>
 
+          {/* Testi Luxury */}
           <motion.div variants={fadeInUp} className="space-y-6">
             <h1 className="text-[#D4AF37] text-4xl md:text-6xl tracking-[0.25em] font-extralight uppercase leading-tight">
               Minerva <br/><span className="font-light">Partners</span>
@@ -64,6 +82,7 @@ export default function Home() {
             </p>
           </motion.div>
 
+          {/* Bottone d'ingresso */}
           <motion.div variants={fadeInUp} className="pt-8">
             <Link href="/login" className="group relative inline-flex items-center justify-center px-16 py-5 overflow-hidden tracking-[0.3em] font-bold text-[11px] text-[#001220] uppercase bg-[#D4AF37] rounded-sm transition-all duration-300 hover:bg-[#FBE8A6] hover:shadow-[0_0_40px_rgba(212,175,55,0.5)]">
                 <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"></span>
@@ -74,6 +93,7 @@ export default function Home() {
           </motion.div>
         </motion.div>
 
+        {/* Card Valori */}
         <motion.div 
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -85,7 +105,6 @@ export default function Home() {
             <FeatureCard icon={Diamond} title="Eccellenza" description="Solo opportunità di alto profilo e partner selezionati." />
             <FeatureCard icon={Users} title="Network" description="Connessioni dirette con i leader della Confederazione." />
         </motion.div>
-
       </main>
 
       <footer className="fixed bottom-6 w-full text-center z-20 mix-blend-overlay pointer-events-none text-[#D4AF37] text-[8px] uppercase tracking-[0.6em] opacity-40">
@@ -110,4 +129,4 @@ function FeatureCard({ icon: Icon, title, description }: { icon: any, title: str
         </div>
       </motion.div>
     );
-}s
+}
