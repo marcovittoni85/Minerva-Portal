@@ -9,7 +9,8 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  // FIX: Specifichiamo che l'errore può essere stringa o null
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createClient();
 
@@ -18,13 +19,13 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error: authError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (error) {
-      setError(error.message);
+    if (authError) {
+      setError(authError.message);
       setLoading(false);
     } else {
       router.push('/portal');
@@ -33,14 +34,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#001220] flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-[#001220] flex flex-col items-center justify-center p-4 font-sans text-white">
       <div className="max-w-md w-full space-y-8 bg-[#001c30] p-10 rounded-xl border border-slate-800 shadow-2xl">
         
         {/* LOGO E TESTI PERSONALIZZATI */}
         <div className="text-center space-y-4">
           <div className="flex justify-center mb-6">
             <Image 
-              src="/icon.png" 
+              src="/icon.webp" 
               alt="Minerva Partners Logo" 
               width={140} 
               height={140}
