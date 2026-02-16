@@ -57,4 +57,4 @@ export default async function MyDealsPage() {
             </div>
             <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-[#D4AF37] transition-colors">{deal.title}</h3>
             <p className="text-slate-400 text-xs uppercase tracking-widest mb-4">{deal.sector} • {deal.geography || "—"}</p>
-            <p className="text-slate-500 text-sm line
+       className="text-slate-500 text-sm line-clamp-2 mb-6"
