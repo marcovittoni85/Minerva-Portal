@@ -23,9 +23,7 @@ export default async function MyDealsPage() {
         <h1 className="text-3xl font-bold text-slate-900 mb-4">I Miei Investimenti</h1>
         <div className="bg-white border rounded-2xl p-12 text-center">
           <p className="text-slate-400 text-lg mb-4">Non hai ancora accesso a nessun deal.</p>
-          <Link href="/portal/board" className="inline-block bg-[#001220] text-[#D4AF37] text-sm font-bold uppercase tracking-widest px-6 py-3 rounded-xl hover:bg-[#D4AF37] hover:text-[#001220] transition-colors">
-            Esplora la Bacheca
-          </Link>
+          <Link href="/portal/board" className="inline-block bg-[#001220] text-[#D4AF37] text-sm font-bold uppercase tracking-widest px-6 py-3 rounded-xl hover:bg-[#D4AF37] hover:text-[#001220] transition-colors">Esplora la Bacheca</Link>
         </div>
       </div>
     );
@@ -49,12 +47,28 @@ export default async function MyDealsPage() {
         <Link href="/portal/board" className="text-sm text-slate-500 underline">Torna alla Bacheca</Link>
       </header>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {deals?.map((deal) => (
-          <Link key={deal.id} href={`/portal/deals/${deal.id}`} className="group bg-white border border-slate-100 rounded-2xl p-8 shadow-sm hover:shadow-xl hover:border-[#D4AF37]/40 transition-all">
-            <div className="flex items-center justify-between mb-6">
-              <span className="inline-block bg-[#001220] text-[#D4AF37] text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-lg">{deal.side || "OPERAZIONE"}</span>
-              <span className="text-[10px] font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-lg border border-green-100">{accessMap[deal.id] || "Full Access"}</span>
-            </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-[#D4AF37] transition-colors">{deal.title}</h3>
-            <p className="text-slate-400 text-xs uppercase tracking-widest mb-4">{deal.sector} • {deal.geography || "—"}</p>
-       className="text-slate-500 text-sm line-clamp-2 mb-6"
+        {deals?.map((deal) => {
+          const level = accessMap[deal.id] || "Full Access";
+          return (
+            <Link key={deal.id} href={"/portal/deals/" + deal.id} className="group bg-white border border-slate-100 rounded-2xl p-8 shadow-sm hover:shadow-xl hover:border-[#D4AF37]/40 transition-all">
+              <div className="flex items-center justify-between mb-6">
+                <span className="inline-block bg-[#001220] text-[#D4AF37] text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-lg">{deal.side || "OPERAZIONE"}</span>
+                <span className="text-[10px] font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-lg border border-green-100">{level}</span>
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-[#D4AF37] transition-colors">{deal.title}</h3>
+              <p className="text-slate-400 text-xs uppercase tracking-widest mb-4">{deal.sector}</p>
+              <p className="text-slate-500 text-sm mb-6">{deal.description}</p>
+              <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                <div>
+                  <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">EV Range</p>
+                  <p className="text-sm font-bold text-slate-900">{deal.ev_range || "N/A"}</p>
+                </div>
+                <span className="text-sm font-bold text-[#D4AF37]">Apri Dossier</span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
