@@ -42,7 +42,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-[#001220] flex items-center justify-center p-6 text-white">
       <div className="w-full max-w-md bg-[#001c30] p-10 rounded-2xl border border-[#D4AF37]/20 text-center shadow-2xl">
         <Image src="/icon.webp" alt="Logo" width={100} height={100} className="mx-auto mb-6" unoptimized />
-        <h1 className="text-[#D4AF37] text-xl tracking-[0.4em] uppercase font-light mb-10">Accesso Riservato</h1>
+        <h1 className="text-[#D4AF37] text-xl tracking-[0.4em] uppercase font-light mb-10">MINERVA V2</h1>
         
         <form onSubmit={handleMagicLink} className="space-y-6">
           <div className="relative">
