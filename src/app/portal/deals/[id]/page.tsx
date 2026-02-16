@@ -2,83 +2,69 @@ export const dynamic = "force-dynamic";
 import { supabaseServer } from "@/lib/supabase-server";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ShieldCheck, MapPin, BarChart3, Tag } from "lucide-react";
+import { ArrowLeft, MapPin, BarChart3, Tag, Download } from "lucide-react";
 
 export default async function DealDetailPage({ params }: { params: { id: string } }) {
   const supabase = await supabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // Verifica se l'utente ha accesso a questo specifico deal
-  const { data: access } = await supabase
-    .from("deal_access")
-    .select("*")
-    .eq("deal_id", params.id)
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  if (!access) redirect("/portal/board");
-
-  const { data: deal } = await supabase
-    .from("deals")
-    .select("*")
-    .eq("id", params.id)
-    .single();
-
+  const { data: deal } = await supabase.from("deals").select("*").eq("id", params.id).single();
   if (!deal) notFound();
 
   return (
-    <div className="min-h-screen bg-[#001220] text-white p-6 md:p-12">
+    <div className="min-h-screen bg-white p-6 md:p-16">
       <div className="max-w-4xl mx-auto">
-        <Link href="/portal/my-deals" className="inline-flex items-center text-[#D4AF37] text-[9px] uppercase tracking-widest mb-10 hover:opacity-70 transition-all">
-          <ArrowLeft className="w-3 h-3 mr-2" /> Torna ai miei Investimenti
+        <Link href="/portal/board" className="inline-flex items-center text-[#D4AF37] text-xs font-bold uppercase tracking-widest mb-12 hover:translate-x-[-5px] transition-transform">
+          <ArrowLeft className="w-4 h-4 mr-2" /> Torna alla bacheca
         </Link>
 
-        <header className="mb-12 border-b border-white/10 pb-10">
-          <div className="flex items-center space-x-3 mb-4 text-[#D4AF37]">
-            <ShieldCheck className="w-4 h-4" />
-            <span className="text-[9px] tracking-[0.4em] uppercase font-bold">Documentazione Riservata</span>
+        <header className="mb-16">
+          <div className="inline-block bg-slate-100 text-slate-700 text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-widest mb-6">
+            {deal.sector}
           </div>
-          <h1 className="text-2xl md:text-3xl font-light tracking-tight leading-tight mb-4">{deal.title}</h1>
-          <div className="flex flex-wrap gap-4 text-slate-500 text-[10px] uppercase tracking-widest">
-             <div className="flex items-center"><Tag className="w-3 h-3 mr-2 text-[#D4AF37]" /> {deal.sector}</div>
-             <div className="flex items-center"><MapPin className="w-3 h-3 mr-2 text-[#D4AF37]" /> {deal.geography || "International"}</div>
-             <div className="flex items-center"><BarChart3 className="w-3 h-3 mr-2 text-[#D4AF37]" /> {deal.side}</div>
+          <h1 className="text-slate-900 text-4xl md:text-5xl font-extrabold tracking-tight leading-tight mb-8">
+            {deal.title}
+          </h1>
+          <div className="flex flex-wrap gap-8 text-slate-500 text-xs font-bold uppercase tracking-[0.1em]">
+             <div className="flex items-center"><MapPin className="w-4 h-4 mr-2 text-[#D4AF37]" /> {deal.geography || "Internazionale"}</div>
+             <div className="flex items-center"><BarChart3 className="w-4 h-4 mr-2 text-[#D4AF37]" /> {deal.side}</div>
+             <div className="flex items-center font-mono text-slate-400">ID: {deal.code}</div>
           </div>
         </header>
 
-        <div className="grid md:grid-cols-3 gap-12">
-          <div className="md:col-span-2 space-y-10">
+        <div className="grid md:grid-cols-3 gap-16">
+          <div className="md:col-span-2 space-y-12">
             <section>
-              <h4 className="text-[#D4AF37] text-[10px] uppercase tracking-[0.3em] font-bold mb-4">Executive Summary</h4>
-              <p className="text-slate-300 text-sm leading-relaxed font-light">{deal.description}</p>
+              <h4 className="text-slate-900 text-sm uppercase tracking-[0.2em] font-black mb-6">Executive Summary</h4>
+              <p className="text-slate-700 text-lg leading-relaxed font-medium opacity-90">{deal.description}</p>
             </section>
             
-            <section className="bg-white/5 p-8 rounded-lg border border-white/5">
-              <h4 className="text-white text-[10px] uppercase tracking-[0.3em] font-bold mb-6">Dettagli Operazione</h4>
-              <div className="grid grid-cols-2 gap-8">
+            <section className="bg-slate-50 p-10 rounded-3xl border border-slate-100">
+              <h4 className="text-slate-900 text-sm uppercase tracking-[0.2em] font-black mb-8 border-b border-slate-200 pb-4">Key Metrics</h4>
+              <div className="grid grid-cols-2 gap-10">
                 <div>
-                  <p className="text-slate-500 text-[8px] uppercase tracking-widest mb-1">Valore (EV)</p>
-                  <p className="text-[#D4AF37] text-xs font-bold">{deal.ev_range}</p>
+                  <p className="text-slate-400 text-[10px] uppercase tracking-widest mb-2 font-bold">Valore (EV)</p>
+                  <p className="text-[#D4AF37] text-2xl font-black italic">{deal.ev_range}</p>
                 </div>
                 <div>
-                  <p className="text-slate-500 text-[8px] uppercase tracking-widest mb-1">Confidenzialità</p>
-                  <p className="text-slate-300 text-xs uppercase tracking-widest">Protocollo {deal.confidentiality || "Blind"}</p>
+                  <p className="text-slate-400 text-[10px] uppercase tracking-widest mb-2 font-bold">Confidenzialità</p>
+                  <p className="text-slate-800 text-base font-bold uppercase tracking-widest">Protocollo {deal.confidentiality || "Blind"}</p>
                 </div>
               </div>
             </section>
           </div>
 
-          <aside className="space-y-6">
-             <div className="bg-[#D4AF37] text-[#001220] p-6 rounded-lg text-center">
-                <p className="text-[8px] uppercase font-black tracking-widest mb-4">Materiale Disponibile</p>
-                <button className="w-full bg-[#001220] text-white py-3 rounded text-[9px] font-bold tracking-widest uppercase hover:bg-slate-900 transition-all">
-                   Scarica Teaser PDF
+          <aside className="space-y-8">
+             <div className="bg-slate-900 text-white p-10 rounded-3xl text-center shadow-2xl">
+                <p className="text-[#D4AF37] text-[10px] uppercase font-black tracking-widest mb-6">Documentazione</p>
+                <button className="w-full bg-[#D4AF37] text-[#001220] py-4 rounded-xl text-xs font-black tracking-widest uppercase hover:bg-white transition-all flex items-center justify-center">
+                   <Download className="w-4 h-4 mr-2" /> Teaser PDF
                 </button>
+                <p className="text-slate-500 text-[9px] mt-6 leading-relaxed font-bold uppercase">
+                   Accesso protetto da NDA attivo
+                </p>
              </div>
-             <p className="text-slate-500 text-[8px] leading-relaxed text-center uppercase tracking-tighter">
-                L'accesso ai dati sensibili è monitorato in conformità agli accordi di riservatezza (NDA) sottoscritti.
-             </p>
           </aside>
         </div>
       </div>

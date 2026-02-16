@@ -1,102 +1,90 @@
-﻿import NotificationsBell from "./NotificationsBell";
-import Link from "next/link";
-import { supabaseServer } from "@/lib/supabase-server";
+﻿'use client';
 
-export default async function PortalLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const supabase = await supabaseServer();
-  const { data } = await supabase.auth.getUser();
+import { createClient } from '@/utils/supabase/client';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { LayoutDashboard, Briefcase, Settings, LogOut, Menu, X } from 'lucide-react';
+import { useState } from 'react';
+import Image from 'next/image';
 
-  const uid = data.user?.id;
-  const email = data.user?.email ?? "";
+export default function PortalLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const supabase = createClient();
 
-  // Recupero ruolo dal database
-  let role = "";
-  if (uid) {
-    const { data: prof } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", uid)
-      .maybeSingle();
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    // Uso window.location per resettare la sessione ed evitare redirect a localhost
+    window.location.href = '/login';
+  };
 
-    role = (prof?.role as any)?.toString?.() ?? String(prof?.role ?? "");
-  }
-
-  const roleLc = role.toLowerCase();
-  const isAdmin = roleLc === "admin" || roleLc === "equity_partner";
+  const menuItems = [
+    { name: 'Dashboard', href: '/portal', icon: LayoutDashboard },
+    { name: 'Bacheca Deal', href: '/portal/board', icon: Briefcase },
+    { name: 'I Miei Deal', href: '/portal/my-deals', icon: Briefcase },
+    { name: 'Impostazioni', href: '/portal/settings', icon: Settings },
+  ];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
-      <div className="flex">
-        {/* Sidebar */}
-        <aside className="w-72 min-h-screen border-r bg-white sticky top-0 flex flex-col">
-          <div className="p-6 border-b">
-            <div className="text-xs tracking-[0.35em] text-slate-400 font-bold">MINERVA</div>
-            <div className="text-lg font-bold text-slate-900">Portal</div>
-            <div className="text-[11px] text-slate-500 mt-2 truncate">{email}</div>
-            <div className="inline-block px-2 py-0.5 bg-slate-100 text-[10px] font-bold text-slate-600 rounded mt-1 uppercase">
-              {role || "Partner"}
-            </div>
-          </div>
-
-          <nav className="p-4 flex-1 space-y-1">
-            <p className="px-3 mb-2 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
-              Menu principale
-            </p>
-            <Link className="flex items-center px-3 py-2.5 rounded-xl hover:bg-slate-50 text-sm font-medium transition-colors" href="/portal">
-              Dashboard
-            </Link>
-            <Link className="flex items-center px-3 py-2.5 rounded-xl hover:bg-slate-50 text-sm font-medium transition-colors" href="/portal/my-deals">
-              💼 I Miei Investimenti
-            </Link>
-            <Link className="flex items-center px-3 py-2.5 rounded-xl hover:bg-slate-50 text-sm font-medium transition-colors" href="/portal/deals">
-              Operazioni
-            </Link>
-            <Link className="flex items-center px-3 py-2.5 rounded-xl hover:bg-slate-50 text-sm font-medium transition-colors" href="/portal/funnel">
-              Funnel Board
-            </Link>
-
-            {/* Sezione Amministrazione Protetta */}
-            {isAdmin && (
-              <div className="pt-6 mt-4 border-t border-slate-100">
-                <p className="px-3 mb-2 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
-                  Management
-                </p>
-                <Link className="flex items-center px-3 py-2.5 rounded-xl hover:bg-blue-50 text-blue-700 text-sm font-semibold transition-colors" href="/portal/access-requests">
-                  🔑 Richieste Accesso
-                </Link>
-                <Link className="flex items-center px-3 py-2.5 rounded-xl hover:bg-slate-50 text-slate-600 text-sm font-medium transition-colors" href="/portal/moderation/deals">
-                  Approva Nuovi Deal
-                </Link>
-                <Link className="flex items-center px-3 py-2.5 rounded-xl hover:bg-slate-50 text-slate-600 text-sm font-medium transition-colors" href="/portal/moderation/comments">
-                  Moderazione Commenti
-                </Link>
-              </div>
-            )}
-          </nav>
-
-          <div className="p-4 border-t">
-            <form action="/portal/logout" method="post">
-              <button className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-red-50 text-red-600 text-sm font-medium transition-colors">
-                Logout
-              </button>
-            </form>
-          </div>
-        </aside>
-
-        {/* Content Area */}
-        <main className="flex-1 min-h-screen">
-          <header className="flex items-center justify-end px-10 py-6">
-            <NotificationsBell />
-          </header>
-          <div className="px-10 pb-10">
-            {children}
-          </div>
-        </main>
+    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row">
+      {/* Mobile Header */}
+      <div className="md:hidden bg-white border-b border-slate-200 p-4 flex justify-between items-center sticky top-0 z-50">
+        <Image src="/icon.webp" alt="Minerva" width={32} height={32} unoptimized />
+        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+          {isMobileMenuOpen ? <X /> : <Menu />}
+        </button>
       </div>
+
+      {/* Sidebar */}
+      <aside className={`
+        fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 transform transition-transform duration-200 ease-in-out
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+        md:relative md:translate-x-0 flex flex-col
+      `}>
+        <div className="p-8 border-b border-slate-100 flex items-center space-x-3">
+          <Image src="/icon.webp" alt="Minerva" width={40} height={40} unoptimized />
+          <div>
+            <p className="text-slate-900 font-bold text-xs tracking-widest uppercase">Minerva</p>
+            <p className="text-[#D4AF37] text-[9px] font-bold uppercase tracking-tighter text-white/50">Partners</p>
+          </div>
+        </div>
+
+        <nav className="flex-1 p-4 space-y-1 mt-4">
+          {menuItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-sm transition-all ${
+                  isActive 
+                    ? 'bg-slate-100 text-[#D4AF37] font-semibold' 
+                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                }`}
+              >
+                <item.icon className="w-4 h-4" />
+                <span>{item.name}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="p-4 border-t border-slate-100">
+          <button 
+            onClick={handleLogout}
+            className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-red-500 hover:bg-red-50 rounded-xl transition-all"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Esci dal Portale</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 relative">
+        {children}
+      </main>
     </div>
   );
 }
