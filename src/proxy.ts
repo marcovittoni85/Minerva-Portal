@@ -23,13 +23,11 @@ export async function proxy(req: NextRequest) {
     }
   );
 
-  // 1. Recupera l'utente e rinfresca la sessione
   const { data: { user } } = await supabase.auth.getUser();
 
-  // 2. LOGICA DI PROTEZIONE: Se l'utente non è loggato e prova ad andare in /portal
   if (!user && req.nextUrl.pathname.startsWith('/portal')) {
     const url = req.nextUrl.clone();
-    url.pathname = '/login'; // Assicurati che la tua pagina di login sia qui
+    url.pathname = '/login';
     return NextResponse.redirect(url);
   }
 
@@ -37,6 +35,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  // Applica a tutto tranne file statici e immagini
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
