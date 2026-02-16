@@ -1,15 +1,20 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+
+// Creiamo il client direttamente qui per evitare errori di libreria
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function ActivatePage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const supabase = createClientComponentClient();
   const router = useRouter();
 
   const handleActivate = async (e: React.FormEvent) => {
@@ -17,14 +22,12 @@ export default function ActivatePage() {
     setLoading(true);
     setError(null);
 
-    // Aggiorniamo la password dell'utente che è appena "atterrato" col token
     const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
-      setError("Il link è scaduto o non valido. Riprova a richiedere l'accesso.");
+      setError("Il link è scaduto o non valido. Riprova.");
       setLoading(false);
     } else {
-      // Successo! Portiamolo ai deal
       router.push('/portal/deals');
     }
   };
@@ -34,8 +37,6 @@ export default function ActivatePage() {
       <div className="max-w-md w-full bg-[#001c30] p-10 rounded-2xl border border-[#D4AF37]/20 shadow-2xl text-center">
         <Image src="/icon.webp" alt="Logo" width={100} height={100} className="mx-auto mb-8" unoptimized />
         <h2 className="text-[#D4AF37] text-xl tracking-[0.3em] uppercase font-light mb-6">Attiva Account</h2>
-        <p className="text-slate-400 text-xs uppercase tracking-widest mb-8 opacity-70">Imposta la tua password d'accesso riservata</p>
-        
         <form onSubmit={handleActivate} className="space-y-6">
           <input 
             type="password" 
@@ -46,14 +47,11 @@ export default function ActivatePage() {
             required
             minLength={6}
           />
-          <button 
-            disabled={loading}
-            className="w-full bg-[#D4AF37] text-[#001220] font-bold py-4 tracking-widest uppercase hover:bg-[#FBE8A6] transition-all disabled:opacity-50"
-          >
+          <button disabled={loading} className="w-full bg-[#D4AF37] text-[#001220] font-bold py-4 tracking-widest uppercase hover:bg-[#FBE8A6] disabled:opacity-50">
             {loading ? 'ELABORAZIONE...' : 'CONFERMA E ACCEDI'}
           </button>
         </form>
-        {error && <p className="mt-6 text-red-500 text-[9px] uppercase tracking-widest leading-relaxed">{error}</p>}
+        {error && <p className="mt-6 text-red-500 text-[9px] uppercase tracking-widest">{error}</p>}
       </div>
     </div>
   );
