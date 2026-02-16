@@ -9,9 +9,9 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  // Specifichiamo esplicitamente il tipo per TypeScript
+  // FIX DEFINITIVO PER TYPESCRIPT
   const [error, setError] = useState<string | null>(null);
-  
+
   const router = useRouter();
   const supabase = createClient();
 
@@ -36,32 +36,35 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#001220] flex flex-col items-center justify-center p-4 text-white">
-      <div className="max-w-md w-full space-y-8 bg-[#001c30] p-10 rounded-xl border border-slate-800 shadow-2xl text-center">
-        <div className="flex justify-center mb-6">
-          <Image src="/icon.webp" alt="Logo" width={120} height={120} priority />
+      <div className="max-w-md w-full space-y-8 bg-[#001c30] p-10 rounded-xl border border-slate-800 shadow-2xl">
+        <div className="text-center space-y-4">
+          <div className="flex justify-center mb-6">
+            <Image src="/icon.webp" alt="Logo" width={140} height={140} priority />
+          </div>
+          <h2 className="text-[#D4AF37] text-sm tracking-[0.3em] font-light uppercase">User</h2>
+          <p className="text-[#C0C0C0] text-xs tracking-widest font-medium uppercase opacity-80">Confederazione del Valore</p>
         </div>
-        
-        <h2 className="text-[#D4AF37] text-sm tracking-[0.3em] font-light uppercase">User</h2>
-        <p className="text-[#C0C0C0] text-xs tracking-widest uppercase opacity-80">Confederazione del Valore</p>
 
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          {error && <div className="text-red-400 text-sm bg-red-900/20 p-2 rounded border border-red-800">{error}</div>}
-          <input
-            type="email"
-            required
-            className="w-full px-3 py-3 bg-[#001220] border border-slate-700 rounded-lg focus:ring-2 focus:ring-[#D4AF37] outline-none"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            required
-            className="w-full px-3 py-3 bg-[#001220] border border-slate-700 rounded-lg focus:ring-2 focus:ring-[#D4AF37] outline-none"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          {error && <div className="bg-red-900/20 border border-red-500 text-red-200 p-3 rounded text-sm text-center">{error}</div>}
+          <div className="space-y-4">
+            <input
+              type="email"
+              required
+              className="w-full px-3 py-3 bg-[#001220] border border-slate-700 rounded-lg focus:ring-2 focus:ring-[#D4AF37] outline-none"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <input
+              type="password"
+              required
+              className="w-full px-3 py-3 bg-[#001220] border border-slate-700 rounded-lg focus:ring-2 focus:ring-[#D4AF37] outline-none"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
           <button
             type="submit"
             disabled={loading}
@@ -74,3 +77,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+// Forza nuovo commit ID per Vercel
