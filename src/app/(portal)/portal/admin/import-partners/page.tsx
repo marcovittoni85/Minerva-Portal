@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import Papa from 'papaparse';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from "@/utils/supabase/client";
+import Link from 'next/link';
 
 export default function ImportPartnersPage() {
   const [importing, setImporting] = useState(false);
   const [results, setResults] = useState<{msg: string, type: 'success' | 'error'}[]>([]);
-  // Inizializziamo il client di Supabase per il browser
-  const supabase = createClientComponentClient();
+  const supabase = createClient();
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -26,19 +26,16 @@ export default function ImportPartnersPage() {
 
         for (const row of rows) {
           try {
-            // Validazione minima: salta se non c'è l'email
             if (!row.email || !row.email.includes('@')) {
               newResults.push({ msg: `⚠️ Saltato: riga senza email valida`, type: 'error' });
               continue;
             }
 
-            // Pulizia dati
             const email = row.email.toLowerCase().trim();
             const fullName = row.full_name || 'Partner';
             const phone = row.phone ? String(row.phone).replace(/\s+/g, '') : '';
             const role = row.role?.toLowerCase().trim() || 'partner';
 
-            // Inserimento o Aggiornamento su Supabase
             const { error } = await supabase
               .from('profiles')
               .upsert({
@@ -68,7 +65,7 @@ export default function ImportPartnersPage() {
   };
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-8">
+    <div className="p-8 max-w-4xl mx-auto space-y-8 font-sans">
       <div>
         <h1 className="text-4xl font-black text-slate-900 tracking-tight uppercase">Importazione Partner</h1>
         <p className="text-slate-500 mt-2 font-medium">
@@ -76,7 +73,7 @@ export default function ImportPartnersPage() {
         </p>
       </div>
 
-      <div className="bg-white border-4 border-dashed border-slate-200 rounded-[3rem] p-20 text-center hover:border-blue-400 transition-colors group">
+      <div className="bg-white border-4 border-dashed border-slate-200 rounded-[3rem] p-20 text-center hover:border-[#D4AF37] transition-colors group">
         <input 
           type="file" 
           accept=".csv" 
@@ -87,7 +84,7 @@ export default function ImportPartnersPage() {
         />
         <label 
           htmlFor="csv-upload" 
-          className="cursor-pointer bg-slate-900 text-white px-12 py-6 rounded-2xl font-bold text-lg hover:bg-blue-600 transition-all inline-block shadow-2xl active:scale-95 disabled:opacity-50"
+          className="cursor-pointer bg-[#001220] text-[#D4AF37] px-12 py-6 rounded-2xl font-bold text-lg hover:bg-black transition-all inline-block shadow-2xl active:scale-95 disabled:opacity-50"
         >
           {importing ? 'IMPORTAZIONE IN CORSO...' : 'SELEZIONA FILE CSV'}
         </label>
@@ -99,7 +96,7 @@ export default function ImportPartnersPage() {
       {results.length > 0 && (
         <div className="bg-white border border-slate-200 rounded-[2rem] p-8 shadow-sm">
           <h2 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-6">Log Operazioni</h2>
-          <div className="max-h-96 overflow-y-auto pr-4 space-y-3 custom-scrollbar">
+          <div className="max-h-96 overflow-y-auto pr-4 space-y-3">
             {results.map((res, i) => (
               <div 
                 key={i} 
