@@ -1,10 +1,11 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react"; // Importato Suspense
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 
-export default function LoginPage() {
+// 1. Creiamo un componente interno che contiene tutta la tua logica
+function LoginContent() {
   const supabase = supabaseBrowser();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -30,22 +31,21 @@ export default function LoginPage() {
         password,
       });
 
-      console.log("LOGIN RESULT", { data, error });
+      console.log(" RESULT", { data, error });
 
       if (error) {
         setErr(error.message);
         return;
       }
 
-      // Verifica utente dopo login (utile per capire se la sessione è stata salvata)
       const { data: u2 } = await supabase.auth.getUser();
-      console.log("AFTER LOGIN getUser()", u2);
+      console.log("AFTER  getUser()", u2);
 
       // Redirect
       router.replace(next.startsWith("/") ? next : `/${next}`);
       router.refresh();
     } catch (e: any) {
-      console.error("LOGIN EXCEPTION", e);
+      console.error(" EXCEPTION", e);
       setErr(e?.message ?? "Errore inatteso");
     } finally {
       setLoading(false);
@@ -54,26 +54,26 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6 font-sans">
       <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/40 shadow-xl">
         <div className="p-6 border-b border-slate-800">
-          <div className="text-sm tracking-[0.28em] text-amber-300/90">
+          <div className="text-sm tracking-[0.28em] text-amber-300/90 font-bold">
             MINERVA
           </div>
-          <h1 className="text-2xl font-semibold mt-2">Area Riservata</h1>
-          <p className="text-slate-300 mt-1 text-sm">
+          <h1 className="text-2xl font-semibold mt-2 uppercase tracking-tighter">Area Riservata</h1>
+          <p className="text-slate-300 mt-1 text-sm italic">
             Accedi al portale opportunità.
           </p>
         </div>
 
         <form onSubmit={onSubmit} className="p-6 space-y-4">
           <div>
-            <label className="text-sm text-slate-300">Email</label>
+            <label className="text-xs font-black uppercase text-slate-400 tracking-widest">Email</label>
             <input
               id="email"
               name="email"
               autoComplete="email"
-              className="mt-1 w-full rounded-xl bg-slate-950/60 border border-slate-800 px-3 py-2 outline-none focus:border-amber-300/60"
+              className="mt-1 w-full rounded-xl bg-slate-950/60 border border-slate-800 px-3 py-3 outline-none focus:border-amber-300/60 transition-all"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               type="email"
@@ -82,12 +82,12 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="text-sm text-slate-300">Password</label>
+            <label className="text-xs font-black uppercase text-slate-400 tracking-widest">Password</label>
             <input
               id="password"
               name="password"
               autoComplete="current-password"
-              className="mt-1 w-full rounded-xl bg-slate-950/60 border border-slate-800 px-3 py-2 outline-none focus:border-amber-300/60"
+              className="mt-1 w-full rounded-xl bg-slate-950/60 border border-slate-800 px-3 py-3 outline-none focus:border-amber-300/60 transition-all"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               type="password"
@@ -103,17 +103,32 @@ export default function LoginPage() {
 
           <button
             disabled={loading}
-            className="w-full rounded-xl bg-amber-300 text-slate-950 font-semibold py-2 hover:bg-amber-200 disabled:opacity-60"
+            className="w-full rounded-xl bg-amber-300 text-slate-950 font-black uppercase text-xs tracking-widest py-4 hover:bg-amber-200 disabled:opacity-60 transition-all shadow-lg active:scale-95"
             type="submit"
           >
-            {loading ? "Accesso..." : "Accedi"}
+            {loading ? "Accesso..." : "Accedi al Portale"}
           </button>
 
-          <div className="text-xs text-slate-500">
-            Debug: apri Console (F12) e guarda “SUBMIT START / LOGIN RESULT”.
+          <div className="text-[10px] text-slate-500 uppercase tracking-tight text-center">
+            Identità Minerva Verificata
           </div>
         </form>
       </div>
     </div>
+  );
+}
+
+// 2. Il componente Page principale avvolge tutto in Suspense
+export default function Page() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-amber-300 text-xs font-black uppercase animate-pulse tracking-[0.3em]">
+          Caricamento Minerva...
+        </div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }
