@@ -29,7 +29,14 @@ export default function TestInvite() {
     <div className="min-h-screen bg-[#001220] flex items-center justify-center p-6 text-white font-sans">
       <div className="max-w-md w-full bg-[#001c30] p-10 rounded-2xl border border-[#D4AF37]/20 shadow-2xl">
         <div className="text-center mb-10 text-[#D4AF37] uppercase tracking-[0.3em]">
-          <Image src="/icon.webp" alt="Logo" width={80} height={80} className="mx-auto mb-6" />
+          <Image 
+            src="/icon.webp" 
+            alt="Logo" 
+            width={80} 
+            height={80} 
+            unoptimized
+            className="mx-auto mb-6" 
+          />
           <h2 className="text-xl font-light">Console Onboarding</h2>
         </div>
         <form onSubmit={handleSend} className="space-y-4">

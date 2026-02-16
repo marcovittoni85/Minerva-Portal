@@ -6,19 +6,12 @@ import { motion, Variants } from "framer-motion";
 import { GeometricBackground } from "@/components/GeometricBackground";
 import { ArrowRight, Shield, Diamond, Users } from "lucide-react";
 
-// Tipizziamo esplicitamente le varianti per accontentare il compilatore
 const fadeInUp: Variants = {
-  hidden: { 
-    opacity: 0, 
-    y: 30 
-  },
+  hidden: { opacity: 0, y: 30 },
   visible: { 
     opacity: 1, 
-    y: 0,
-    transition: { 
-      duration: 0.8, 
-      ease: "easeOut" 
-    }
+    y: 0, 
+    transition: { duration: 0.8, ease: "easeOut" } 
   }
 };
 
@@ -26,10 +19,7 @@ const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { 
-      staggerChildren: 0.2, 
-      delayChildren: 0.3 
-    }
+    transition: { staggerChildren: 0.2, delayChildren: 0.3 }
   }
 };
 
@@ -45,18 +35,10 @@ export default function Home() {
           animate="visible"
           className="max-w-4xl mx-auto space-y-12"
         >
-          {/* Logo con effetto respiro */}
           <motion.div variants={fadeInUp} className="flex justify-center relative">
             <motion.div
-              animate={{ 
-                scale: [1, 1.02, 1], 
-                filter: ["brightness(1)", "brightness(1.1)", "brightness(1)"] 
-              }}
-              transition={{ 
-                duration: 4, 
-                repeat: Infinity, 
-                ease: "easeInOut" 
-              }}
+              animate={{ scale: [1, 1.02, 1], filter: ["brightness(1)", "brightness(1.1)", "brightness(1)"] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
               className="relative"
             >
               <div className="absolute inset-0 bg-[#D4AF37] blur-[50px] opacity-20 rounded-full z-0"></div>
@@ -66,12 +48,12 @@ export default function Home() {
                 width={220}
                 height={220}
                 priority
+                unoptimized
                 className="drop-shadow-[0_0_30px_rgba(212,175,55,0.3)] relative z-10"
               />
             </motion.div>
           </motion.div>
 
-          {/* Testi Luxury */}
           <motion.div variants={fadeInUp} className="space-y-6">
             <h1 className="text-[#D4AF37] text-4xl md:text-6xl tracking-[0.25em] font-extralight uppercase leading-tight">
               Minerva <br/><span className="font-light">Partners</span>
@@ -82,7 +64,6 @@ export default function Home() {
             </p>
           </motion.div>
 
-          {/* Bottone d'ingresso */}
           <motion.div variants={fadeInUp} className="pt-8">
             <Link href="/login" className="group relative inline-flex items-center justify-center px-16 py-5 overflow-hidden tracking-[0.3em] font-bold text-[11px] text-[#001220] uppercase bg-[#D4AF37] rounded-sm transition-all duration-300 hover:bg-[#FBE8A6] hover:shadow-[0_0_40px_rgba(212,175,55,0.5)]">
                 <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"></span>
@@ -93,7 +74,6 @@ export default function Home() {
           </motion.div>
         </motion.div>
 
-        {/* Card Valori */}
         <motion.div 
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
