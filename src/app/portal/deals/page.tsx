@@ -1,84 +1,56 @@
-﻿'use client';
+﻿export const dynamic = "force-dynamic";
+import { supabaseServer } from "@/lib/supabase-server";
+import { redirect } from "next/navigation";
+import Link from "next/link";
 
-import { useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+export default async function DealsPage() {
+  const supabase = await supabaseServer();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const router = useRouter();
-  const supabase = createClient();
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email: email.toLowerCase().trim(),
-      password,
-    });
-
-    if (authError) {
-      setError(authError.message);
-      setLoading(false);
-    } else {
-      router.push('/portal');
-      router.refresh();
-    }
-  };
+  const { data: deals } = await supabase
+    .from("deals")
+    .select("*")
+    .eq("active", true)
+    .order("created_at", { ascending: false });
 
   return (
-    <div className="min-h-screen bg-[#001220] flex flex-col items-center justify-center p-4 text-white">
-      <div className="max-w-md w-full space-y-8 bg-[#001c30] p-10 rounded-xl border border-slate-800 shadow-2xl text-center">
-        <div className="flex justify-center mb-6">
-          <Image src="/icon.webp" alt="Minerva Partners" width={120} height={120} priority />
-        </div>
-        <h2 className="text-[#D4AF37] text-sm tracking-[0.3em] font-light uppercase">
-          Private Marketplace
-        </h2>
-        <p className="text-[#C0C0C0] text-xs tracking-widest uppercase opacity-80">
-          Minerva Partners
-        </p>
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          {error && (
-            <div className="text-red-400 text-sm bg-red-900/20 p-3 rounded border border-red-800">
-              {error}
-            </div>
-          )}
-          <input
-            type="email"
-            required
-            className="w-full px-3 py-3 bg-[#001220] border border-slate-700 rounded-lg outline-none focus:border-[#D4AF37] transition-colors"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            required
-            className="w-full px-3 py-3 bg-[#001220] border border-slate-700 rounded-lg outline-none focus:border-[#D4AF37] transition-colors"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 bg-[#D4AF37] text-[#001220] font-bold rounded-lg hover:bg-[#b8962d] transition-colors disabled:opacity-50"
-          >
-            {loading ? 'ACCESSO...' : 'ACCEDI'}
-          </button>
-        </form>
-        <div className="pt-6 border-t border-white/5">
-          <p className="text-slate-500 text-[9px] uppercase tracking-[0.3em]">
-            Minerva Partners • Private & Confidential
-          </p>
+    <div className="min-h-screen bg-[#001220] p-4 md:p-8 font-sans">
+      <div className="max-w-6xl mx-auto">
+        <header className="mb-10 border-b border-[#D4AF37]/20 pb-6">
+          <h1 className="text-[#D4AF37] text-lg tracking-[0.4em] uppercase font-light">Marketplace Esclusivo</h1>
+          <p className="text-slate-500 text-[9px] tracking-[0.2em] uppercase mt-1 text-white/60">Partner Portfolio Overview</p>
+        </header>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {deals?.map((deal) => (
+            <Link key={deal.id} href={`/portal/deals/${deal.id}`} className="block group">
+              <div className="bg-[#001c30] border border-white/5 p-5 rounded-lg hover:border-[#D4AF37]/40 transition-all h-full flex flex-col">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-[8px] bg-[#D4AF37]/10 text-[#D4AF37] px-2 py-0.5 rounded border border-[#D4AF37]/20 font-bold uppercase tracking-tighter">
+                    {deal.side}
+                  </span>
+                  <span className="text-[8px] text-slate-500 font-mono">{deal.code}</span>
+                </div>
+
+                <h3 className="text-white text-sm font-medium tracking-tight mb-2 group-hover:text-[#D4AF37] transition-colors leading-tight">
+                  {deal.title}
+                </h3>
+                
+                <p className="text-slate-400 text-[10px] leading-relaxed mb-6 font-light line-clamp-2">
+                  {deal.description}
+                </p>
+
+                <div className="mt-auto pt-4 border-t border-white/5 flex justify-between items-end">
+                  <div>
+                    <p className="text-slate-500 text-[7px] uppercase tracking-widest mb-0.5">Valore Stimato</p>
+                    <p className="text-[#D4AF37] text-[11px] font-semibold tracking-tight">{deal.ev_range}</p>
+                  </div>
+                  <span className="text-[#D4AF37] text-[10px] font-light">Dettagli →</span>
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
     </div>

@@ -17,9 +17,8 @@ export async function supabaseServer() {
             cookiesToSet.forEach(({ name, value, options }) => {
               cookieStore.set(name, value, options);
             });
-          } catch {
-            // in alcuni contesti server component non puoi settare cookie:
-            // il proxy.ts farà il lavoro vero
+          } catch (error) {
+            // Gestione silenziosa per i Server Components
           }
         },
       },
