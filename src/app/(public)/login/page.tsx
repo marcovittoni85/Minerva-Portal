@@ -9,7 +9,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  // FIX: Specifichiamo che l'errore può essere stringa o null
+  // FIX DEFINITIVO PER TYPESCRIPT
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createClient();
@@ -37,7 +37,6 @@ export default function LoginPage() {
     <div className="min-h-screen bg-[#001220] flex flex-col items-center justify-center p-4 font-sans text-white">
       <div className="max-w-md w-full space-y-8 bg-[#001c30] p-10 rounded-xl border border-slate-800 shadow-2xl">
         
-        {/* LOGO E TESTI PERSONALIZZATI */}
         <div className="text-center space-y-4">
           <div className="flex justify-center mb-6">
             <Image 
@@ -97,10 +96,6 @@ export default function LoginPage() {
           </div>
         </form>
       </div>
-      
-      <p className="mt-8 text-slate-500 text-xs">
-        © 2026 Minerva Partners Board. All rights reserved.
-      </p>
     </div>
   );
 }
