@@ -41,16 +41,18 @@ export default function Home() {
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
               className="relative"
             >
-              <div className="absolute inset-0 bg-[#D4AF37] blur-[50px] opacity-20 rounded-full z-0"></div>
-              <Image
-                src="/icon.webp"
-                alt="Minerva Partners Logo"
-                width={220}
-                height={220}
-                priority
-                unoptimized
-                className="drop-shadow-[0_0_30px_rgba(212,175,55,0.3)] relative z-10"
-              />
+{/* Metodo Bruto: Se il file esiste in public, questo DEVE caricarlo */}
+<img 
+  src="/icon.webp" 
+  alt="Minerva Logo" 
+  style={{
+    width: '220px',
+    height: '220px',
+    filter: 'drop-shadow(0 0 30px rgba(212,175,55,0.3))',
+    position: 'relative',
+    zIndex: 10
+  }}
+/>
             </motion.div>
           </motion.div>
 
