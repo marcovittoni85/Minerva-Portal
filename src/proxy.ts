@@ -21,10 +21,25 @@ export async function proxy(req: NextRequest) {
     }
   );
 
-  // Forza il refresh della sessione
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Se l'utente non è loggato e prova a entrare nel portale, vai al login
+  // Protezione cartella /portal
+  if (user && req.nextUrl.pathname.startsWith('/portal')) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('trial_ends_at, documents_signed')
+      .eq('id', user.id)
+      .single();
+
+    // Controllo Scadenza 30 giorni
+    if (profile && !profile.documents_signed && profile.trial_ends_at) {
+      if (new Date() > new Date(profile.trial_ends_at)) {
+        return NextResponse.redirect(new URL('/access-expired', req.url));
+      }
+    }
+  }
+
+  // Redirect se non loggato
   if (!user && req.nextUrl.pathname.startsWith('/portal')) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
