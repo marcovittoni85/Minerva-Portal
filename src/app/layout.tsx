@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// UNICO BLOCCO METADATA - Ho rimosso ogni duplicato
+// UNICO BLOCCO METADATA - Nessun duplicato ammesso
 export const metadata: Metadata = {
   title: "Minerva Partners Board",
   description: "Private Marketplace - Confederazione del Valore",
