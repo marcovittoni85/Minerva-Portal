@@ -16,8 +16,8 @@ export const metadata: Metadata = {
   title: "Minerva Partners Board",
   description: "Private Marketplace",
   icons: {
-    icon: "/icon.png", 
-    apple: "/icon.png",
+    icon: "/icon.webp", 
+    apple: "/icon.webp",
   },
 };
 
