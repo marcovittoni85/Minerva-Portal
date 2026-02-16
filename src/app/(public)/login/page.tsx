@@ -1,134 +1,105 @@
-﻿"use client";
+﻿'use client';
 
-import { useState, Suspense } from "react"; // Importato Suspense
-import { useRouter, useSearchParams } from "next/navigation";
-import { supabaseBrowser } from "@/lib/supabase-browser";
+import { useState } from 'react';
+import { createClient } from '@/utils/supabase/client';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
-// 1. Creiamo un componente interno che contiene tutta la tua logica
-function LoginContent() {
-  const supabase = supabaseBrowser();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const next = searchParams.get("next") || "/portal";
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [err, setErr] = useState<string | null>(null);
+export default function LoginPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const router = useRouter();
+  const supabase = createClient();
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    console.log("SUBMIT START", { email, next });
-
-    setErr(null);
     setLoading(true);
+    setError(null);
 
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-      console.log(" RESULT", { data, error });
-
-      if (error) {
-        setErr(error.message);
-        return;
-      }
-
-      const { data: u2 } = await supabase.auth.getUser();
-      console.log("AFTER  getUser()", u2);
-
-      // Redirect
-      router.replace(next.startsWith("/") ? next : `/${next}`);
-      router.refresh();
-    } catch (e: any) {
-      console.error(" EXCEPTION", e);
-      setErr(e?.message ?? "Errore inatteso");
-    } finally {
+    if (error) {
+      setError(error.message);
       setLoading(false);
-      console.log("SUBMIT END");
+    } else {
+      router.push('/portal');
+      router.refresh();
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6 font-sans">
-      <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/40 shadow-xl">
-        <div className="p-6 border-b border-slate-800">
-          <div className="text-sm tracking-[0.28em] text-amber-300/90 font-bold">
-            MINERVA
+    <div className="min-h-screen bg-[#001220] flex flex-col items-center justify-center p-4">
+      <div className="max-w-md w-full space-y-8 bg-[#001c30] p-10 rounded-xl border border-slate-800 shadow-2xl">
+        
+        {/* LOGO E TESTI PERSONALIZZATI */}
+        <div className="text-center space-y-4">
+          <div className="flex justify-center mb-6">
+            <Image 
+              src="/icon.png" 
+              alt="Minerva Partners Logo" 
+              width={140} 
+              height={140}
+              priority
+              className="drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]"
+            />
           </div>
-          <h1 className="text-2xl font-semibold mt-2 uppercase tracking-tighter">Area Riservata</h1>
-          <p className="text-slate-300 mt-1 text-sm italic">
-            Accedi al portale opportunità.
-          </p>
+          
+          <div className="space-y-1">
+            <h2 className="text-[#D4AF37] text-sm tracking-[0.3em] font-light uppercase">
+              User
+            </h2>
+            <p className="text-[#C0C0C0] text-xs tracking-widest font-medium uppercase opacity-80">
+              Confederazione del Valore
+            </p>
+          </div>
         </div>
 
-        <form onSubmit={onSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="text-xs font-black uppercase text-slate-400 tracking-widest">Email</label>
-            <input
-              id="email"
-              name="email"
-              autoComplete="email"
-              className="mt-1 w-full rounded-xl bg-slate-950/60 border border-slate-800 px-3 py-3 outline-none focus:border-amber-300/60 transition-all"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              type="email"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-black uppercase text-slate-400 tracking-widest">Password</label>
-            <input
-              id="password"
-              name="password"
-              autoComplete="current-password"
-              className="mt-1 w-full rounded-xl bg-slate-950/60 border border-slate-800 px-3 py-3 outline-none focus:border-amber-300/60 transition-all"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              type="password"
-              required
-            />
-          </div>
-
-          {err && (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
-              {err}
+        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+          {error && (
+            <div className="bg-red-900/20 border border-red-500 text-red-200 p-3 rounded text-sm text-center">
+              {error}
             </div>
           )}
+          
+          <div className="space-y-4">
+            <input
+              type="email"
+              required
+              className="appearance-none relative block w-full px-3 py-3 border border-slate-700 bg-[#001220] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent sm:text-sm"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <input
+              type="password"
+              required
+              className="appearance-none relative block w-full px-3 py-3 border border-slate-700 bg-[#001220] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent sm:text-sm"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
 
-          <button
-            disabled={loading}
-            className="w-full rounded-xl bg-amber-300 text-slate-950 font-black uppercase text-xs tracking-widest py-4 hover:bg-amber-200 disabled:opacity-60 transition-all shadow-lg active:scale-95"
-            type="submit"
-          >
-            {loading ? "Accesso..." : "Accedi al Portale"}
-          </button>
-
-          <div className="text-[10px] text-slate-500 uppercase tracking-tight text-center">
-            Identità Minerva Verificata
+          <div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-lg text-[#001220] bg-[#D4AF37] hover:bg-[#b8962d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#D4AF37] transition-all duration-200"
+            >
+              {loading ? 'ACCESSO IN CORSO...' : 'ACCEDI AL PORTALE'}
+            </button>
           </div>
         </form>
       </div>
+      
+      <p className="mt-8 text-slate-500 text-xs">
+        © 2026 Minerva Partners Board. All rights reserved.
+      </p>
     </div>
-  );
-}
-
-// 2. Il componente Page principale avvolge tutto in Suspense
-export default function Page() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="text-amber-300 text-xs font-black uppercase animate-pulse tracking-[0.3em]">
-          Caricamento Minerva...
-        </div>
-      </div>
-    }>
-      <LoginContent />
-    </Suspense>
   );
 }
