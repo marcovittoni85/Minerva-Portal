@@ -45,13 +45,7 @@ export default function Home() {
 <img 
   src="/icon.webp" 
   alt="Minerva Logo" 
-  style={{
-    width: '220px',
-    height: '220px',
-    filter: 'drop-shadow(0 0 30px rgba(212,175,55,0.3))',
-    position: 'relative',
-    zIndex: 10
-  }}
+  className="w-[220px] h-auto relative z-10 drop-shadow-[0_0_30px_rgba(212,175,55,0.3)]"
 />
             </motion.div>
           </motion.div>
