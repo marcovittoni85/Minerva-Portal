@@ -4,64 +4,42 @@ import { Resend } from "resend";
 
 export async function POST(req: Request) {
   try {
-    // Inizializziamo il client SOLO qui dentro, non all'inizio del file
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error("Configurazione Supabase mancante sul server.");
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { email, name } = await req.json();
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+    const resend = new Resend(process.env.RESEND_API_KEY);
     
-    const resendApiKey = process.env.RESEND_API_KEY;
-    if (!resendApiKey) throw new Error("RESEND_API_KEY mancante.");
-    const resend = new Resend(resendApiKey);
+    const { email, name, password } = await req.json();
 
-    // 1. Crea utente
-    const { data: userData, error: userError } = await supabase.auth.admin.createUser({
+    // 1. Crea l'utente con la password che hai scelto tu
+    const { data, error } = await supabase.auth.admin.createUser({
       email,
-      email_confirm: true,
+      password: password,
+      email_confirm: true, // L'utente è già confermato
       user_metadata: { full_name: name }
     });
 
-    if (userError && !userError.message.includes("already registered")) {
-        throw userError;
-    }
+    if (error) throw error;
 
-    // 2. Genera link
-    const { data, error: authError } = await supabase.auth.admin.generateLink({
-      type: 'invite', 
-      email,
-      options: { redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.minervapartners.it'}/portal/activate` }
-    });
-
-    if (authError || !data?.properties?.action_link) {
-      throw new Error(authError?.message || "Errore generazione link.");
-    }
-
-    const inviteLink = data.properties.action_link;
-
-    // 3. Invia Email
+    // 2. Invia la mail brandizzata con le credenziali
     await resend.emails.send({
       from: "Minerva Partners <board@minervapartners.it>",
       to: email,
-      subject: "Accesso Riservato: Private Marketplace Minerva Partners",
+      subject: "Benvenuto in Minerva Partners - Le tue credenziali",
       html: `
-        <div style="background-color: #001220; padding: 50px; text-align: center; color: white; font-family: sans-serif;">
-          <h1 style="color: #D4AF37; text-transform: uppercase; letter-spacing: 3px;">Benvenuto, ${name}</h1>
-          <p style="letter-spacing: 2px; color: #C0C0C0;">MINERVA PARTNERS - PRIVATE MARKETPLACE</p>
-          <div style="margin: 40px 0;">
-            <a href="${inviteLink}" style="background-color: #D4AF37; color: #001220; padding: 15px 30px; text-decoration: none; font-weight: bold; text-transform: uppercase; font-size: 11px; letter-spacing: 2px; border-radius: 2px;">Attiva Account Partner</a>
+        <div style="background-color: #001220; padding: 40px; color: white; font-family: sans-serif; text-align: center;">
+          <h1 style="color: #D4AF37; letter-spacing: 4px;">MINERVA PARTNERS</h1>
+          <p style="margin-top: 30px; font-size: 16px;">Gentile ${name}, il tuo accesso al Private Marketplace è attivo.</p>
+          <div style="background: #001c30; padding: 20px; border: 1px solid #D4AF37; margin: 30px 0;">
+            <p style="margin: 5px 0; color: #D4AF37;">EMAIL: <strong>${email}</strong></p>
+            <p style="margin: 5px 0; color: #D4AF37;">PASSWORD TEMPORANEA: <strong>${password}</strong></p>
           </div>
+          <a href="https://www.minervapartners.it/login" style="display: inline-block; background: #D4AF37; color: #001220; padding: 15px 30px; text-decoration: none; font-weight: bold; text-transform: uppercase; font-size: 12px; letter-spacing: 2px;">Accedi al Portale</a>
+          <p style="margin-top: 40px; font-size: 10px; color: #666;">Ti consigliamo di cambiare la password dopo il primo accesso nella sezione Impostazioni.</p>
         </div>
       `
     });
 
     return NextResponse.json({ success: true });
-  } catch (e: any) { 
-    console.error("Errore Onboarding:", e.message);
-    return NextResponse.json({ error: e.message }, { status: 500 }); 
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }
