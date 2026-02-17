@@ -1,66 +1,74 @@
-﻿"use client";
-import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
+﻿export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+import { supabaseServer } from "@/lib/supabase-server";
 import Link from "next/link";
-import { Briefcase, PlusCircle, ClipboardList, Settings } from "lucide-react";
+import { redirect } from "next/navigation";
 
-export default function DashboardPage() {
-  const supabase = createClient();
-  const [name, setName] = useState("");
-  const [role, setRole] = useState("");
+export default async function MyDealsPage() {
+  const supabase = await supabaseServer();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
 
-  useEffect(() => {
-    async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase.from("profiles").select("full_name, role").eq("id", user.id).single();
-        setName(data?.full_name || "Partner");
-        setRole(data?.role || "");
-      }
-    }
-    load();
-  }, []);
+  const { data: accessRows } = await supabase
+    .from("deal_access")
+    .select("deal_id, access_level")
+    .eq("user_id", user.id);
 
-  const isAdmin = role === "admin" || role === "equity_partner";
+  const dealIds = (accessRows ?? []).map((r) => r.deal_id);
+
+  if (dealIds.length === 0) {
+    return (
+      <div className="p-8 max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold text-slate-900 mb-4">I Miei Investimenti</h1>
+        <div className="bg-white border rounded-2xl p-12 text-center">
+          <p className="text-slate-400 text-lg mb-4">Non hai ancora accesso a nessun deal.</p>
+          <Link href="/portal/board" className="inline-block bg-[#D4AF37] text-white text-sm font-bold uppercase tracking-widest px-6 py-3 rounded-xl hover:bg-[#b8962d] transition-colors">Esplora la Bacheca</Link>
+        </div>
+      </div>
+    );
+  }
+
+  const { data: deals } = await supabase
+    .from("deals")
+    .select("*")
+    .in("id", dealIds)
+    .order("created_at", { ascending: false });
+
+  const accessMap = Object.fromEntries((accessRows ?? []).map((r) => [r.deal_id, r.access_level]));
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <header className="mb-10">
-        <p className="text-[#D4AF37] text-[10px] uppercase tracking-[0.5em] font-medium mb-2">Minerva Partners</p>
-        <h1 className="text-3xl font-bold text-slate-900">Bentornato, <span className="text-[#D4AF37]">{name}</span></h1>
-        <p className="text-slate-500 text-sm mt-2">Private Marketplace Dashboard</p>
-      </header>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Link href="/portal/board" className="group bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:border-[#D4AF37]/40 transition-all">
-          <Briefcase className="w-5 h-5 mb-4 text-[#D4AF37]" />
-          <h3 className="text-slate-900 text-sm font-bold mb-1 group-hover:text-[#D4AF37] transition-colors">Bacheca Deal</h3>
-          <p className="text-slate-500 text-xs">Esplora le opportunita riservate</p>
-        </Link>
-        <Link href="/portal/propose-deal" className="group bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:border-[#D4AF37]/40 transition-all">
-          <PlusCircle className="w-5 h-5 mb-4 text-emerald-500" />
-          <h3 className="text-slate-900 text-sm font-bold mb-1 group-hover:text-[#D4AF37] transition-colors">Proponi Deal</h3>
-          <p className="text-slate-500 text-xs">Sottoponi una nuova operazione</p>
-        </Link>
-        <Link href="/portal/settings" className="group bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:border-[#D4AF37]/40 transition-all">
-          <Settings className="w-5 h-5 mb-4 text-slate-400" />
-          <h3 className="text-slate-900 text-sm font-bold mb-1 group-hover:text-[#D4AF37] transition-colors">Impostazioni</h3>
-          <p className="text-slate-500 text-xs">Gestisci il tuo account</p>
-        </Link>
-      </div>
-
-      {isAdmin && (
-        <div className="mt-8">
-          <p className="text-slate-400 text-[9px] uppercase tracking-widest font-bold mb-3">Amministrazione</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Link href="/portal/access-requests" className="group bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:border-[#D4AF37]/40 transition-all">
-              <ClipboardList className="w-5 h-5 mb-4 text-[#D4AF37]" />
-              <h3 className="text-slate-900 text-sm font-bold mb-1 group-hover:text-[#D4AF37] transition-colors">Richieste Accesso</h3>
-              <p className="text-slate-500 text-xs">Approva o rifiuta le richieste</p>
-            </Link>
-          </div>
+    <div className="p-8 max-w-7xl mx-auto">
+      <header className="mb-10 flex items-end justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">I Miei Investimenti</h1>
+          <p className="text-slate-500 mt-2">{deals?.length} deal con accesso approvato</p>
         </div>
-      )}
+        <Link href="/portal/board" className="text-sm text-slate-500 underline">Torna alla Bacheca</Link>
+      </header>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {deals?.map((deal) => {
+          const level = accessMap[deal.id] || "Full Access";
+          return (
+            <Link key={deal.id} href={"/portal/deals/" + deal.id} className="group bg-white border border-slate-100 rounded-2xl p-8 shadow-sm hover:shadow-xl hover:border-[#D4AF37]/40 transition-all">
+              <div className="flex items-center justify-between mb-6">
+                <span className="inline-block bg-slate-900 text-[#D4AF37] text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-lg">{deal.side || "OPERAZIONE"}</span>
+                <span className="text-[10px] font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-lg border border-green-100">{level}</span>
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-[#D4AF37] transition-colors">{deal.title}</h3>
+              <p className="text-slate-400 text-xs uppercase tracking-widest mb-4">{deal.sector}</p>
+              <p className="text-slate-500 text-sm mb-6">{deal.description}</p>
+              <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                <div>
+                  <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">EV Range</p>
+                  <p className="text-sm font-bold text-slate-900">{deal.ev_range || "N/A"}</p>
+                </div>
+                <span className="text-sm font-bold text-[#D4AF37]">Apri Dossier</span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }

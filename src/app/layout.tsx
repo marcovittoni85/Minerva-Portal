@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "Minerva Partners Board",
   description: "Private Marketplace",
   icons: {
-    icon: "/icon.webps",
+    icon: "/icon.webp",
     apple: "/icon.webp",
   },
 };
@@ -28,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="it">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#001220] text-white`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-slate-900`}>
         {children}
       </body>
     </html>

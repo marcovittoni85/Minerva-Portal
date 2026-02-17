@@ -26,21 +26,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#001220] flex flex-col items-center justify-center p-4 text-white">
-      <div className="max-w-md w-full space-y-8 bg-[#001c30] p-10 rounded-xl border border-slate-800 shadow-2xl text-center">
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4 text-slate-900">
+      <div className="max-w-md w-full space-y-8 bg-white border border-slate-100 p-10 rounded-xl shadow-lg text-center">
         <div className="flex justify-center mb-6">
           <Image src="/icon.webp" alt="Minerva Partners" width={120} height={120} priority />
         </div>
-        <h2 className="text-[#D4AF37] text-sm tracking-[0.3em] font-light uppercase">Private Marketplace</h2>
-        <p className="text-[#C0C0C0] text-xs tracking-widest uppercase opacity-80">Minerva Partners</p>
+        <h2 className="text-[#D4AF37] text-sm tracking-[0.3em] font-medium uppercase">Private Marketplace</h2>
+        <p className="text-slate-400 text-xs tracking-widest uppercase">Minerva Partners</p>
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          {error && <div className="text-red-400 text-sm bg-red-900/20 p-3 rounded border border-red-800">{error}</div>}
-          <input type="email" required className="w-full px-3 py-3 bg-[#001220] border border-slate-700 rounded-lg outline-none focus:border-[#D4AF37] transition-colors" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <input type="password" required className="w-full px-3 py-3 bg-[#001220] border border-slate-700 rounded-lg outline-none focus:border-[#D4AF37] transition-colors" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-          <button type="submit" disabled={loading} className="w-full py-3 bg-[#D4AF37] text-[#001220] font-bold rounded-lg hover:bg-[#b8962d] transition-colors disabled:opacity-50">{loading ? 'ACCESSO...' : 'ACCEDI'}</button>
+          {error && <div className="text-red-600 text-sm bg-red-50 p-3 rounded-lg border border-red-200">{error}</div>}
+          <input type="email" required className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 outline-none focus:border-[#D4AF37] transition-colors placeholder:text-slate-400" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input type="password" required className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 outline-none focus:border-[#D4AF37] transition-colors placeholder:text-slate-400" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <button type="submit" disabled={loading} className="w-full py-3 bg-[#D4AF37] text-white font-bold rounded-lg hover:bg-[#b8962d] transition-colors disabled:opacity-50">{loading ? 'ACCESSO...' : 'ACCEDI'}</button>
         </form>
-        <div className="pt-6 border-t border-white/5">
-          <p className="text-slate-500 text-[9px] uppercase tracking-[0.3em]">Minerva Partners • Private & Confidential</p>
+        <div className="pt-6 border-t border-slate-100">
+          <p className="text-slate-400 text-[9px] uppercase tracking-[0.3em]">Minerva Partners • Private & Confidential</p>
         </div>
       </div>
     </div>
