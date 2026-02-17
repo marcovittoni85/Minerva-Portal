@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
+import Image from "next/image";
 import { Briefcase, Clock, CheckCircle, Calendar, TrendingUp, ArrowRight, PlusCircle, ClipboardList, Settings } from "lucide-react";
 
 interface Deal {
@@ -22,7 +23,7 @@ interface AccessRequest {
   deals: { title: string; sector: string } | null;
 }
 
-// Placeholder events — in futuro verranno da Supabase
+// Placeholder events
 const placeholderEvents = [
   {
     id: "evt-1",
@@ -42,7 +43,7 @@ const placeholderEvents = [
   },
 ];
 
-// Placeholder stories — in futuro verranno da Supabase
+// Placeholder stories
 const placeholderStories = [
   {
     id: "str-1",
@@ -84,12 +85,10 @@ export default function DashboardPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Profile
       const { data: profile } = await supabase.from("profiles").select("full_name, role").eq("id", user.id).single();
       setName(profile?.full_name || "Partner");
       setRole(profile?.role || "");
 
-      // Approved deals (from deal_access)
       const { data: accessRows } = await supabase
         .from("deal_access")
         .select("deal_id")
@@ -106,7 +105,6 @@ export default function DashboardPage() {
         setApprovedDeals(deals || []);
       }
 
-      // Pending requests
       const { data: pending } = await supabase
         .from("deal_access_requests")
         .select("id, deal_id, status, created_at, deals:deal_id(title, sector)")
@@ -116,7 +114,6 @@ export default function DashboardPage() {
         .limit(5);
       setPendingRequests((pending as any) || []);
 
-      // Latest deals on board (via RPC or direct)
       const { data: latest } = await supabase.rpc("get_board_deals");
       setLatestDeals((latest || []).slice(0, 3));
 
@@ -150,10 +147,9 @@ export default function DashboardPage() {
     return (
       <div className="p-8 max-w-6xl mx-auto">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-slate-100 rounded w-64" />
-          <div className="h-4 bg-slate-100 rounded w-48" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
-            {[1,2,3].map(i => <div key={i} className="h-32 bg-slate-50 rounded-2xl" />)}
+          <div className="h-48 bg-slate-100 rounded-2xl" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[1,2,3,4].map(i => <div key={i} className="h-24 bg-slate-50 rounded-2xl" />)}
           </div>
         </div>
       </div>
@@ -162,12 +158,26 @@ export default function DashboardPage() {
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
-      {/* Header */}
-      <header className="mb-10">
-        <p className="text-[#D4AF37] text-[10px] uppercase tracking-[0.5em] font-medium mb-2">Minerva Partners</p>
-        <h1 className="text-3xl font-bold text-slate-900">Bentornato, <span className="text-[#D4AF37]">{name}</span></h1>
-        <p className="text-slate-500 text-sm mt-2">Ecco cosa sta succedendo nel tuo network</p>
-      </header>
+
+      {/* Hero Banner */}
+      <div className="relative rounded-2xl overflow-hidden mb-10">
+        <div className="absolute inset-0">
+          <Image
+            src="/dashboard-hero.webp"
+            alt="Minerva Partners"
+            fill
+            className="object-cover object-center"
+            priority
+            unoptimized
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 via-slate-900/60 to-slate-900/30" />
+        </div>
+        <div className="relative z-10 px-8 py-12 md:py-16">
+          <p className="text-[#D4AF37] text-[10px] uppercase tracking-[0.5em] font-medium mb-2">Minerva Partners</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-white">Bentornato, <span className="text-[#D4AF37]">{name}</span></h1>
+          <p className="text-white/60 text-sm mt-2 max-w-md">Ecco cosa sta succedendo nel tuo network</p>
+        </div>
+      </div>
 
       {/* Quick stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
@@ -202,7 +212,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left column — 2/3 */}
+        {/* Left column */}
         <div className="lg:col-span-2 space-y-8">
 
           {/* Approved Deals */}
@@ -286,33 +296,6 @@ export default function DashboardPage() {
               )}
             </div>
           </section>
-        </div>
-
-        {/* Right column — 1/3 */}
-        <div className="space-y-8">
-
-          {/* Network Events */}
-          <section>
-            <h2 className="text-slate-900 text-lg font-bold flex items-center gap-2 mb-4">
-              <Calendar className="w-4 h-4 text-blue-500" />
-              Prossimi Eventi
-            </h2>
-            <div className="space-y-4">
-              {placeholderEvents.map((event) => (
-                <div key={event.id} className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">
-                      {daysUntilEvent(event.date)}
-                    </span>
-                  </div>
-                  <h3 className="text-slate-900 text-sm font-bold mb-1">{event.title}</h3>
-                  <p className="text-slate-400 text-xs mb-2">{formatEventDate(event.date)}</p>
-                  <p className="text-slate-400 text-[10px] uppercase tracking-wider mb-3">{event.location}</p>
-                  <p className="text-slate-500 text-xs leading-relaxed">{event.description}</p>
-                </div>
-              ))}
-            </div>
-          </section>
 
           {/* Network Stories */}
           <section>
@@ -320,6 +303,24 @@ export default function DashboardPage() {
               <TrendingUp className="w-4 h-4 text-emerald-500" />
               Dal Network
             </h2>
+
+            <div className="relative rounded-2xl overflow-hidden mb-5">
+              <div className="aspect-[21/9] relative">
+                <Image
+                  src="/dashboard-network.webp"
+                  alt="Minerva Network"
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-transparent to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-5">
+                  <p className="text-[9px] uppercase tracking-widest text-[#D4AF37] font-bold mb-1">Aggiornamenti dal Network</p>
+                  <p className="text-white text-sm font-medium">Le ultime novita sugli investimenti della community</p>
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-4">
               {placeholderStories.map((story) => (
                 <div key={story.id} className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
@@ -335,6 +336,52 @@ export default function DashboardPage() {
                       <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-wider">Performance positiva</span>
                     </div>
                   )}
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        {/* Right column */}
+        <div className="space-y-8">
+
+          {/* Network Events */}
+          <section>
+            <h2 className="text-slate-900 text-lg font-bold flex items-center gap-2 mb-4">
+              <Calendar className="w-4 h-4 text-blue-500" />
+              Prossimi Eventi
+            </h2>
+
+            <div className="relative rounded-2xl overflow-hidden mb-5">
+              <div className="aspect-[4/3] relative">
+                <Image
+                  src="/dashboard-events.webp"
+                  alt="Minerva Events"
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-5">
+                  <p className="text-[9px] uppercase tracking-widest text-[#D4AF37] font-bold mb-1">Prossimo Evento</p>
+                  <p className="text-white text-sm font-bold">{placeholderEvents[0]?.title}</p>
+                  <p className="text-white/60 text-xs mt-1">{formatEventDate(placeholderEvents[0]?.date)}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {placeholderEvents.map((event) => (
+                <div key={event.id} className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">
+                      {daysUntilEvent(event.date)}
+                    </span>
+                  </div>
+                  <h3 className="text-slate-900 text-sm font-bold mb-1">{event.title}</h3>
+                  <p className="text-slate-400 text-xs mb-2">{formatEventDate(event.date)}</p>
+                  <p className="text-slate-400 text-[10px] uppercase tracking-wider mb-3">{event.location}</p>
+                  <p className="text-slate-500 text-xs leading-relaxed">{event.description}</p>
                 </div>
               ))}
             </div>
