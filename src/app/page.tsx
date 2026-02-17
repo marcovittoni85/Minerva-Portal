@@ -178,7 +178,7 @@ export default function HomePage() {
           font-family: 'Montserrat', sans-serif;
           font-weight: 300;
           font-size: 0.9rem;
-          color: rgba(255,255,255,0.4);
+          color: rgba(255,255,255,0.9);
           line-height: 1.8;
           letter-spacing: 0.02em;
           max-width: 440px;
