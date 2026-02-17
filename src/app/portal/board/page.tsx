@@ -8,6 +8,7 @@ const sectorColors: Record<string, string> = {
   "Healthcare": "bg-rose-500/10 text-rose-400 border-rose-500/20",
   "Energy": "bg-amber-500/10 text-amber-400 border-amber-500/20",
   "Capital Markets": "bg-purple-500/10 text-purple-400 border-purple-500/20",
+  "Banking & Credit": "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
   "DEBT": "bg-orange-500/10 text-orange-400 border-orange-500/20",
 };
 
@@ -47,23 +48,23 @@ export default async function BoardPage() {
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-5">
           {(deals ?? []).map((d: any) => (
             <div key={d.id} className="bg-[#001c30] border border-white/5 rounded-xl p-6 hover:border-[#D4AF37]/20 transition-all">
-              {/* Top: Sector + Side */}
               <div className="flex items-center justify-between mb-4">
-                <span className={"text-xs font-semibold uppercase tracking-wider px-3 py-1.5 rounded-lg border " + getSectorStyle(d.sector)}>
-                  {d.sector || "Altro"}
-                </span>
+                <div className="flex flex-wrap gap-2">
+                  {(d.sector || "Altro").split(" & ").map((s: string) => (
+                    <span key={s} className={"text-xs font-semibold uppercase tracking-wider px-3 py-1.5 rounded-lg border " + getSectorStyle(s.trim())}>
+                      {s.trim()}
+                    </span>
+                  ))}
+                </div>
                 <span className="text-[10px] text-slate-500 uppercase tracking-wider">{d.side}</span>
               </div>
 
-              {/* Title */}
               <Link href={"/portal/deals/" + d.id} className="group">
                 <h3 className="text-white text-lg font-medium leading-snug mb-2 group-hover:text-[#D4AF37] transition-colors">{d.title}</h3>
               </Link>
 
-              {/* Description */}
               <p className="text-slate-400 text-sm leading-relaxed mb-4">{d.description || "Dettagli riservati"}</p>
 
-              {/* Bottom: Meta + Action */}
               <div className="flex items-end justify-between pt-4 border-t border-white/5">
                 <div className="flex gap-6">
                   <div>
