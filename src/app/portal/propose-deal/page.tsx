@@ -20,6 +20,12 @@ export default function ProposeNewDeal() {
     }
   };
 
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / 1024 / 1024).toFixed(1) + " MB";
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (files.length === 0) { setFileError("Allega almeno un documento"); return; }
@@ -85,7 +91,7 @@ export default function ProposeNewDeal() {
             <p className="text-slate-900 text-sm font-medium">Deal Proposal Template</p>
             <p className="text-slate-500 text-xs mt-1">Scarica il template PDF come guida per la compilazione</p>
           </div>
-          <a href="/Minerva_Deal_Template.pdf" download className="bg-[#D4AF37]/10 text-[#D4AF37] px-5 py-2.5 rounded-lg text-[10px] font-bold tracking-widest uppercase border border-[#D4AF37]/20 hover:bg-[#D4AF37]/20 transition-colors whitespace-nowrap">Scarica PDF</a>
+          <a href="/Minerva_Deal_Template.pdf" target="_blank" rel="noopener noreferrer" className="bg-[#D4AF37]/10 text-[#D4AF37] px-5 py-2.5 rounded-lg text-[10px] font-bold tracking-widest uppercase border border-[#D4AF37]/20 hover:bg-[#D4AF37]/20 transition-colors whitespace-nowrap">Scarica PDF</a>
         </div>
 
         {error && <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 text-red-600 text-sm">{error}</div>}
@@ -161,7 +167,7 @@ export default function ProposeNewDeal() {
                 {files.map((f, i) => (
                   <div key={i} className="flex items-center justify-between bg-slate-50 border border-slate-100 rounded-lg px-3 py-2">
                     <span className="text-slate-900 text-xs truncate">{f.name}</span>
-                    <span className="text-slate-400 text-[10px]">{(f.size / 1024 / 1024).toFixed(1)} MB</span>
+                    <span className="text-slate-400 text-[10px] ml-3 whitespace-nowrap">{formatFileSize(f.size)}</span>
                   </div>
                 ))}
               </div>
