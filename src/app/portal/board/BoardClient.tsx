@@ -82,12 +82,12 @@ export default function BoardClient({ deals, isAdmin, error }: { deals: any[]; i
         {filtered.map((d: any) => (
           <div key={d.id} className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:border-[#D4AF37]/40 transition-all">
             {/* Top: Sector + Deal Type */}
-            <div className="flex items-center justify-between mb-3">
-              <span className={"text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg border " + getSectorStyle(d.sector)}>
-                {d.sector || "Altro"}
-              </span>
-              <span className="text-xs font-black text-slate-900 uppercase tracking-wider">{d.deal_type || d.side}</span>
-            </div>
+           <div className="flex flex-wrap items-center gap-2">
+                <span className={"text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg border " + getSectorStyle(d.sector)}>
+                  {d.sector || "Altro"}
+                </span>
+                {d.sub_sector && <span className="text-[9px] text-slate-400 italic">{d.sub_sector}</span>}
+              </div>
 
             {/* Code + Thematic Area */}
             <div className="flex items-center gap-3 mb-2">
