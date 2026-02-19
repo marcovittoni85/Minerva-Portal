@@ -34,6 +34,8 @@ export default function BoardClient({ deals, isAdmin, error }: { deals: any[]; i
 
   const hasFilters = sectorFilter !== "ALL" || dealTypeFilter !== "ALL" || geoFilter !== "ALL";
 
+  const selectClass = "bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-700 outline-none focus:border-[#D4AF37] transition-colors cursor-pointer";
+
   return (
     <div className="p-8 max-w-6xl mx-auto">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8 pb-8 border-b border-slate-100">
@@ -44,7 +46,7 @@ export default function BoardClient({ deals, isAdmin, error }: { deals: any[]; i
         </div>
         <div className="flex gap-2">
           {hasFilters && (
-            <button onClick={() => { setSectorFilter("ALL"); setDealTypeFilter("ALL"); setGeoFilter("ALL"); }} className="text-xs text-red-400 border border-red-200 px-4 py-2.5 rounded-lg hover:bg-red-50 transition-colors">Reset filtri</button>
+            <button onClick={() => { setSectorFilter("ALL"); setDealTypeFilter("ALL"); setGeoFilter("ALL"); }} className="text-xs text-red-400 border border-red-200 px-4 py-2 rounded-lg hover:bg-red-50 transition-colors">Reset</button>
           )}
           {isAdmin && (
             <Link href="/portal/access-requests" className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] border border-[#D4AF37]/30 px-5 py-2.5 rounded-lg hover:bg-[#D4AF37]/10 transition-colors">Richieste Pendenti</Link>
@@ -52,31 +54,25 @@ export default function BoardClient({ deals, isAdmin, error }: { deals: any[]; i
         </div>
       </header>
 
-      {/* Filtri */}
-      <div className="mb-6 space-y-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[9px] uppercase tracking-widest text-slate-400 font-bold w-16">Settore</span>
-          {sectors.map(s => (
-            <button key={s} onClick={() => setSectorFilter(s)} className={"px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all " + (sectorFilter === s ? "bg-[#D4AF37] text-white border-[#D4AF37]" : "bg-white text-slate-500 border-slate-200 hover:border-[#D4AF37]/40")}>
-              {s === "ALL" ? "Tutti" : s}
-            </button>
-          ))}
+      {/* Filtri dropdown */}
+      <div className="flex flex-wrap gap-4 mb-6">
+        <div>
+          <label className="text-[9px] uppercase tracking-widest text-slate-400 font-bold block mb-1">Settore</label>
+          <select value={sectorFilter} onChange={e => setSectorFilter(e.target.value)} className={selectClass}>
+            {sectors.map(s => <option key={s} value={s}>{s === "ALL" ? "Tutti i settori" : s}</option>)}
+          </select>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[9px] uppercase tracking-widest text-slate-400 font-bold w-16">Tipo</span>
-          {dealTypes.map(s => (
-            <button key={s} onClick={() => setDealTypeFilter(s)} className={"px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all " + (dealTypeFilter === s ? "bg-[#D4AF37] text-white border-[#D4AF37]" : "bg-white text-slate-500 border-slate-200 hover:border-[#D4AF37]/40")}>
-              {s === "ALL" ? "Tutti" : s}
-            </button>
-          ))}
+        <div>
+          <label className="text-[9px] uppercase tracking-widest text-slate-400 font-bold block mb-1">Tipo operazione</label>
+          <select value={dealTypeFilter} onChange={e => setDealTypeFilter(e.target.value)} className={selectClass}>
+            {dealTypes.map(s => <option key={s} value={s}>{s === "ALL" ? "Tutti i tipi" : s}</option>)}
+          </select>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[9px] uppercase tracking-widest text-slate-400 font-bold w-16">Area</span>
-          {geos.map(s => (
-            <button key={s} onClick={() => setGeoFilter(s)} className={"px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all " + (geoFilter === s ? "bg-[#D4AF37] text-white border-[#D4AF37]" : "bg-white text-slate-500 border-slate-200 hover:border-[#D4AF37]/40")}>
-              {s === "ALL" ? "Tutti" : s}
-            </button>
-          ))}
+        <div>
+          <label className="text-[9px] uppercase tracking-widest text-slate-400 font-bold block mb-1">Geografia</label>
+          <select value={geoFilter} onChange={e => setGeoFilter(e.target.value)} className={selectClass}>
+            {geos.map(s => <option key={s} value={s}>{s === "ALL" ? "Tutte le aree" : s}</option>)}
+          </select>
         </div>
       </div>
 
