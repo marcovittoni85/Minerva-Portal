@@ -40,6 +40,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
   const adminItems = [
     { name: 'Richieste Accesso', href: '/portal/access-requests', icon: ClipboardList },
+    { name: 'Richieste Accesso', href: '/portal/access-requests', icon: ClipboardList },
+    { name: 'Proposte Deal', href: '/portal/deal-proposals', icon: Briefcase },
   ];
 
   return (
