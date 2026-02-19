@@ -86,9 +86,9 @@ export default function BoardClient({ deals, isAdmin, error }: { deals: any[]; i
                 <span className={"text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg border " + getSectorStyle(d.sector)}>
                   {d.sector || "Altro"}
                 </span>
-                {d.sub_sector && <span className="text-[9px] text-slate-400 italic">{d.sub_sector}</span>}
+                {d.sub_sector && <span className="text-[10px] font-medium text-slate-500 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">{d.sub_sector}</span>}
               </div>
-
+              
             {/* Code + Thematic Area */}
             <div className="flex items-center gap-3 mb-2">
               <span className="text-[9px] text-slate-400 tracking-wider">{d.code}</span>
