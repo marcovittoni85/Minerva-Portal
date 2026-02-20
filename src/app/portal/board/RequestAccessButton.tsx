@@ -47,7 +47,7 @@ export default function RequestAccessButton({ dealId, isAdmin }: { dealId: strin
     if (!error) {
       setStatus("pending");
       try {
-        await fetch("/api/notify-request", {
+         fetch("/api/notify-request", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ dealId }),
