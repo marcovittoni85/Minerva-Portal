@@ -4,11 +4,34 @@ import { redirect } from "next/navigation";
 export default async function AccessRequestsPage() {
   const supabase = await supabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user?.id).single();
-  if (profile?.role !== "admin" && profile?.role !== "equity_partner") redirect("/portal");
+  if (!user) redirect("/login");
 
-  const { data: pending } = await supabase.from("deal_access_requests").select("id, status, created_at, reason, user_id, deal_id").eq("status", "pending").order("created_at", { ascending: false });
-  const { data: history } = await supabase.from("deal_access_requests").select("id, status, created_at, reason, user_id, deal_id, decided_at").neq("status", "pending").order("decided_at", { ascending: false }).limit(50);
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+  const role = profile?.role || "";
+  const isAdmin = role === "admin" || role === "equity_partner";
+
+  // Check if user is originator of any deal
+  const { data: originatedDeals } = await supabase.from("deals").select("id, title").eq("originator_id", user.id).eq("active", true);
+  const isOriginator = (originatedDeals ?? []).length > 0;
+
+  // If not admin and not originator, redirect
+  if (!isAdmin && !isOriginator) redirect("/portal");
+
+  const originatedDealIds = (originatedDeals ?? []).map(d => d.id);
+
+  // Pending requests: admin sees all, originator sees only their deals
+  let pendingQuery = supabase.from("deal_access_requests").select("id, status, created_at, reason, user_id, deal_id").eq("status", "pending").order("created_at", { ascending: false });
+  if (!isAdmin) {
+    pendingQuery = pendingQuery.in("deal_id", originatedDealIds);
+  }
+  const { data: pending } = await pendingQuery;
+
+  // History: same logic
+  let historyQuery = supabase.from("deal_access_requests").select("id, status, created_at, reason, user_id, deal_id, decided_at").neq("status", "pending").order("decided_at", { ascending: false }).limit(50);
+  if (!isAdmin) {
+    historyQuery = historyQuery.in("deal_id", originatedDealIds);
+  }
+  const { data: history } = await historyQuery;
 
   const allUserIds = [...new Set([...(pending ?? []).map(r => r.user_id), ...(history ?? []).map(r => r.user_id)])];
   const allDealIds = [...new Set([...(pending ?? []).map(r => r.deal_id), ...(history ?? []).map(r => r.deal_id)])];
@@ -22,8 +45,9 @@ export default async function AccessRequestsPage() {
   return (
     <div className="p-8 max-w-4xl mx-auto">
       <header className="mb-10 pb-8 border-b border-slate-100">
-        <p className="text-[#D4AF37] text-[10px] uppercase tracking-[0.5em] font-medium mb-2">Amministrazione</p>
+        <p className="text-[#D4AF37] text-[10px] uppercase tracking-[0.5em] font-medium mb-2">{isAdmin ? "Amministrazione" : "I Tuoi Deal"}</p>
         <h1 className="text-3xl font-bold text-slate-900">Richieste <span className="text-[#D4AF37]">Accesso</span></h1>
+        <p className="text-slate-500 text-sm mt-2">{isAdmin ? "Tutte le richieste di accesso ai deal" : "Richieste di accesso ai deal che hai originato"}</p>
       </header>
 
       <div className="mb-12">
@@ -77,7 +101,7 @@ export default async function AccessRequestsPage() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-slate-900 text-sm font-medium">{profileMap[req.user_id] || "Partner"}</span>
-                        <span className="text-slate-300">→</span>
+                        <span className="text-slate-300">&rarr;</span>
                         <span className="text-slate-500 text-xs">{dealMap[req.deal_id] || "Deal"}</span>
                       </div>
                       <p className="text-slate-400 text-[10px] mt-1">

@@ -88,11 +88,10 @@ export default function BoardClient({ deals, isAdmin, error }: { deals: any[]; i
                 </span>
                 {d.sub_sector && <span className="text-[10px] font-medium text-slate-500 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">{d.sub_sector}</span>}
               </div>
-              
-            {/* Code + Thematic Area */}
-            <div className="flex items-center gap-3 mb-2">
+
+           {/* Code */}
+            <div className="mb-2">
               <span className="text-[9px] text-slate-400 tracking-wider">{d.code}</span>
-              {d.thematic_area && <span className="text-[9px] text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-0.5 rounded tracking-wider">{d.thematic_area}</span>}
             </div>
 
             {/* Title */}
