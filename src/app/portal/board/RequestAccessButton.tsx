@@ -43,6 +43,18 @@ export default function RequestAccessButton({ dealId, isAdmin }: { dealId: strin
     <span className="text-[9px] font-bold uppercase tracking-widest text-[#D4AF37] bg-[#D4AF37]/5 px-3 py-2 rounded border border-[#D4AF37]/20">In Attesa</span>
   );
 
+  // Notify admin + originator
+    if (!error) {
+      setStatus("pending");
+      try {
+        await fetch("/api/notify-request", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ dealId }),
+        });
+      } catch (e) {}
+    }
+
   if (status === "rejected") return (
     <span className="text-[9px] font-bold uppercase tracking-widest text-red-400">Rifiutata</span>
   );
