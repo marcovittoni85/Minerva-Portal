@@ -10,9 +10,9 @@ export default async function MyDealsPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: accessRows } = await supabase
+ const { data: accessRows } = await supabase
     .from("deal_access")
-    .select("deal_id, access_level")
+    .select("deal_id")
     .eq("user_id", user.id);
 
   const dealIds = (accessRows ?? []).map((r) => r.deal_id);
@@ -47,8 +47,8 @@ export default async function MyDealsPage() {
     .eq("active", true)
     .order("created_at", { ascending: false });
 
-  const accessMap = Object.fromEntries((accessRows ?? []).map((r) => [r.deal_id, r.access_level]));
-
+  const accessMap = Object.fromEntries((accessRows ?? []).map((r) => [r.deal_id, "Full Access"]));
+  
   // Get comment counts per deal
   const { data: commentCounts } = await supabase
     .from("deal_comments")
