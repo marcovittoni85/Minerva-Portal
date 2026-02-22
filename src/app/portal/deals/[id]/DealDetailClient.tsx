@@ -6,7 +6,7 @@ import { ArrowLeft, Send, FileText, MapPin, TrendingUp, Users, Clock, Shield } f
 
 interface Comment {
   id: string;
-  message: string;
+  content: string;
   created_at: string;
   user_id: string;
 }
@@ -192,7 +192,7 @@ const { data, error } = await supabase.from("deal_comments").insert({
                         {isMe ? "Tu" : (commenter?.name || "Utente")}
                         {commenter?.role === "admin" && !isMe && <span className="ml-1 text-[9px] text-slate-400">(Admin)</span>}
                       </p>
-                     <p className="text-sm text-slate-900">{(c as any).content}</p>
+                    <p className="text-sm text-slate-900">{c.content}</p>
                       <p className="text-[10px] text-slate-400 mt-1">
                         {new Date(c.created_at).toLocaleDateString("it-IT", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                       </p>
