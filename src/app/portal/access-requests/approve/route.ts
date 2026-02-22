@@ -31,8 +31,8 @@ export async function POST(req: Request) {
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
 
   // Insert deal_access
-  await supabase.from("deal_access").upsert({ deal_id: request.deal_id, user_id: request.user_id, access_level: "Full Access" }, { onConflict: "deal_id,user_id" });
-
+ await supabase.from("deal_access").upsert({ deal_id: request.deal_id, user_id: request.user_id }, { onConflict: "deal_id,user_id" });
+ 
   // Notification to requester
   await supabase.from("notifications").insert({
     user_id: request.user_id,
