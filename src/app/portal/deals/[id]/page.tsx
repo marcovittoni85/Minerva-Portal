@@ -28,9 +28,9 @@ export default async function DealDetailPage({ params }: { params: Promise<{ id:
     originatorName = origProf?.full_name || "";
   }
 
-  const { data: comments } = await supabase
+ const { data: comments } = await supabase
     .from("deal_comments")
-    .select("id, message, created_at, user_id")
+    .select("id, content, created_at, user_id")
     .eq("deal_id", id)
     .order("created_at", { ascending: true });
 

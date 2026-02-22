@@ -35,10 +35,11 @@ export default function DealDetailClient({
   const sendComment = async () => {
     if (!newMsg.trim()) return;
     setSending(true);
-    const { data, error } = await supabase.from("deal_comments").insert({
+const { data, error } = await supabase.from("deal_comments").insert({
       deal_id: deal.id,
       user_id: userId,
-      message: newMsg.trim(),
+      content: newMsg.trim(),
+      status: "approved",
     }).select().single();
 
     if (!error && data) {
@@ -191,7 +192,7 @@ export default function DealDetailClient({
                         {isMe ? "Tu" : (commenter?.name || "Utente")}
                         {commenter?.role === "admin" && !isMe && <span className="ml-1 text-[9px] text-slate-400">(Admin)</span>}
                       </p>
-                      <p className="text-sm text-slate-900">{c.message}</p>
+                     <p className="text-sm text-slate-900">{(c as any).content}</p>
                       <p className="text-[10px] text-slate-400 mt-1">
                         {new Date(c.created_at).toLocaleDateString("it-IT", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                       </p>
