@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     type: "access_approved",
     title: "Accesso approvato",
     body: "La tua richiesta per \"" + (deal?.title || "Deal") + "\" è stata approvata. Puoi ora accedere al dossier.",
-    data: { deal_id: request.deal_id },
+    link: `/portal/deals/${request.deal_id}`,
   });
 
   // Webhook Make (WhatsApp + Email)

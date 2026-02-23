@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     type: "access_request",
     title: "Nuova richiesta accesso",
     body: (profile?.full_name || "Un utente") + " ha richiesto accesso a \"" + deal.title + "\"",
-    data: { deal_id: dealId },
+    link: "/portal/access-requests",
   }));
 
   // Notify originator if different from admins
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
       type: "access_request",
       title: "Nuova richiesta accesso",
       body: (profile?.full_name || "Un utente") + " ha richiesto accesso a \"" + deal.title + "\"",
-      data: { deal_id: dealId },
+      link: "/portal/access-requests",
     });
   }
 

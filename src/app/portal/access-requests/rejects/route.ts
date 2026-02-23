@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     type: "access_rejected",
     title: "Richiesta rifiutata",
     body: "La tua richiesta per \"" + (deal?.title || "Deal") + "\" non è stata approvata.",
-    data: { deal_id: request.deal_id },
+    link: "/portal/board",
   });
 
   return NextResponse.redirect(new URL("/portal/access-requests", req.url), { status: 303 });

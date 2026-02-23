@@ -100,7 +100,7 @@ export default function DeclarationForm({
             type: "step_changed",
             title: "Dichiarazione Ricevuta",
             body: `Nuova dichiarazione per "${deal.title}" (${deal.code})${hasConflict === "yes" ? " — CONFLITTO SEGNALATO" : ""}`,
-            is_read: false,
+            link: `/portal/deal-manage/${deal.id}`,
           })
         ));
       }
