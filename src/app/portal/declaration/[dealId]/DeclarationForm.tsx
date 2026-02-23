@@ -29,6 +29,12 @@ const feeTypeOptions = [
   { value: "tbd", label: "Da negoziare" },
 ];
 
+const chainRelationshipOptions = [
+  { value: "sub_mandato_scritto", label: "Sub-mandato scritto" },
+  { value: "accordo_verbale", label: "Accordo verbale" },
+  { value: "segnalazione", label: "Segnalazione" },
+];
+
 export default function DeclarationForm({
   deal,
   userId,
@@ -228,7 +234,14 @@ export default function DeclarationForm({
                 </div>
                 <div>
                   <label className="text-[9px] uppercase tracking-widest text-slate-400 font-bold block mb-1">Tipo rapporto</label>
-                  <input type="text" value={chainRelationship} onChange={e => setChainRelationship(e.target.value)} className={inputClass} placeholder="es. Collaborazione professionale" />
+                  <div className="space-y-2">
+                    {chainRelationshipOptions.map(opt => (
+                      <label key={opt.value} className={chainRelationship === opt.value ? radioActiveClass : radioClass}>
+                        <input type="radio" name="chainRelationship" value={opt.value} checked={chainRelationship === opt.value} onChange={() => setChainRelationship(opt.value)} className="accent-[#D4AF37]" />
+                        <span className="text-sm text-slate-700">{opt.label}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
