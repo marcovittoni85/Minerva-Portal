@@ -60,15 +60,18 @@ export default async function MyDealsPage() {
     commentMap[c.deal_id] = (commentMap[c.deal_id] || 0) + 1;
   });
 
-  // Get originator names
-  const originatorIds = [...new Set((deals ?? []).map((d) => d.originator_id).filter(Boolean))];
-  const { data: originatorProfiles } = originatorIds.length > 0
-    ? await supabase.from("profiles").select("id, full_name").in("id", originatorIds)
-    : { data: [] };
-  const originatorMap = Object.fromEntries((originatorProfiles ?? []).map((p) => [p.id, p.full_name]));
-
   const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).single();
   const isAdmin = prof?.role?.toString() === "admin";
+
+  // Get originator names (admin only)
+  let originatorMap: Record<string, string> = {};
+  if (isAdmin) {
+    const originatorIds = [...new Set((deals ?? []).map((d) => d.originator_id).filter(Boolean))];
+    const { data: originatorProfiles } = originatorIds.length > 0
+      ? await supabase.from("profiles").select("id, full_name").in("id", originatorIds)
+      : { data: [] };
+    originatorMap = Object.fromEntries((originatorProfiles ?? []).map((p) => [p.id, p.full_name]));
+  }
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
@@ -95,6 +98,9 @@ export default async function MyDealsPage() {
               </div>
 
               <div className="flex items-center gap-2 mb-3">
+                {deal.side && (
+                  <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-[#1B2A4A] text-[#D4AF37]">{deal.side}</span>
+                )}
                 <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">{deal.sector}</span>
                 <span className="text-[10px] font-bold text-slate-900">{deal.deal_type}</span>
               </div>

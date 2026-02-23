@@ -23,7 +23,7 @@ export default async function DealDetailPage({ params }: { params: Promise<{ id:
   if (!hasAccess) redirect("/portal/board");
 
   let originatorName = "";
-  if (deal.originator_id) {
+  if (isAdmin && deal.originator_id) {
     const { data: origProf } = await supabase.from("profiles").select("full_name").eq("id", deal.originator_id).single();
     originatorName = origProf?.full_name || "";
   }

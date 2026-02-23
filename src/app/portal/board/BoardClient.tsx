@@ -83,6 +83,11 @@ export default function BoardClient({ deals, isAdmin, error }: { deals: any[]; i
           <div key={d.id} className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:border-[#D4AF37]/40 transition-all">
             {/* Top: Sector + Deal Type */}
            <div className="flex flex-wrap items-center gap-2">
+                {d.side && (
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg bg-[#1B2A4A] text-[#D4AF37] border border-[#1B2A4A]">
+                    {d.side}
+                  </span>
+                )}
                 <span className={"text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg border " + getSectorStyle(d.sector)}>
                   {d.sector || "Altro"}
                 </span>
