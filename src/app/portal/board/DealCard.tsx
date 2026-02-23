@@ -60,7 +60,7 @@ export default function DealCard({ deal: d, isAdmin }: { deal: any; isAdmin: boo
   const metaLine = [d.sector, d.sub_sector, d.deal_type].filter(Boolean).join(" · ");
 
   return (
-    <div className={"relative bg-white border border-slate-100 border-l-4 rounded-2xl p-6 hover:shadow-lg hover:border-slate-100 hover:border-l-4 transition-all " + getSideBorderColor(d.side)}>
+    <div className={"relative bg-white border border-slate-100 border-l-[5px] rounded-2xl p-6 hover:shadow-lg hover:border-slate-100 hover:border-l-[5px] transition-all " + getSideBorderColor(d.side)}>
       {/* Sector icon watermark — top right */}
       <div className="absolute top-5 right-5">
         <SectorIcon sector={d.sector} />

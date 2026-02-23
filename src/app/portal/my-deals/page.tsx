@@ -117,7 +117,7 @@ export default async function MyDealsPage() {
           const metaLine = [deal.sector, deal.sub_sector, deal.deal_type].filter(Boolean).join(" · ");
 
           return (
-            <Link key={deal.id} href={"/portal/deals/" + deal.id} className={"group relative bg-white border border-slate-100 border-l-4 rounded-2xl p-6 hover:shadow-lg transition-all " + getSideBorderColor(deal.side)}>
+            <Link key={deal.id} href={"/portal/deals/" + deal.id} className={"group relative bg-white border border-slate-100 border-l-[5px] rounded-2xl p-6 hover:shadow-lg transition-all " + getSideBorderColor(deal.side)}>
               {/* Sector icon watermark */}
               <div className="absolute top-5 right-5">
                 <SectorIcon sector={deal.sector} />
