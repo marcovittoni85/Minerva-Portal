@@ -25,7 +25,7 @@ const sectorIcons: Record<string, React.ComponentType<{ className?: string }>> =
 
 function SectorIcon({ sector }: { sector: string }) {
   const Icon = sectorIcons[sector] || CircleDot;
-  return <Icon className="w-6 h-6 text-slate-300" />;
+  return <Icon className="w-7 h-7 text-[#F5A623]/30" />;
 }
 
 function getSideBorderColor(side: string) {
@@ -121,7 +121,7 @@ export default async function MyDealsPage() {
         {deals?.map((deal) => {
           const isOriginator = deal.originator_id === user.id;
           const comments = commentMap[deal.id] || 0;
-          const metaLine = [deal.sector, deal.sub_sector, deal.deal_type].filter(Boolean).join(" · ");
+          const metaParts = [deal.sector, deal.sub_sector, deal.deal_type].filter(Boolean);
 
           return (
             <Link key={deal.id} href={"/portal/deals/" + deal.id} className={"group relative bg-white border border-slate-100 border-l-[5px] rounded-2xl p-6 hover:shadow-lg transition-all " + getSideBorderColor(deal.side)}>
@@ -148,7 +148,14 @@ export default async function MyDealsPage() {
               <h3 className="text-lg font-bold text-slate-900 mb-1 group-hover:text-[#D4AF37] transition-colors leading-tight">{deal.title}</h3>
 
               {/* Meta line */}
-              {metaLine && <p className="text-xs text-slate-400 mb-3">{metaLine}</p>}
+              {metaParts.length > 0 && (
+                <p className="text-xs mb-3">
+                  <span className="text-slate-600 font-medium">{metaParts[0]}</span>
+                  {metaParts.slice(1).map((part, i) => (
+                    <span key={i}><span className="text-[#D4AF37]"> · </span><span className="text-slate-400">{part}</span></span>
+                  ))}
+                </p>
+              )}
 
               {isAdmin && deal.originator_id && (
                 <p className="text-[10px] text-slate-400 mb-2">Originator: {originatorMap[deal.originator_id] || "—"}</p>

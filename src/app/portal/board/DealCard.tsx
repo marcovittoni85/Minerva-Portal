@@ -25,7 +25,7 @@ const sectorIcons: Record<string, React.ComponentType<{ className?: string }>> =
 
 function SectorIcon({ sector }: { sector: string }) {
   const Icon = sectorIcons[sector] || CircleDot;
-  return <Icon className="w-6 h-6 text-slate-300" />;
+  return <Icon className="w-7 h-7 text-[#F5A623]/30" />;
 }
 
 function getSideBorderColor(side: string) {
@@ -64,7 +64,7 @@ export default function DealCard({ deal: d, isAdmin }: { deal: any; isAdmin: boo
 
   const hasAccess = status === "approved" || isAdmin;
 
-  const metaLine = [d.sector, d.sub_sector, d.deal_type].filter(Boolean).join(" · ");
+  const metaParts = [d.sector, d.sub_sector, d.deal_type].filter(Boolean);
 
   return (
     <div className={"relative bg-white border border-slate-100 border-l-[5px] rounded-2xl p-6 hover:shadow-lg hover:border-slate-100 hover:border-l-[5px] transition-all " + getSideBorderColor(d.side)}>
@@ -96,7 +96,14 @@ export default function DealCard({ deal: d, isAdmin }: { deal: any; isAdmin: boo
       )}
 
       {/* Sector · Sub-sector · Deal type */}
-      {metaLine && <p className="text-xs text-slate-400 mb-3">{metaLine}</p>}
+      {metaParts.length > 0 && (
+        <p className="text-xs mb-3">
+          <span className="text-slate-600 font-medium">{metaParts[0]}</span>
+          {metaParts.slice(1).map((part, i) => (
+            <span key={i}><span className="text-[#D4AF37]"> · </span><span className="text-slate-400">{part}</span></span>
+          ))}
+        </p>
+      )}
 
       {/* Description */}
       <p className="text-slate-500 text-sm leading-relaxed line-clamp-2 mb-4">{d.description || "Dettagli riservati"}</p>
