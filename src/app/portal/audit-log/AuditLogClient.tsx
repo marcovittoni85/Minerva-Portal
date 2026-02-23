@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Search } from "lucide-react";
 
@@ -35,24 +35,24 @@ interface LogEntry {
 }
 
 export default function AuditLogClient({ deals }: { deals: { id: string; code: string; title: string }[] }) {
-  const supabase = createClient();
+  const supabaseRef = useRef(createClient());
   const [entries, setEntries] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
 
-  // Filters
   const [actionFilter, setActionFilter] = useState("ALL");
   const [dealFilter, setDealFilter] = useState("ALL");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [search, setSearch] = useState("");
 
-  const dealMap = Object.fromEntries(deals.map(d => [d.id, d.code]));
-  const dealTitleMap = Object.fromEntries(deals.map(d => [d.id, d.title]));
+  const dealMap = useMemo(() => Object.fromEntries(deals.map(d => [d.id, d.code])), [deals]);
+  const dealTitleMap = useMemo(() => Object.fromEntries(deals.map(d => [d.id, d.title])), [deals]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+    const supabase = supabaseRef.current;
 
     let query = supabase
       .from("deal_activity_log")
@@ -72,30 +72,36 @@ export default function AuditLogClient({ deals }: { deals: { id: string; code: s
     const userIds = [...new Set((rows ?? []).map(r => r.user_id).filter(Boolean))];
     const { data: profiles } = userIds.length > 0
       ? await supabase.from("profiles").select("id, full_name").in("id", userIds)
-      : { data: [] };
+      : { data: [] as { id: string; full_name: string }[] };
     const nameMap: Record<string, string> = Object.fromEntries(
       (profiles ?? []).map(p => [p.id, p.full_name])
     );
 
-    const mapped: LogEntry[] = (rows ?? []).map(r => ({
+    // Resolve deal codes for deals not in the dropdown (e.g. inactive deals)
+    const missingDealIds = [...new Set(
+      (rows ?? []).map(r => r.deal_id).filter((id: string) => id && !dealMap[id])
+    )];
+    let extraDealMap: Record<string, string> = {};
+    if (missingDealIds.length > 0) {
+      const { data: extraDeals } = await supabase.from("deals").select("id, code").in("id", missingDealIds);
+      extraDealMap = Object.fromEntries((extraDeals ?? []).map(d => [d.id, d.code]));
+    }
+
+    setEntries((rows ?? []).map(r => ({
       id: r.id,
       userName: nameMap[r.user_id] || "Sistema",
-      dealCode: dealMap[r.deal_id] || "—",
+      dealCode: dealMap[r.deal_id] || extraDealMap[r.deal_id] || "—",
       dealId: r.deal_id,
       action: r.action,
       details: r.details,
       createdAt: r.created_at,
-    }));
-
-    setEntries(mapped);
+    })));
     setLoading(false);
-  }, [page, actionFilter, dealFilter, dateFrom, dateTo, supabase, dealMap]);
+  }, [page, actionFilter, dealFilter, dateFrom, dateTo, dealMap]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Reset to page 0 when filters change
-  useEffect(() => { setPage(0); }, [actionFilter, dealFilter, dateFrom, dateTo]);
-
+  // Client-side text search within current page
   const filtered = search.trim()
     ? entries.filter(e =>
         e.userName.toLowerCase().includes(search.toLowerCase()) ||
@@ -105,7 +111,6 @@ export default function AuditLogClient({ deals }: { deals: { id: string; code: s
     : entries;
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
-
   const selectClass = "bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-700 outline-none focus:border-[#D4AF37] transition-colors";
   const inputClass = "bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-700 outline-none focus:border-[#D4AF37] transition-colors";
 
@@ -129,24 +134,24 @@ export default function AuditLogClient({ deals }: { deals: { id: string; code: s
             className={inputClass + " pl-9 w-56"}
           />
         </div>
-        <select value={actionFilter} onChange={e => setActionFilter(e.target.value)} className={selectClass}>
+        <select value={actionFilter} onChange={e => { setActionFilter(e.target.value); setPage(0); }} className={selectClass}>
           {actionOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
-        <select value={dealFilter} onChange={e => setDealFilter(e.target.value)} className={selectClass}>
+        <select value={dealFilter} onChange={e => { setDealFilter(e.target.value); setPage(0); }} className={selectClass}>
           <option value="ALL">Tutti i deal</option>
           {deals.map(d => <option key={d.id} value={d.id}>{d.code} — {d.title}</option>)}
         </select>
         <div className="flex items-center gap-2">
           <label className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Da</label>
-          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className={inputClass} />
+          <input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setPage(0); }} className={inputClass} />
         </div>
         <div className="flex items-center gap-2">
           <label className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">A</label>
-          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className={inputClass} />
+          <input type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setPage(0); }} className={inputClass} />
         </div>
         {(actionFilter !== "ALL" || dealFilter !== "ALL" || dateFrom || dateTo || search) && (
           <button
-            onClick={() => { setActionFilter("ALL"); setDealFilter("ALL"); setDateFrom(""); setDateTo(""); setSearch(""); }}
+            onClick={() => { setActionFilter("ALL"); setDealFilter("ALL"); setDateFrom(""); setDateTo(""); setSearch(""); setPage(0); }}
             className="text-xs text-red-400 border border-red-200 px-4 py-2 rounded-lg hover:bg-red-50 transition-colors"
           >
             Reset
