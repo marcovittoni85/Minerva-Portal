@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import { supabaseServer } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import DealDetailClient from "./DealDetailClient";
+import DealPreview from "./DealPreview";
 
 export default async function DealDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -20,7 +21,37 @@ export default async function DealDetailPage({ params }: { params: Promise<{ id:
   const isOriginator = deal.originator_id === user.id;
   const hasAccess = isAdmin || isOriginator || !!access;
 
-  if (!hasAccess) redirect("/portal/board");
+  // Show preview for non-approved users instead of redirecting
+  if (!hasAccess) {
+    const { data: request } = await supabase
+      .from("deal_access_requests")
+      .select("status")
+      .eq("deal_id", id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const accessStatus: "none" | "pending" | "rejected" =
+      request?.status === "pending" ? "pending" :
+      request?.status === "rejected" ? "rejected" : "none";
+
+    return (
+      <DealPreview
+        deal={{
+          id: deal.id,
+          code: deal.code,
+          title: deal.title,
+          sector: deal.sector,
+          sub_sector: deal.sub_sector,
+          deal_type: deal.deal_type,
+          side: deal.side,
+          ev_range: deal.ev_range,
+          geography: deal.geography,
+          thematic_area: deal.thematic_area,
+        }}
+        accessStatus={accessStatus}
+      />
+    );
+  }
 
   let originatorName = "";
   if (isAdmin && deal.originator_id) {
