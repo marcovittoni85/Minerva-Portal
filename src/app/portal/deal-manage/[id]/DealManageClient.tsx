@@ -26,6 +26,7 @@ interface Member {
   name: string;
   role: string;
   roleInDeal?: string;
+  declarationStatus?: "none" | "pending" | "conflict" | "approved";
 }
 
 export default function DealManageClient({
@@ -66,14 +67,14 @@ export default function DealManageClient({
       added_by: adminId,
     });
     if (!error) {
-      // Send notification
+      // Send notification with declaration link
       await supabase.from("notifications").insert({
         user_id: userId,
         title: "Gruppo di Lavoro",
-        message: `Sei stato selezionato per il gruppo di lavoro di "${deal.title}"`,
+        message: `Sei stato selezionato per il gruppo di lavoro di "${deal.title}". Completa la dichiarazione obbligatoria per procedere: /portal/declaration/${deal.id}`,
         is_read: false,
       });
-      setWgMembers(prev => [...prev, { id: userId, name: userName, role: "", roleInDeal: "member" }]);
+      setWgMembers(prev => [...prev, { id: userId, name: userName, role: "", roleInDeal: "member", declarationStatus: "none" }]);
     }
     setAddingUserId(null);
   };
@@ -201,15 +202,22 @@ export default function DealManageClient({
             {wgMembers.length === 0 ? (
               <p className="text-sm text-slate-400 py-4 text-center">Nessun membro nel gruppo di lavoro</p>
             ) : (
-              wgMembers.map(m => (
-                <div key={m.id} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
-                  <div>
-                    <p className="text-sm font-medium text-slate-900">{m.name}</p>
-                    <p className="text-[10px] text-slate-400 uppercase tracking-wider">{m.roleInDeal || "member"}</p>
+              wgMembers.map(m => {
+                const declBadge = m.declarationStatus === "conflict"
+                  ? { text: "Conflitto segnalato", style: "text-red-600 bg-red-50" }
+                  : m.declarationStatus === "pending" || m.declarationStatus === "approved"
+                  ? { text: "Dichiarato", style: "text-emerald-600 bg-emerald-50" }
+                  : { text: "Dichiarazione pendente", style: "text-amber-600 bg-amber-50" };
+                return (
+                  <div key={m.id} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
+                    <div>
+                      <p className="text-sm font-medium text-slate-900">{m.name}</p>
+                      <p className="text-[10px] text-slate-400 uppercase tracking-wider">{m.roleInDeal || "member"}</p>
+                    </div>
+                    <span className={"text-[9px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg " + declBadge.style}>{declBadge.text}</span>
                   </div>
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg">Workgroup</span>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
 

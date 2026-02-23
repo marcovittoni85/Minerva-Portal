@@ -40,12 +40,23 @@ export default async function DealManageDetailPage({ params }: { params: Promise
 
   const wgRoleMap = Object.fromEntries((wgRows ?? []).map(r => [r.user_id, r.role_in_deal]));
 
+  // Get declaration statuses for workgroup members
+  const { data: declarations } = wgUserIds.length > 0
+    ? await supabase.from("deal_declarations").select("user_id, has_conflict, review_status").eq("deal_id", id).in("user_id", wgUserIds)
+    : { data: [] };
+  const declMap: Record<string, "none" | "pending" | "conflict" | "approved"> = {};
+  (declarations ?? []).forEach(d => {
+    if (d.has_conflict) declMap[d.user_id] = "conflict";
+    else if (d.review_status === "approved") declMap[d.user_id] = "approved";
+    else declMap[d.user_id] = "pending";
+  });
+
   return (
     <DealManageClient
       deal={deal}
       originatorName={originatorName}
       accessMembers={(accessProfiles ?? []).map(p => ({ id: p.id, name: p.full_name, role: p.role }))}
-      workgroupMembers={(wgProfiles ?? []).map(p => ({ id: p.id, name: p.full_name, role: p.role, roleInDeal: wgRoleMap[p.id] || "" }))}
+      workgroupMembers={(wgProfiles ?? []).map(p => ({ id: p.id, name: p.full_name, role: p.role, roleInDeal: wgRoleMap[p.id] || "", declarationStatus: declMap[p.id] || "none" }))}
       adminId={user.id}
     />
   );
