@@ -73,6 +73,13 @@ export default async function MyDealsPage() {
     originatorMap = Object.fromEntries((originatorProfiles ?? []).map((p) => [p.id, p.full_name]));
   }
 
+  function getSideStyle(side: string) {
+    const s = side.toUpperCase();
+    if (s.includes("SELL")) return "bg-[#001220] text-[#D4AF37]";
+    if (s.includes("BUY")) return "bg-[#D4AF37] text-white";
+    return "bg-slate-100 text-slate-700";
+  }
+
   return (
     <div className="p-8 max-w-7xl mx-auto">
       <header className="mb-10">
@@ -99,7 +106,7 @@ export default async function MyDealsPage() {
 
               <div className="flex items-center gap-2 mb-3">
                 {deal.side && (
-                  <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-[#1B2A4A] text-[#D4AF37]">{deal.side}</span>
+                  <span className={"text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded " + getSideStyle(deal.side)}>{deal.side}</span>
                 )}
                 <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">{deal.sector}</span>
                 <span className="text-[10px] font-bold text-slate-900">{deal.deal_type}</span>

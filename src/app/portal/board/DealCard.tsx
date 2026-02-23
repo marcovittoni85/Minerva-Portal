@@ -17,6 +17,13 @@ function getSectorStyle(sector: string) {
   return sectorColors[sector] || "bg-slate-50 text-slate-600 border-slate-200";
 }
 
+function getSideStyle(side: string) {
+  const s = side.toUpperCase();
+  if (s.includes("SELL")) return "bg-[#001220] text-[#D4AF37]";
+  if (s.includes("BUY")) return "bg-[#D4AF37] text-white";
+  return "bg-slate-100 text-slate-700";
+}
+
 type AccessStatus = "loading" | "none" | "pending" | "approved" | "rejected";
 
 export default function DealCard({ deal: d, isAdmin }: { deal: any; isAdmin: boolean }) {
@@ -44,7 +51,7 @@ export default function DealCard({ deal: d, isAdmin }: { deal: any; isAdmin: boo
       {/* Top: Side + Sector + Sub-sector */}
       <div className="flex flex-wrap items-center gap-2">
         {d.side && (
-          <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg bg-[#1B2A4A] text-[#D4AF37] border border-[#1B2A4A]">
+          <span className={"text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg " + getSideStyle(d.side)}>
             {d.side}
           </span>
         )}
