@@ -3,7 +3,11 @@ import { useState } from "react";
 import Link from "next/link";
 import DealCard from "./DealCard";
 
+const boardVisibleStages = new Set(["board", "in_review", null, undefined, ""]);
+
 export default function BoardClient({ deals, isAdmin, error }: { deals: any[]; isAdmin: boolean; error?: string }) {
+  // Filter out deals that have progressed past board/in_review
+  deals = deals.filter(d => boardVisibleStages.has(d.deal_stage) || !d.deal_stage);
   const [sectorFilter, setSectorFilter] = useState("ALL");
   const [dealTypeFilter, setDealTypeFilter] = useState("ALL");
   const [geoFilter, setGeoFilter] = useState("ALL");

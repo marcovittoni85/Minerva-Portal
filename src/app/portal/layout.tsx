@@ -2,7 +2,7 @@
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Briefcase, Settings, LogOut, Menu, ShieldCheck, PlusCircle, ClipboardList, Bell } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Settings, LogOut, Menu, ShieldCheck, PlusCircle, ClipboardList, Bell, Shield } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
@@ -66,6 +66,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   ];
 
   const adminItems = [
+    { name: 'Gestione Deal', href: '/portal/deal-manage', icon: Shield },
     { name: 'Richieste Accesso', href: '/portal/access-requests', icon: ClipboardList },
     { name: 'Proposte Deal', href: '/portal/deal-proposals', icon: Briefcase },
   ];
@@ -112,7 +113,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                 <p className="px-4 mb-2 text-[9px] font-bold text-slate-300 uppercase tracking-widest">Admin</p>
               </div>
               {adminItems.map((item) => (
-                <Link key={item.href} href={item.href} onClick={() => setIsMobileMenuOpen(false)} className={"flex items-center space-x-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all " + (pathname === item.href ? "bg-slate-50 text-[#D4AF37]" : "text-slate-400 hover:text-slate-900")}>
+                <Link key={item.href} href={item.href} onClick={() => setIsMobileMenuOpen(false)} className={"flex items-center space-x-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all " + (pathname.startsWith(item.href) ? "bg-slate-50 text-[#D4AF37]" : "text-slate-400 hover:text-slate-900")}>
                   <item.icon className="w-4 h-4" /> <span>{item.name}</span>
                 </Link>
               ))}
