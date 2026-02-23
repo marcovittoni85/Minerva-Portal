@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
-import { Info } from "lucide-react";
+import { Info, AlertTriangle } from "lucide-react";
 
 const roleOptions = [
   { value: "facilitatore", label: "Facilitatore / Finder" },
@@ -65,9 +65,12 @@ export default function DeclarationForm({
 
   const hasMandateAgreement = hasMandate === "formal" || hasMandate === "informal";
 
+  const noMandateSelected = hasMandate === "none";
+
   const isValid =
     roleInDeal &&
     hasMandate &&
+    !noMandateSelected &&
     hasConflict &&
     (!hasMandateAgreement || mandateCounterparty) &&
     (!hasMandateAgreement || mandateFeeType) &&
@@ -168,6 +171,14 @@ export default function DeclarationForm({
               </label>
             ))}
           </div>
+          {noMandateSelected && (
+            <div className="mt-4 flex gap-3 items-start border border-[#D4AF37] bg-[#D4AF37]/5 rounded-xl px-4 py-3.5">
+              <AlertTriangle className="w-5 h-5 text-[#D4AF37] shrink-0 mt-0.5" />
+              <p className="text-sm text-slate-700 leading-relaxed">
+                Per procedere è necessario disporre di un mandato o accordo, anche generico, con una delle parti coinvolte. Contatta l&apos;originator o l&apos;admin per ottenere un mandato e caricalo prima di proseguire.
+              </p>
+            </div>
+          )}
         </section>
 
         {/* C) Con chi? */}
