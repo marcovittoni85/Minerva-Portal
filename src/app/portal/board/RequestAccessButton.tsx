@@ -3,25 +3,29 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 
-export default function RequestAccessButton({ dealId, isAdmin }: { dealId: string; isAdmin?: boolean }) {
+export default function RequestAccessButton({ dealId, isAdmin, externalStatus }: { dealId: string; isAdmin?: boolean; externalStatus?: "loading" | "none" | "pending" | "approved" | "rejected" }) {
   const supabase = createClient();
-  const [status, setStatus] = useState<"loading" | "none" | "pending" | "approved" | "rejected">("loading");
+  const [internalStatus, setInternalStatus] = useState<"loading" | "none" | "pending" | "approved" | "rejected">("loading");
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [reason, setReason] = useState("");
 
+  const status = externalStatus ?? internalStatus;
+  const setStatus = setInternalStatus;
+
   useEffect(() => {
-    if (isAdmin) { setStatus("approved"); return; }
+    if (externalStatus !== undefined) return;
+    if (isAdmin) { setInternalStatus("approved"); return; }
     async function checkStatus() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       const { data: access } = await supabase.from("deal_access").select("*").eq("deal_id", dealId).eq("user_id", user.id).maybeSingle();
-      if (access) { setStatus("approved"); return; }
+      if (access) { setInternalStatus("approved"); return; }
       const { data: request } = await supabase.from("deal_access_requests").select("status").eq("deal_id", dealId).eq("user_id", user.id).maybeSingle();
-      if (request) { setStatus(request.status === "ACCESS_APPROVED" ? "approved" : request.status as any); } else { setStatus("none"); }
+      if (request) { setInternalStatus(request.status === "ACCESS_APPROVED" ? "approved" : request.status as any); } else { setInternalStatus("none"); }
     }
     checkStatus();
-  }, [dealId, supabase, isAdmin]);
+  }, [dealId, supabase, isAdmin, externalStatus]);
 
   const handleRequest = async () => {
     if (!reason.trim()) return;

@@ -1,20 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import RequestAccessButton from "./RequestAccessButton";
-
-const sectorColors: Record<string, string> = {
-  "Real estate & hospitality": "bg-emerald-50 text-emerald-700 border-emerald-200",
-  "Healthcare": "bg-rose-50 text-rose-700 border-rose-200",
-  "Macchinari industriali": "bg-blue-50 text-blue-700 border-blue-200",
-  "Utility e rinnovabili": "bg-amber-50 text-amber-700 border-amber-200",
-  "Servizi finanziari": "bg-purple-50 text-purple-700 border-purple-200",
-  "Chimica": "bg-cyan-50 text-cyan-700 border-cyan-200",
-};
-
-function getSectorStyle(sector: string) {
-  return sectorColors[sector] || "bg-slate-50 text-slate-600 border-slate-200";
-}
+import DealCard from "./DealCard";
 
 export default function BoardClient({ deals, isAdmin, error }: { deals: any[]; isAdmin: boolean; error?: string }) {
   const [sectorFilter, setSectorFilter] = useState("ALL");
@@ -80,48 +67,7 @@ export default function BoardClient({ deals, isAdmin, error }: { deals: any[]; i
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {filtered.map((d: any) => (
-          <div key={d.id} className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:border-[#D4AF37]/40 transition-all">
-            {/* Top: Sector + Deal Type */}
-           <div className="flex flex-wrap items-center gap-2">
-                {d.side && (
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg bg-[#1B2A4A] text-[#D4AF37] border border-[#1B2A4A]">
-                    {d.side}
-                  </span>
-                )}
-                <span className={"text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg border " + getSectorStyle(d.sector)}>
-                  {d.sector || "Altro"}
-                </span>
-                {d.sub_sector && <span className="text-[10px] font-medium text-slate-500 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">{d.sub_sector}</span>}
-              </div>
-
-           {/* Code */}
-            <div className="mb-2">
-              <span className="text-[9px] text-slate-400 tracking-wider">{d.code}</span>
-            </div>
-
-            {/* Title */}
-            <Link href={"/portal/deals/" + d.id} className="group">
-              <h3 className="text-slate-900 text-lg font-bold leading-snug mb-2 group-hover:text-[#D4AF37] transition-colors">{d.title}</h3>
-            </Link>
-
-            {/* Description */}
-            <p className="text-slate-500 text-sm leading-relaxed mb-4">{d.description || "Dettagli riservati"}</p>
-
-            {/* Bottom: Meta + Action */}
-            <div className="flex items-end justify-between pt-4 border-t border-slate-50">
-              <div className="flex gap-6">
-                <div>
-                  <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">EV Range</p>
-                  <p className="text-slate-900 text-sm font-bold">{d.ev_range || "Riservato"}</p>
-                </div>
-                <div>
-                  <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">Area</p>
-                  <p className="text-slate-900 text-sm font-bold">{d.geography || "Italia"}</p>
-                </div>
-              </div>
-              <RequestAccessButton dealId={d.id} isAdmin={isAdmin} />
-            </div>
-          </div>
+          <DealCard key={d.id} deal={d} isAdmin={isAdmin} />
         ))}
 
         {filtered.length === 0 && (
