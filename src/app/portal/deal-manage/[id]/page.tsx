@@ -40,15 +40,32 @@ export default async function DealManageDetailPage({ params }: { params: Promise
 
   const wgRoleMap = Object.fromEntries((wgRows ?? []).map(r => [r.user_id, r.role_in_deal]));
 
-  // Get declaration statuses for workgroup members
+  // Get declaration data for workgroup members
   const { data: declarations } = wgUserIds.length > 0
-    ? await supabase.from("deal_declarations").select("user_id, has_conflict, review_status").eq("deal_id", id).in("user_id", wgUserIds)
+    ? await supabase.from("deal_declarations").select("user_id, role_in_deal, has_mandate, mandate_counterparty, mandate_fee_type, mandate_fee_value, has_conflict, conflict_details, is_chain_mandate, chain_mandante_name, chain_mandante_company, chain_mandante_contact, chain_mandante_relationship, review_status, declared_at").eq("deal_id", id).in("user_id", wgUserIds)
     : { data: [] };
   const declMap: Record<string, "none" | "pending" | "conflict" | "approved"> = {};
+  const declDataMap: Record<string, any> = {};
   (declarations ?? []).forEach(d => {
     if (d.has_conflict) declMap[d.user_id] = "conflict";
     else if (d.review_status === "approved") declMap[d.user_id] = "approved";
     else declMap[d.user_id] = "pending";
+    declDataMap[d.user_id] = {
+      roleInDeal: d.role_in_deal,
+      hasMandate: d.has_mandate,
+      mandateCounterparty: d.mandate_counterparty,
+      mandateFeeType: d.mandate_fee_type,
+      mandateFeeValue: d.mandate_fee_value,
+      hasConflict: d.has_conflict,
+      conflictDetails: d.conflict_details,
+      isChainMandate: d.is_chain_mandate,
+      chainMandanteName: d.chain_mandante_name,
+      chainMandanteCompany: d.chain_mandante_company,
+      chainMandanteContact: d.chain_mandante_contact,
+      chainMandanteRelationship: d.chain_mandante_relationship,
+      reviewStatus: d.review_status,
+      declaredAt: d.declared_at,
+    };
   });
 
   return (
@@ -56,7 +73,7 @@ export default async function DealManageDetailPage({ params }: { params: Promise
       deal={deal}
       originatorName={originatorName}
       accessMembers={(accessProfiles ?? []).map(p => ({ id: p.id, name: p.full_name, role: p.role }))}
-      workgroupMembers={(wgProfiles ?? []).map(p => ({ id: p.id, name: p.full_name, role: p.role, roleInDeal: wgRoleMap[p.id] || "", declarationStatus: declMap[p.id] || "none" }))}
+      workgroupMembers={(wgProfiles ?? []).map(p => ({ id: p.id, name: p.full_name, role: p.role, roleInDeal: wgRoleMap[p.id] || "", declarationStatus: declMap[p.id] || "none", declaration: declDataMap[p.id] || null }))}
       adminId={user.id}
     />
   );

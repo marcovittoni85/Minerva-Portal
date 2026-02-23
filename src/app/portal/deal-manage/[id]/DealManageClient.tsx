@@ -21,12 +21,55 @@ function getMacroCategory(sector: string) {
   return "CORPORATE M&A";
 }
 
+interface DeclarationData {
+  roleInDeal: string | null;
+  hasMandate: boolean;
+  mandateCounterparty: string | null;
+  mandateFeeType: string | null;
+  mandateFeeValue: string | null;
+  hasConflict: boolean;
+  conflictDetails: string | null;
+  isChainMandate: boolean;
+  chainMandanteName: string | null;
+  chainMandanteCompany: string | null;
+  chainMandanteContact: string | null;
+  chainMandanteRelationship: string | null;
+  reviewStatus: string | null;
+  declaredAt: string | null;
+}
+
+const roleLabels: Record<string, string> = {
+  facilitatore: "Facilitatore / Finder",
+  buyer_rep: "Rappresentante Buyer",
+  seller_rep: "Rappresentante Seller",
+  supporto_tecnico: "Supporto Tecnico",
+};
+
+const counterpartyLabels: Record<string, string> = {
+  buyer: "Buyer / Investitore",
+  seller: "Venditore / Target",
+  other: "Altro soggetto",
+};
+
+const feeTypeLabels: Record<string, string> = {
+  percentage: "% su EV",
+  fixed: "Importo fisso",
+  tbd: "Da negoziare",
+};
+
+const reviewLabels: Record<string, string> = {
+  pending: "In attesa di revisione",
+  approved: "Approvato",
+  rejected: "Rifiutato",
+};
+
 interface Member {
   id: string;
   name: string;
   role: string;
   roleInDeal?: string;
   declarationStatus?: "none" | "pending" | "conflict" | "approved";
+  declaration?: DeclarationData | null;
 }
 
 export default function DealManageClient({
@@ -48,6 +91,7 @@ export default function DealManageClient({
   const [loading, setLoading] = useState(false);
   const [wgMembers, setWgMembers] = useState<Member[]>(workgroupMembers);
   const [addingUserId, setAddingUserId] = useState<string | null>(null);
+  const [expandedMemberId, setExpandedMemberId] = useState<string | null>(null);
 
   const currentIndex = stages.indexOf(currentStage);
 
@@ -208,13 +252,119 @@ export default function DealManageClient({
                   : m.declarationStatus === "pending" || m.declarationStatus === "approved"
                   ? { text: "Dichiarato", style: "text-emerald-600 bg-emerald-50" }
                   : { text: "Dichiarazione pendente", style: "text-amber-600 bg-amber-50" };
+                const hasDecl = !!m.declaration;
+                const isExpanded = expandedMemberId === m.id;
+                const d = m.declaration;
                 return (
-                  <div key={m.id} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
-                    <div>
-                      <p className="text-sm font-medium text-slate-900">{m.name}</p>
-                      <p className="text-[10px] text-slate-400 uppercase tracking-wider">{m.roleInDeal || "member"}</p>
+                  <div key={m.id} className="border-b border-slate-50 last:border-0">
+                    <div
+                      className={"flex items-center justify-between py-2" + (hasDecl ? " cursor-pointer hover:bg-slate-50/50 transition-colors rounded-lg -mx-2 px-2" : "")}
+                      onClick={() => hasDecl && setExpandedMemberId(isExpanded ? null : m.id)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div>
+                          <p className="text-sm font-medium text-slate-900">{m.name}</p>
+                          <p className="text-[10px] text-slate-400 uppercase tracking-wider">{m.roleInDeal || "member"}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={"text-[9px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg " + declBadge.style}>{declBadge.text}</span>
+                        {hasDecl && (
+                          <svg className={"w-4 h-4 text-slate-400 transition-transform duration-200 " + (isExpanded ? "rotate-180" : "")} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        )}
+                      </div>
                     </div>
-                    <span className={"text-[9px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg " + declBadge.style}>{declBadge.text}</span>
+
+                    {/* Expanded declaration detail */}
+                    <div className={"overflow-hidden transition-all duration-200 " + (isExpanded ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0")}>
+                      {d && (
+                        <div className="border-l-2 border-[#D4AF37]/20 ml-1 pl-4 pb-3 pt-2 mt-1 mb-2">
+                          <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                            {/* Ruolo */}
+                            <div>
+                              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-0.5">Ruolo nel Deal</p>
+                              <p className="text-xs text-slate-700">{roleLabels[d.roleInDeal || ""] || d.roleInDeal || "—"}</p>
+                            </div>
+
+                            {/* Review status */}
+                            <div>
+                              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-0.5">Stato Revisione</p>
+                              <p className="text-xs text-slate-700">{reviewLabels[d.reviewStatus || ""] || d.reviewStatus || "—"}</p>
+                            </div>
+
+                            {/* Mandato */}
+                            <div>
+                              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-0.5">Mandato</p>
+                              <p className="text-xs text-slate-700">{d.hasMandate ? "Sì" : "No"}</p>
+                            </div>
+
+                            {d.hasMandate && (
+                              <div>
+                                <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-0.5">Controparte</p>
+                                <p className="text-xs text-slate-700">{counterpartyLabels[d.mandateCounterparty || ""] || d.mandateCounterparty || "—"}</p>
+                              </div>
+                            )}
+
+                            {d.hasMandate && (
+                              <>
+                                <div>
+                                  <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-0.5">Tipo Fee</p>
+                                  <p className="text-xs text-slate-700">{feeTypeLabels[d.mandateFeeType || ""] || d.mandateFeeType || "—"}</p>
+                                </div>
+                                {d.mandateFeeValue && (
+                                  <div>
+                                    <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-0.5">Valore Fee</p>
+                                    <p className="text-xs text-slate-700">{d.mandateFeeValue}</p>
+                                  </div>
+                                )}
+                              </>
+                            )}
+
+                            {/* Chain mandate */}
+                            {d.isChainMandate && (
+                              <>
+                                <div className="col-span-2 mt-1">
+                                  <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">Mandato in catena</p>
+                                </div>
+                                <div>
+                                  <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-0.5">Nome Mandante</p>
+                                  <p className="text-xs text-slate-700">{d.chainMandanteName || "—"}</p>
+                                </div>
+                                <div>
+                                  <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-0.5">Azienda</p>
+                                  <p className="text-xs text-slate-700">{d.chainMandanteCompany || "—"}</p>
+                                </div>
+                                <div>
+                                  <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-0.5">Contatto</p>
+                                  <p className="text-xs text-slate-700">{d.chainMandanteContact || "—"}</p>
+                                </div>
+                                <div>
+                                  <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-0.5">Relazione</p>
+                                  <p className="text-xs text-slate-700">{d.chainMandanteRelationship || "—"}</p>
+                                </div>
+                              </>
+                            )}
+
+                            {/* Conflict */}
+                            {d.hasConflict && (
+                              <div className="col-span-2 mt-1 bg-red-50/50 border border-red-100 rounded-lg p-3">
+                                <p className="text-[9px] uppercase tracking-widest text-red-500 font-bold mb-0.5">Conflitto di Interesse</p>
+                                <p className="text-xs text-red-700">{d.conflictDetails || "Conflitto segnalato senza dettagli"}</p>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Declaration date */}
+                          {d.declaredAt && (
+                            <p className="text-[9px] text-slate-400 mt-3">
+                              Dichiarato il {new Date(d.declaredAt).toLocaleDateString("it-IT", { day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 );
               })
