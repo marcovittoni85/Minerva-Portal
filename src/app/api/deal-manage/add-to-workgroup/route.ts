@@ -39,12 +39,13 @@ export async function POST(req: Request) {
 
   if (wgError) return NextResponse.json({ error: wgError.message }, { status: 500 });
 
-  // Send notification
+  // Send notification with link to declaration form
   const { error: notifError } = await supabase.from("notifications").insert({
     user_id: userId,
     type: "step_changed",
     title: "Gruppo di lavoro",
     body: "Sei stato selezionato per il gruppo di lavoro. Completa la dichiarazione obbligatoria per procedere.",
+    link: `/portal/declaration/${dealId}`,
     data: { deal_id: dealId },
     is_read: false,
   });
