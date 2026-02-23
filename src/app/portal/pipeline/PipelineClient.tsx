@@ -57,6 +57,8 @@ export default function PipelineClient({ deals: initialDeals }: { deals: Deal[] 
 
   const moveDeal = async (dealId: string, newStage: string) => {
     setMoving(dealId);
+    const deal = deals.find(d => d.id === dealId);
+    const oldStage = deal?.deal_stage || "board";
     // Map "closed" column to "closed_won" for the DB
     const dbStage = newStage === "closed" ? "closed_won" : newStage;
     const { error } = await supabase
@@ -65,6 +67,14 @@ export default function PipelineClient({ deals: initialDeals }: { deals: Deal[] 
       .eq("id", dealId);
     if (!error) {
       setDeals(prev => prev.map(d => d.id === dealId ? { ...d, deal_stage: dbStage } : d));
+      // Log activity
+      const { data: { user } } = await supabase.auth.getUser();
+      await supabase.from("deal_activity_log").insert({
+        deal_id: dealId,
+        user_id: user?.id,
+        action: "stage_changed",
+        details: { from: oldStage, to: dbStage },
+      });
     }
     setMoving(null);
   };

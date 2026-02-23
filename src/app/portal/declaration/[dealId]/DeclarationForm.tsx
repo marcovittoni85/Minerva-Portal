@@ -100,6 +100,14 @@ export default function DeclarationForm({
     });
 
     if (!error) {
+      // Log activity
+      await supabase.from("deal_activity_log").insert({
+        deal_id: deal.id,
+        user_id: userId,
+        action: "declaration_submitted",
+        details: { role_in_deal: roleInDeal, has_conflict: hasConflict === "yes" },
+      });
+
       // Notify admins
       const { data: admins } = await supabase.from("profiles").select("id").in("role", ["admin"]);
       if (admins) {

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Clock } from "lucide-react";
 
 const stages = ["board", "in_review", "workgroup", "in_progress", "closed_won", "closed_lost"];
 const stageLabels: Record<string, string> = {
@@ -72,18 +73,55 @@ interface Member {
   declaration?: DeclarationData | null;
 }
 
+interface ActivityEntry {
+  id: string;
+  userName: string;
+  action: string;
+  details: any;
+  createdAt: string;
+}
+
+const actionLabels: Record<string, string> = {
+  deal_viewed: "Ha visualizzato il deal",
+  access_requested: "Ha richiesto accesso",
+  access_approved: "Ha approvato l'accesso",
+  workgroup_added: "Ha aggiunto un membro al gruppo di lavoro",
+  declaration_submitted: "Ha inviato la dichiarazione",
+  stage_changed: "Ha cambiato lo stage",
+};
+
+function getActionDescription(action: string, details: any): string {
+  if (action === "stage_changed" && details?.from && details?.to) {
+    const from = stageLabels[details.from] || details.from;
+    const to = stageLabels[details.to] || details.to;
+    return `Ha cambiato lo stage da ${from} a ${to}`;
+  }
+  if (action === "access_approved" && details?.approved_user_name) {
+    return `Ha approvato l'accesso per ${details.approved_user_name}`;
+  }
+  if (action === "workgroup_added" && details?.added_user_name) {
+    return `Ha aggiunto ${details.added_user_name} al gruppo di lavoro`;
+  }
+  if (action === "declaration_submitted" && details?.has_conflict) {
+    return "Ha inviato la dichiarazione (conflitto segnalato)";
+  }
+  return actionLabels[action] || action;
+}
+
 export default function DealManageClient({
   deal,
   originatorName,
   accessMembers,
   workgroupMembers,
   adminId,
+  activityLog = [],
 }: {
   deal: any;
   originatorName: string;
   accessMembers: Member[];
   workgroupMembers: Member[];
   adminId: string;
+  activityLog?: ActivityEntry[];
 }) {
   const supabase = createClient();
   const router = useRouter();
@@ -97,8 +135,17 @@ export default function DealManageClient({
 
   const updateStage = async (newStage: string) => {
     setLoading(true);
+    const oldStage = currentStage;
     const { error } = await supabase.from("deals").update({ deal_stage: newStage }).eq("id", deal.id);
-    if (!error) setCurrentStage(newStage);
+    if (!error) {
+      setCurrentStage(newStage);
+      await supabase.from("deal_activity_log").insert({
+        deal_id: deal.id,
+        user_id: adminId,
+        action: "stage_changed",
+        details: { from: oldStage, to: newStage },
+      });
+    }
     setLoading(false);
   };
 
@@ -445,6 +492,38 @@ export default function DealManageClient({
           </div>
         )}
       </div>
+
+      {/* Activity Timeline */}
+      {activityLog.length > 0 && (
+        <div className="bg-white border border-slate-100 rounded-2xl p-6 mt-8">
+          <div className="flex items-center gap-2 mb-6">
+            <Clock className="w-4 h-4 text-slate-400" />
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Attività Recenti</h2>
+            <span className="text-xs text-slate-400 ml-auto">{activityLog.length} eventi</span>
+          </div>
+          <div className="relative">
+            <div className="absolute left-[7px] top-2 bottom-2 w-px bg-slate-100" />
+            <div className="space-y-4">
+              {activityLog.map(entry => (
+                <div key={entry.id} className="flex gap-4 relative">
+                  <div className="w-[15px] flex-shrink-0 flex justify-center pt-1.5">
+                    <div className="w-2 h-2 rounded-full bg-[#D4AF37]/60" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-slate-700">
+                      <span className="font-medium text-slate-900">{entry.userName}</span>
+                      {" "}{getActionDescription(entry.action, entry.details)}
+                    </p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">
+                      {new Date(entry.createdAt).toLocaleDateString("it-IT", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

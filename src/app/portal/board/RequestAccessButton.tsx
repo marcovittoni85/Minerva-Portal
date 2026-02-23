@@ -33,6 +33,8 @@ export default function RequestAccessButton({ dealId, isAdmin, externalStatus }:
     const { data: { user } } = await supabase.auth.getUser();
     const { error } = await supabase.from("deal_access_requests").insert({ deal_id: dealId, user_id: user?.id, status: "pending", reason: reason.trim() });
     if (!error) {
+      // Log activity
+      await supabase.from("deal_activity_log").insert({ deal_id: dealId, user_id: user?.id, action: "access_requested", details: { reason: reason.trim() } });
       setStatus("pending");
       try {
         fetch("/api/notify-request", {

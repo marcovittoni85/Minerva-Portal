@@ -40,6 +40,14 @@ export default async function DealDetailPage({ params }: { params: Promise<{ id:
     : { data: [] };
   const commenterMap = Object.fromEntries((commenterProfiles ?? []).map((p) => [p.id, { name: p.full_name, role: p.role?.toString() }]));
 
+  // Log deal_viewed activity
+  await supabase.from("deal_activity_log").insert({
+    deal_id: id,
+    user_id: user.id,
+    action: "deal_viewed",
+    details: { deal_title: deal.title },
+  });
+
   return (
     <DealDetailClient
       deal={deal}

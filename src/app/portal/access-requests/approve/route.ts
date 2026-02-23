@@ -32,6 +32,14 @@ export async function POST(req: Request) {
 
   // Insert deal_access
  await supabase.from("deal_access").upsert({ deal_id: request.deal_id, user_id: request.user_id }, { onConflict: "deal_id,user_id" });
+
+  // Log activity
+  await supabase.from("deal_activity_log").insert({
+    deal_id: request.deal_id,
+    user_id: currentUser?.id,
+    action: "access_approved",
+    details: { approved_user_id: request.user_id, approved_user_name: profile?.full_name },
+  });
  
   // Notification to requester
   await supabase.from("notifications").insert({

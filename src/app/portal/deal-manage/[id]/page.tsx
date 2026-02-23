@@ -68,6 +68,31 @@ export default async function DealManageDetailPage({ params }: { params: Promise
     };
   });
 
+  // Fetch activity log
+  const { data: activityRows } = await supabase
+    .from("deal_activity_log")
+    .select("id, user_id, action, details, created_at")
+    .eq("deal_id", id)
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  // Resolve user names for activity log
+  const activityUserIds = [...new Set((activityRows ?? []).map(r => r.user_id).filter(Boolean))];
+  const { data: activityProfiles } = activityUserIds.length > 0
+    ? await supabase.from("profiles").select("id, full_name").in("id", activityUserIds)
+    : { data: [] };
+  const activityNameMap: Record<string, string> = Object.fromEntries(
+    (activityProfiles ?? []).map(p => [p.id, p.full_name])
+  );
+
+  const activityLog = (activityRows ?? []).map(r => ({
+    id: r.id,
+    userName: activityNameMap[r.user_id] || "Sistema",
+    action: r.action,
+    details: r.details,
+    createdAt: r.created_at,
+  }));
+
   return (
     <DealManageClient
       deal={deal}
@@ -75,6 +100,7 @@ export default async function DealManageDetailPage({ params }: { params: Promise
       accessMembers={(accessProfiles ?? []).map(p => ({ id: p.id, name: p.full_name, role: p.role }))}
       workgroupMembers={(wgProfiles ?? []).map(p => ({ id: p.id, name: p.full_name, role: p.role, roleInDeal: wgRoleMap[p.id] || "", declarationStatus: declMap[p.id] || "none", declaration: declDataMap[p.id] || null }))}
       adminId={user.id}
+      activityLog={activityLog}
     />
   );
 }

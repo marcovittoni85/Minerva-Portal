@@ -28,6 +28,15 @@ export async function POST(req: Request) {
 
   if (wgError) return NextResponse.json({ error: wgError.message }, { status: 500 });
 
+  // Log activity
+  const { data: addedProfile } = await supabase.from("profiles").select("full_name").eq("id", userId).single();
+  await supabase.from("deal_activity_log").insert({
+    deal_id: dealId,
+    user_id: user.id,
+    action: "workgroup_added",
+    details: { added_user_id: userId, added_user_name: addedProfile?.full_name || "—", deal_title: dealTitle },
+  });
+
   // Send notification with link to declaration form
   const title = dealTitle || "il deal";
   const { error: notifError } = await supabase.from("notifications").insert({
