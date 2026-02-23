@@ -25,7 +25,7 @@ const sectorIcons: Record<string, React.ComponentType<{ className?: string }>> =
 
 function SectorIcon({ sector }: { sector: string }) {
   const Icon = sectorIcons[sector] || Briefcase;
-  return <Icon className="w-5 h-5 text-slate-200" />;
+  return <Icon className="w-5 h-5 text-slate-300" />;
 }
 
 type AccessStatus = "loading" | "none" | "pending" | "approved" | "rejected";
