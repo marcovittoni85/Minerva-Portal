@@ -77,11 +77,21 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
   return (
     <div className="min-h-screen bg-white flex flex-col md:flex-row">
+      <style>{`
+        @keyframes bell-ring {
+          0% { transform: rotate(0deg); }
+          15% { transform: rotate(15deg); }
+          30% { transform: rotate(-10deg); }
+          45% { transform: rotate(5deg); }
+          60% { transform: rotate(0deg); }
+          100% { transform: rotate(0deg); }
+        }
+      `}</style>
       <div className="md:hidden bg-white border-b p-4 flex justify-between items-center sticky top-0 z-50">
         <Image src="/icon.webp" alt="Minerva" width={30} height={30} unoptimized />
         <div className="flex items-center gap-3">
           <button onClick={loadNotifs} className="relative">
-            <Bell className="w-5 h-5 text-slate-400" />
+            <Bell className={"w-5 h-5 " + (unreadCount > 0 ? "text-[#F5A623]" : "text-slate-400")} style={unreadCount > 0 ? { animation: "bell-ring 0.8s ease-in-out 3", transformOrigin: "top center" } : undefined} />
             {unreadCount > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-bold w-4 h-4 rounded-full flex items-center justify-center">{unreadCount}</span>}
           </button>
           <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}><Menu className="w-5 h-5" /></button>
@@ -95,7 +105,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-900">Minerva Partners</span>
           </div>
           <button onClick={loadNotifs} className="relative hidden md:block">
-            <Bell className="w-4 h-4 text-slate-400 hover:text-[#D4AF37] transition-colors" />
+            <Bell className={"w-4 h-4 transition-colors " + (unreadCount > 0 ? "text-[#F5A623]" : "text-slate-400 hover:text-[#D4AF37]")} style={unreadCount > 0 ? { animation: "bell-ring 0.8s ease-in-out 3", transformOrigin: "top center" } : undefined} />
             {unreadCount > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-bold w-4 h-4 rounded-full flex items-center justify-center">{unreadCount}</span>}
           </button>
         </div>
