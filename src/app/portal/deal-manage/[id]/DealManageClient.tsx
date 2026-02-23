@@ -110,14 +110,16 @@ export default function DealManageClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ dealId: deal.id, userId }),
       });
+      const data = await res.json();
       if (res.ok) {
         setWgMembers(prev => [...prev, { id: userId, name: userName, role: "", roleInDeal: "member", declarationStatus: "none" }]);
+        alert("Utente aggiunto al gruppo di lavoro");
+        router.refresh();
       } else {
-        const data = await res.json();
-        console.error("Errore aggiunta WG:", data.error);
+        alert("Errore: " + (data.error || "Impossibile aggiungere al gruppo"));
       }
-    } catch (e) {
-      console.error("Errore aggiunta WG:", e);
+    } catch (e: any) {
+      alert("Errore di rete: " + (e.message || "Riprova più tardi"));
     }
     setAddingUserId(null);
   };
