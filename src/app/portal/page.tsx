@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import Image from "next/image";
-import { Briefcase, Clock, CheckCircle, Calendar, TrendingUp, ArrowRight, PlusCircle, ClipboardList, Settings } from "lucide-react";
+import { Briefcase, Clock, CheckCircle, Calendar, TrendingUp, ArrowRight, PlusCircle, ClipboardList, Settings, Users, FileText, Activity } from "lucide-react";
 
 interface Deal {
   id: string;
@@ -71,6 +71,16 @@ const placeholderStories = [
   },
 ];
 
+const activityLabelMap: Record<string, string> = {
+  deal_viewed: "ha visualizzato il deal",
+  access_requested: "ha richiesto accesso",
+  access_approved: "ha approvato l'accesso",
+  workgroup_added: "ha aggiunto a WG",
+  declaration_submitted: "ha inviato dichiarazione",
+  stage_changed: "ha cambiato stage",
+};
+function activityLabel(action: string) { return activityLabelMap[action] || action; }
+
 export default function DashboardPage() {
   const supabase = createClient();
   const [name, setName] = useState("");
@@ -79,6 +89,17 @@ export default function DashboardPage() {
   const [pendingRequests, setPendingRequests] = useState<AccessRequest[]>([]);
   const [latestDeals, setLatestDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Admin stats
+  const [adminStats, setAdminStats] = useState<{
+    activeDeals: number;
+    stageCounts: Record<string, number>;
+    pendingAccessRequests: number;
+    totalMembers: number;
+    wgMembers: number;
+    pendingDeclarations: number;
+    recentActivity: { id: string; userName: string; dealCode: string; action: string; createdAt: string }[];
+  } | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -117,10 +138,80 @@ export default function DashboardPage() {
       const { data: latest } = await supabase.rpc("get_board_deals");
       setLatestDeals((latest || []).slice(0, 3));
 
+      // Load admin stats
+      if (profile?.role === "admin") {
+        await loadAdminStats();
+      }
+
       setLoading(false);
     }
     load();
   }, []);
+
+  async function loadAdminStats() {
+    // Active deals count + stage breakdown
+    const { data: allDeals } = await supabase.from("deals").select("id, deal_stage").eq("active", true);
+    const activeDeals = allDeals?.length || 0;
+    const stageCounts: Record<string, number> = {};
+    (allDeals ?? []).forEach(d => {
+      const stage = d.deal_stage || "board";
+      stageCounts[stage] = (stageCounts[stage] || 0) + 1;
+    });
+
+    // Pending access requests
+    const { count: pendingAccessRequests } = await supabase.from("deal_access_requests").select("id", { count: "exact", head: true }).eq("status", "pending");
+
+    // Total members
+    const { count: totalMembers } = await supabase.from("profiles").select("id", { count: "exact", head: true });
+
+    // Workgroup members (distinct user_id)
+    const { data: wgRows } = await supabase.from("deal_workgroup").select("user_id");
+    const wgMembers = new Set((wgRows ?? []).map(r => r.user_id)).size;
+
+    // Pending declarations: wg members without a declaration
+    const { data: declRows } = await supabase.from("deal_declarations").select("deal_id, user_id");
+    const declSet = new Set((declRows ?? []).map(r => `${r.deal_id}:${r.user_id}`));
+    const { data: wgFull } = await supabase.from("deal_workgroup").select("deal_id, user_id");
+    const pendingDeclarations = (wgFull ?? []).filter(r => !declSet.has(`${r.deal_id}:${r.user_id}`)).length;
+
+    // Recent activity
+    const { data: actRows } = await supabase
+      .from("deal_activity_log")
+      .select("id, deal_id, user_id, action, created_at")
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    const actUserIds = [...new Set((actRows ?? []).map(r => r.user_id).filter(Boolean))];
+    const actDealIds = [...new Set((actRows ?? []).map(r => r.deal_id).filter(Boolean))];
+
+    const { data: actProfiles } = actUserIds.length > 0
+      ? await supabase.from("profiles").select("id, full_name").in("id", actUserIds)
+      : { data: [] };
+    const { data: actDeals } = actDealIds.length > 0
+      ? await supabase.from("deals").select("id, code").in("id", actDealIds)
+      : { data: [] };
+
+    const nameMap: Record<string, string> = Object.fromEntries((actProfiles ?? []).map(p => [p.id, p.full_name]));
+    const codeMap: Record<string, string> = Object.fromEntries((actDeals ?? []).map(d => [d.id, d.code]));
+
+    const recentActivity = (actRows ?? []).map(r => ({
+      id: r.id,
+      userName: nameMap[r.user_id] || "Sistema",
+      dealCode: codeMap[r.deal_id] || "—",
+      action: r.action,
+      createdAt: r.created_at,
+    }));
+
+    setAdminStats({
+      activeDeals,
+      stageCounts,
+      pendingAccessRequests: pendingAccessRequests ?? 0,
+      totalMembers: totalMembers ?? 0,
+      wgMembers,
+      pendingDeclarations,
+      recentActivity,
+    });
+  }
 
   const isAdmin = role === "admin";
 
@@ -179,37 +270,134 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Quick stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-        <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
-          <div className="flex items-center gap-3 mb-2">
-            <CheckCircle className="w-4 h-4 text-emerald-500" />
-            <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Deal Attivi</p>
+      {/* Admin stats panel */}
+      {isAdmin && adminStats && (
+        <div className="mb-10">
+          {/* Top-level counts */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+            <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">Deal Attivi</p>
+              <p className="text-2xl font-bold text-slate-900">{adminStats.activeDeals}</p>
+            </div>
+            <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">Richieste Pendenti</p>
+              <p className="text-2xl font-bold text-amber-600">{adminStats.pendingAccessRequests}</p>
+            </div>
+            <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">Membri Totali</p>
+              <p className="text-2xl font-bold text-slate-900">{adminStats.totalMembers}</p>
+            </div>
+            <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">In Workgroup</p>
+              <p className="text-2xl font-bold text-blue-600">{adminStats.wgMembers}</p>
+            </div>
+            <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">Dich. Pendenti</p>
+              <p className="text-2xl font-bold text-red-500">{adminStats.pendingDeclarations}</p>
+            </div>
+            <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">Prossimi Eventi</p>
+              <p className="text-2xl font-bold text-slate-900">{placeholderEvents.length}</p>
+            </div>
           </div>
-          <p className="text-2xl font-bold text-slate-900">{approvedDeals.length}</p>
-        </div>
-        <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
-          <div className="flex items-center gap-3 mb-2">
-            <Clock className="w-4 h-4 text-amber-500" />
-            <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">In Attesa</p>
+
+          {/* Deal per stage + recent activity */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Stage breakdown */}
+            <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-4">Deal per Stage</h3>
+              <div className="space-y-3">
+                {[
+                  { key: "board", label: "Board", color: "bg-slate-200" },
+                  { key: "in_review", label: "In Review", color: "bg-amber-400" },
+                  { key: "workgroup", label: "Workgroup", color: "bg-blue-400" },
+                  { key: "in_progress", label: "In Progress", color: "bg-[#D4AF37]" },
+                  { key: "closing", label: "Closing", color: "bg-emerald-400" },
+                  { key: "closed_won", label: "Closed Won", color: "bg-emerald-600" },
+                  { key: "closed_lost", label: "Closed Lost", color: "bg-red-400" },
+                ].map(s => {
+                  const count = adminStats.stageCounts[s.key] || 0;
+                  const pct = adminStats.activeDeals > 0 ? (count / adminStats.activeDeals) * 100 : 0;
+                  return (
+                    <div key={s.key} className="flex items-center gap-3">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 w-24">{s.label}</span>
+                      <div className="flex-1 h-2 bg-slate-50 rounded-full overflow-hidden">
+                        <div className={`h-full rounded-full ${s.color}`} style={{ width: `${Math.max(pct, 0)}%` }} />
+                      </div>
+                      <span className="text-xs font-bold text-slate-700 w-6 text-right">{count}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Recent activity */}
+            <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-[#D4AF37]" />
+                  Attivita Recenti
+                </h3>
+                <a href="/portal/audit-log" className="text-[10px] uppercase tracking-widest text-[#D4AF37] font-bold hover:text-[#b8962d] transition-colors">Vedi tutto &rarr;</a>
+              </div>
+              <div className="space-y-3">
+                {adminStats.recentActivity.length === 0 ? (
+                  <p className="text-sm text-slate-400 text-center py-4">Nessuna attivita</p>
+                ) : (
+                  adminStats.recentActivity.map(a => (
+                    <div key={a.id} className="flex items-start gap-3 py-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]/50 mt-1.5 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-slate-700 truncate">
+                          <span className="font-medium text-slate-900">{a.userName}</span>
+                          {" · "}{activityLabel(a.action)}
+                        </p>
+                        <p className="text-[10px] text-slate-400">
+                          {a.dealCode} · {new Date(a.createdAt).toLocaleDateString("it-IT", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
-          <p className="text-2xl font-bold text-slate-900">{pendingRequests.length}</p>
         </div>
-        <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
-          <div className="flex items-center gap-3 mb-2">
-            <Calendar className="w-4 h-4 text-blue-500" />
-            <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Prossimi Eventi</p>
+      )}
+
+      {/* Quick stats (non-admin) */}
+      {!isAdmin && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+          <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center gap-3 mb-2">
+              <CheckCircle className="w-4 h-4 text-emerald-500" />
+              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Deal Attivi</p>
+            </div>
+            <p className="text-2xl font-bold text-slate-900">{approvedDeals.length}</p>
           </div>
-          <p className="text-2xl font-bold text-slate-900">{placeholderEvents.length}</p>
-        </div>
-        <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
-          <div className="flex items-center gap-3 mb-2">
-            <Briefcase className="w-4 h-4 text-[#D4AF37]" />
-            <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Nuove Opportunita</p>
+          <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center gap-3 mb-2">
+              <Clock className="w-4 h-4 text-amber-500" />
+              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">In Attesa</p>
+            </div>
+            <p className="text-2xl font-bold text-slate-900">{pendingRequests.length}</p>
           </div>
-          <p className="text-2xl font-bold text-slate-900">{latestDeals.length}</p>
+          <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center gap-3 mb-2">
+              <Calendar className="w-4 h-4 text-blue-500" />
+              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Prossimi Eventi</p>
+            </div>
+            <p className="text-2xl font-bold text-slate-900">{placeholderEvents.length}</p>
+          </div>
+          <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center gap-3 mb-2">
+              <Briefcase className="w-4 h-4 text-[#D4AF37]" />
+              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Nuove Opportunita</p>
+            </div>
+            <p className="text-2xl font-bold text-slate-900">{latestDeals.length}</p>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left column */}
