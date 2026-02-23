@@ -25,7 +25,7 @@ const sectorIcons: Record<string, React.ComponentType<{ className?: string }>> =
 
 function SectorIcon({ sector }: { sector: string }) {
   const Icon = sectorIcons[sector] || CircleDot;
-  return <Icon className="w-7 h-7 text-[#F5A623]/30" />;
+  return <Icon className="w-8 h-8 text-[#F5A623]/30" />;
 }
 
 function getSideBorderColor(side: string) {
