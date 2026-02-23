@@ -122,7 +122,7 @@ export default function DashboardPage() {
     load();
   }, []);
 
-  const isAdmin = role === "admin" || role === "equity_partner";
+  const isAdmin = role === "admin";
 
   const formatEventDate = (dateStr: string) => {
     const d = new Date(dateStr);

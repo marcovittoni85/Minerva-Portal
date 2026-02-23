@@ -10,7 +10,7 @@ export default async function BoardPage() {
 
   const { data: prof } = await supabase.from("profiles").select("role").eq("id", uid).maybeSingle();
   const role = String(prof?.role ?? "");
-  const isAdmin = role === "admin" || role === "equity_partner";
+  const isAdmin = role === "admin";
 
   const { data: deals, error } = await supabase.rpc("get_board_deals");
 

@@ -11,7 +11,7 @@ export default async function DealModerationPage() {
     .eq("id", me.user?.id)
     .maybeSingle();
 
-  if (prof?.role !== "admin" && prof?.role !== "equity_partner") {
+  if (prof?.role !== "admin") {
     return <div className="p-6">Accesso negato.</div>;
   }
 

@@ -92,7 +92,7 @@ export default function DeclarationForm({
 
     if (!error) {
       // Notify admins
-      const { data: admins } = await supabase.from("profiles").select("id").in("role", ["admin", "partner"]);
+      const { data: admins } = await supabase.from("profiles").select("id").in("role", ["admin"]);
       if (admins) {
         await Promise.all(admins.map(a =>
           supabase.from("notifications").insert({

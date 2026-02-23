@@ -50,7 +50,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     }
   };
 
-  const isAdmin = role === "admin" || role === "equity_partner";
+  const isAdmin = role === "admin";
 
   const handleLogout = async () => {
     await supabase.auth.signOut();

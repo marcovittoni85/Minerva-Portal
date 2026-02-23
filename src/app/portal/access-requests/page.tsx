@@ -8,7 +8,7 @@ export default async function AccessRequestsPage() {
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
   const role = profile?.role || "";
-  const isAdmin = role === "admin" || role === "equity_partner";
+  const isAdmin = role === "admin";
 
   // Check if user is originator of any deal
   const { data: originatedDeals } = await supabase.from("deals").select("id, title").eq("originator_id", user.id).eq("active", true);

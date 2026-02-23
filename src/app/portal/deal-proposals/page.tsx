@@ -6,7 +6,7 @@ export default async function DealProposalsPage() {
   const supabase = await supabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user?.id).single();
-  if (profile?.role !== "admin" && profile?.role !== "equity_partner") redirect("/portal");
+  if (profile?.role !== "admin") redirect("/portal");
 
   const { data: proposals } = await supabase
     .from("deals")

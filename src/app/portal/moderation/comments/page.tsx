@@ -11,7 +11,7 @@ export default async function ModerationCommentsPage() {
     .eq("id", me.user?.id || "")
     .maybeSingle();
 
-  const isAdmin = prof?.role === "admin" || prof?.role === "equity_partner" || prof?.role === "minerva";
+  const isAdmin = prof?.role === "admin" || prof?.role === "minerva";
   if (!isAdmin) return <div className="p-8 text-red-500 font-bold">Area Riservata.</div>;
 
   // 2. Recupero richieste (Senza join per evitare l'errore schema cache)

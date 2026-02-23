@@ -28,7 +28,7 @@ export default function Allocations({ dealId }: { dealId: string }) {
     if (aErr) alert(aErr.message);
     setAllocs(a ?? []);
 
-    // ✅ FIX: Rimosso "equity_partner" che non esiste nel database
+    // Fetch eligible profiles for allocations
     const { data: p, error: pErr } = await supabase
       .from("profiles")
       .select("id, full_name, role")

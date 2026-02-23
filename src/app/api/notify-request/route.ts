@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   if (!deal) return NextResponse.json({ error: "Deal non trovato" }, { status: 404 });
 
   // Notify all admins
-  const { data: admins } = await supabase.from("profiles").select("id").in("role", ["admin", "equity_partner"]);
+  const { data: admins } = await supabase.from("profiles").select("id").in("role", ["admin"]);
 
   const notifications = (admins ?? []).map(a => ({
     user_id: a.id,
