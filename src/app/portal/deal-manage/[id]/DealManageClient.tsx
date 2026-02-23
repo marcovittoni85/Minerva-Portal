@@ -119,6 +119,10 @@ export default function DealManageClient({
         setWgMembers(prev => [...prev, { id: userId, name: userName, role: "", roleInDeal: "member", declarationStatus: "none" }]);
         alert("Utente aggiunto al gruppo di lavoro");
         router.refresh();
+      } else if (data.alreadyExists) {
+        // Sync local state so button disappears
+        setWgMembers(prev => prev.some(m => m.id === userId) ? prev : [...prev, { id: userId, name: userName, role: "", roleInDeal: "member", declarationStatus: "none" }]);
+        alert("Utente già nel gruppo di lavoro");
       } else {
         alert("Errore: " + (data.error || "Impossibile aggiungere al gruppo"));
       }

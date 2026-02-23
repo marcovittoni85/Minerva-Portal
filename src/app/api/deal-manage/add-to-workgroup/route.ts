@@ -25,6 +25,10 @@ export async function POST(req: Request) {
   const { dealId, userId } = await req.json();
   if (!dealId || !userId) return NextResponse.json({ error: "Parametri mancanti" }, { status: 400 });
 
+  // Check if already in workgroup
+  const { data: existing } = await supabase.from("deal_workgroup").select("id").eq("deal_id", dealId).eq("user_id", userId).maybeSingle();
+  if (existing) return NextResponse.json({ error: "Utente già nel gruppo di lavoro", alreadyExists: true }, { status: 409 });
+
   // Insert into workgroup
   const { error: wgError } = await supabase.from("deal_workgroup").insert({
     deal_id: dealId,
