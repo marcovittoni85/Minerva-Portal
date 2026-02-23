@@ -105,9 +105,13 @@ export default function DealManageClient({
   const addToWorkgroup = async (userId: string, userName: string) => {
     setAddingUserId(userId);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch("/api/deal-manage/add-to-workgroup", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
         body: JSON.stringify({ dealId: deal.id, userId }),
       });
       const data = await res.json();
