@@ -114,8 +114,10 @@ export default function DealManageClient({
       // Send notification with declaration link
       await supabase.from("notifications").insert({
         user_id: userId,
-        title: "Gruppo di Lavoro",
-        message: `Sei stato selezionato per il gruppo di lavoro di "${deal.title}". Completa la dichiarazione obbligatoria per procedere: /portal/declaration/${deal.id}`,
+        type: "workgroup_added",
+        title: "Gruppo di lavoro",
+        message: "Sei stato selezionato per il gruppo di lavoro. Completa la dichiarazione obbligatoria per procedere.",
+        deal_id: deal.id,
         is_read: false,
       });
       setWgMembers(prev => [...prev, { id: userId, name: userName, role: "", roleInDeal: "member", declarationStatus: "none" }]);

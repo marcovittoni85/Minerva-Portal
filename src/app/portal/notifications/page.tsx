@@ -9,7 +9,8 @@ export default async function NotificationsPage() {
 
   const { data: notifs, error } = await supabase
     .from("notifications")
-    .select("id, type, title, body, data, is_read, created_at")
+    .select("id, type, title, message, body, data, is_read, created_at")
+    .eq("user_id", uid)
     .order("created_at", { ascending: false })
     .limit(50);
 
@@ -17,6 +18,7 @@ export default async function NotificationsPage() {
   const { error: updErr } = await supabase
     .from("notifications")
     .update({ is_read: true })
+    .eq("user_id", uid)
     .eq("is_read", false);
 
   return (
@@ -47,7 +49,7 @@ export default async function NotificationsPage() {
                 {n.created_at ? new Date(n.created_at).toLocaleString() : ""}
               </div>
             </div>
-            {n.body && <div className="mt-2 text-sm text-slate-700">{n.body}</div>}
+            {(n.message || n.body) && <div className="mt-2 text-sm text-slate-700">{n.message || n.body}</div>}
           </div>
         ))}
 
