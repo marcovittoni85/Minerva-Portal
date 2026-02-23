@@ -97,8 +97,9 @@ export default function DeclarationForm({
         await Promise.all(admins.map(a =>
           supabase.from("notifications").insert({
             user_id: a.id,
+            type: "step_changed",
             title: "Dichiarazione Ricevuta",
-            message: `Nuova dichiarazione per "${deal.title}" (${deal.code})${hasConflict === "yes" ? " — CONFLITTO SEGNALATO" : ""}`,
+            body: `Nuova dichiarazione per "${deal.title}" (${deal.code})${hasConflict === "yes" ? " — CONFLITTO SEGNALATO" : ""}`,
             is_read: false,
           })
         ));

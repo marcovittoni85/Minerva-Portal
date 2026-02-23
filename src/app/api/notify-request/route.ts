@@ -18,20 +18,20 @@ export async function POST(req: Request) {
 
   const notifications = (admins ?? []).map(a => ({
     user_id: a.id,
-    type: "new_access_request",
+    type: "access_request",
     title: "Nuova richiesta accesso",
-    message: (profile?.full_name || "Un utente") + " ha richiesto accesso a \"" + deal.title + "\"",
-    deal_id: dealId,
+    body: (profile?.full_name || "Un utente") + " ha richiesto accesso a \"" + deal.title + "\"",
+    data: { deal_id: dealId },
   }));
 
   // Notify originator if different from admins
   if (deal.originator_id && !(admins ?? []).find(a => a.id === deal.originator_id)) {
     notifications.push({
       user_id: deal.originator_id,
-      type: "new_access_request",
+      type: "access_request",
       title: "Nuova richiesta accesso",
-      message: (profile?.full_name || "Un utente") + " ha richiesto accesso a \"" + deal.title + "\"",
-      deal_id: dealId,
+      body: (profile?.full_name || "Un utente") + " ha richiesto accesso a \"" + deal.title + "\"",
+      data: { deal_id: dealId },
     });
   }
 

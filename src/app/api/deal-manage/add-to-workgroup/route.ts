@@ -42,10 +42,10 @@ export async function POST(req: Request) {
   // Send notification
   const { error: notifError } = await supabase.from("notifications").insert({
     user_id: userId,
-    type: "workgroup_added",
+    type: "step_changed",
     title: "Gruppo di lavoro",
-    message: "Sei stato selezionato per il gruppo di lavoro. Completa la dichiarazione obbligatoria per procedere.",
-    deal_id: dealId,
+    body: "Sei stato selezionato per il gruppo di lavoro. Completa la dichiarazione obbligatoria per procedere.",
+    data: { deal_id: dealId },
     is_read: false,
   });
 

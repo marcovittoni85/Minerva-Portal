@@ -162,7 +162,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                       {!n.is_read && <span className="w-2 h-2 rounded-full bg-[#D4AF37] mt-1.5 flex-shrink-0" />}
                       <div>
                         <p className="text-xs font-bold text-slate-900">{n.title}</p>
-                        {n.message && <p className="text-xs text-slate-500 mt-0.5">{n.message}</p>}
+                        {n.body && <p className="text-xs text-slate-500 mt-0.5">{n.body}</p>}
                         <p className="text-[10px] text-slate-400 mt-1">{new Date(n.created_at).toLocaleDateString("it-IT", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
                       </div>
                     </div>
