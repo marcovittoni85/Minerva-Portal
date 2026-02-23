@@ -5,6 +5,13 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { MessageSquare } from "lucide-react";
 
+function getMacroCategory(sector: string) {
+  if (sector === "Real estate & hospitality") return "REAL ESTATE";
+  if (sector === "Utility e rinnovabili" || sector === "Petrolio e gas") return "ENERGY";
+  if (sector === "Servizi finanziari") return "FINANCE";
+  return "CORPORATE M&A";
+}
+
 function getSideBorderColor(side: string) {
   const s = side?.toUpperCase() || "";
   if (s.includes("SELL")) return "border-l-[#D4AF37]";
@@ -98,31 +105,35 @@ export default async function MyDealsPage() {
         {deals?.map((deal) => {
           const isOriginator = deal.originator_id === user.id;
           const comments = commentMap[deal.id] || 0;
-          const subMeta = [deal.sub_sector, deal.deal_type].filter(Boolean).join(" · ");
+          const metaLine = [deal.sector, deal.sub_sector, deal.deal_type].filter(Boolean).join(" · ");
+          const macro = deal.sector ? getMacroCategory(deal.sector) : null;
 
           return (
             <Link key={deal.id} href={"/portal/deals/" + deal.id} className={"group bg-white border border-slate-100 border-l-[5px] rounded-2xl p-6 hover:shadow-lg transition-all " + getSideBorderColor(deal.side)}>
-              {/* Side label */}
-              {deal.side && (
-                <p className={"text-[9px] font-bold uppercase tracking-[0.3em] mb-1 " + getSideLabelColor(deal.side)}>{deal.side}</p>
-              )}
-
-              {/* Code · Sector + role badge */}
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-[10px] text-slate-400 uppercase tracking-widest">
-                  {deal.code}{deal.sector ? ` · ${deal.sector}` : ""}
-                </span>
-                {isOriginator ? (
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-[#D4AF37]">Originator</span>
-                ) : (
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Accesso</span>
+              {/* Top row: side + code on left, macro category on right */}
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  {deal.side && (
+                    <p className={"text-[9px] font-bold uppercase tracking-[0.3em] mb-1 " + getSideLabelColor(deal.side)}>{deal.side}</p>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] text-slate-400 uppercase tracking-widest">{deal.code}</span>
+                    {isOriginator ? (
+                      <span className="text-[9px] font-bold uppercase tracking-widest text-[#D4AF37]">Originator</span>
+                    ) : (
+                      <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Accesso</span>
+                    )}
+                  </div>
+                </div>
+                {macro && (
+                  <span className="text-[11px] font-bold uppercase tracking-widest text-[#D4AF37] bg-[#D4AF37]/10 px-3 py-1.5 rounded-lg">{macro}</span>
                 )}
               </div>
 
               <h3 className="text-lg font-bold text-slate-900 mb-1 group-hover:text-[#D4AF37] transition-colors leading-tight">{deal.title}</h3>
 
-              {/* Sub-sector · Deal type */}
-              {subMeta && <p className="text-xs text-slate-500 mb-3">{subMeta}</p>}
+              {/* Sector · Sub-sector · Deal type */}
+              {metaLine && <p className="text-xs text-slate-500 mb-3">{metaLine}</p>}
 
               {isAdmin && deal.originator_id && (
                 <p className="text-[10px] text-slate-400 mb-2">Originator: {originatorMap[deal.originator_id] || "—"}</p>

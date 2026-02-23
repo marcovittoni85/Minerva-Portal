@@ -4,6 +4,13 @@ import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import RequestAccessButton from "./RequestAccessButton";
 
+function getMacroCategory(sector: string) {
+  if (sector === "Real estate & hospitality") return "REAL ESTATE";
+  if (sector === "Utility e rinnovabili" || sector === "Petrolio e gas") return "ENERGY";
+  if (sector === "Servizi finanziari") return "FINANCE";
+  return "CORPORATE M&A";
+}
+
 function getSideBorderColor(side: string) {
   const s = side?.toUpperCase() || "";
   if (s.includes("SELL")) return "border-l-[#D4AF37]";
@@ -40,19 +47,23 @@ export default function DealCard({ deal: d, isAdmin }: { deal: any; isAdmin: boo
 
   const hasAccess = status === "approved" || isAdmin;
 
-  const subMeta = [d.sub_sector, d.deal_type].filter(Boolean).join(" · ");
+  const metaLine = [d.sector, d.sub_sector, d.deal_type].filter(Boolean).join(" · ");
+  const macro = d.sector ? getMacroCategory(d.sector) : null;
 
   return (
     <div className={"bg-white border border-slate-100 border-l-[5px] rounded-2xl p-6 hover:shadow-lg hover:border-slate-100 hover:border-l-[5px] transition-all " + getSideBorderColor(d.side)}>
-      {/* Side label */}
-      {d.side && (
-        <p className={"text-[9px] font-bold uppercase tracking-[0.3em] mb-1 " + getSideLabelColor(d.side)}>{d.side}</p>
-      )}
-
-      {/* Code · Sector */}
-      <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-3">
-        {d.code}{d.sector ? ` · ${d.sector}` : ""}
-      </p>
+      {/* Top row: side + code on left, macro category on right */}
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          {d.side && (
+            <p className={"text-[9px] font-bold uppercase tracking-[0.3em] mb-1 " + getSideLabelColor(d.side)}>{d.side}</p>
+          )}
+          <p className="text-[10px] text-slate-400 uppercase tracking-widest">{d.code}</p>
+        </div>
+        {macro && (
+          <span className="text-[11px] font-bold uppercase tracking-widest text-[#D4AF37] bg-[#D4AF37]/10 px-3 py-1.5 rounded-lg">{macro}</span>
+        )}
+      </div>
 
       {/* Title — conditional behavior */}
       {hasAccess ? (
@@ -68,8 +79,8 @@ export default function DealCard({ deal: d, isAdmin }: { deal: any; isAdmin: boo
         </button>
       )}
 
-      {/* Sub-sector · Deal type */}
-      {subMeta && <p className="text-xs text-slate-500 mb-3">{subMeta}</p>}
+      {/* Sector · Sub-sector · Deal type */}
+      {metaLine && <p className="text-xs text-slate-500 mb-3">{metaLine}</p>}
 
       {/* Description */}
       <p className="text-slate-500 text-sm leading-relaxed line-clamp-2 mb-4">{d.description || "Dettagli riservati"}</p>
