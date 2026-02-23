@@ -1,22 +1,11 @@
-import { createClient } from "@supabase/supabase-js";
+import { supabaseServer } from "@/lib/supabase-server";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  const supabase = await supabaseServer();
 
-  // Get token from Authorization header
-  const authHeader = req.headers.get("Authorization");
-  const token = authHeader?.replace("Bearer ", "");
-  if (!token) return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
-
-  // Create client — service role key bypasses RLS, anon key as fallback
-  const supabase = createClient(url, serviceKey || anonKey);
-
-  // Verify the user's token
-  const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-  if (authError || !user) return NextResponse.json({ error: "Sessione non valida" }, { status: 401 });
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
 
   // Verify admin role
   const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).single();
