@@ -3,7 +3,37 @@ export const revalidate = 0;
 import { supabaseServer } from "@/lib/supabase-server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, Building2, Heart, Settings, Zap, Landmark, FlaskConical, Trophy, Monitor, Briefcase } from "lucide-react";
+
+const sectorIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  "Real estate & hospitality": Building2,
+  "Healthcare": Heart,
+  "Macchinari industriali": Settings,
+  "Utility e rinnovabili": Zap,
+  "Servizi finanziari": Landmark,
+  "Chimica": FlaskConical,
+  "Sports goods": Trophy,
+  "Tecnologia": Monitor,
+};
+
+function SectorIcon({ sector }: { sector: string }) {
+  const Icon = sectorIcons[sector] || Briefcase;
+  return <Icon className="w-5 h-5 text-slate-200" />;
+}
+
+function getSideBorderColor(side: string) {
+  const s = side?.toUpperCase() || "";
+  if (s.includes("SELL")) return "border-l-[#D4AF37]";
+  if (s.includes("BUY")) return "border-l-[#001220]";
+  return "border-l-slate-200";
+}
+
+function getSideLabelColor(side: string) {
+  const s = side?.toUpperCase() || "";
+  if (s.includes("SELL")) return "text-[#D4AF37]";
+  if (s.includes("BUY")) return "text-[#001220]";
+  return "text-slate-400";
+}
 
 export default async function MyDealsPage() {
   const supabase = await supabaseServer();
@@ -48,7 +78,7 @@ export default async function MyDealsPage() {
     .order("created_at", { ascending: false });
 
   const accessMap = Object.fromEntries((accessRows ?? []).map((r) => [r.deal_id, "Full Access"]));
-  
+
   // Get comment counts per deal
   const { data: commentCounts } = await supabase
     .from("deal_comments")
@@ -73,13 +103,6 @@ export default async function MyDealsPage() {
     originatorMap = Object.fromEntries((originatorProfiles ?? []).map((p) => [p.id, p.full_name]));
   }
 
-  function getSideStyle(side: string) {
-    const s = side.toUpperCase();
-    if (s.includes("SELL")) return "bg-[#001220] text-[#D4AF37]";
-    if (s.includes("BUY")) return "bg-[#D4AF37] text-white";
-    return "bg-slate-100 text-slate-700";
-  }
-
   return (
     <div className="p-8 max-w-7xl mx-auto">
       <header className="mb-10">
@@ -89,30 +112,36 @@ export default async function MyDealsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {deals?.map((deal) => {
-          const level = accessMap[deal.id] || (originatedIds.includes(deal.id) ? "Originator" : "—");
           const isOriginator = deal.originator_id === user.id;
           const comments = commentMap[deal.id] || 0;
+          const metaLine = [deal.sector, deal.sub_sector, deal.deal_type].filter(Boolean).join(" · ");
 
           return (
-            <Link key={deal.id} href={"/portal/deals/" + deal.id} className="group bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-lg hover:border-[#D4AF37]/30 transition-all">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{deal.code}</span>
+            <Link key={deal.id} href={"/portal/deals/" + deal.id} className={"group relative bg-white border border-slate-100 border-l-4 rounded-2xl p-6 hover:shadow-lg transition-all " + getSideBorderColor(deal.side)}>
+              {/* Sector icon watermark */}
+              <div className="absolute top-5 right-5">
+                <SectorIcon sector={deal.sector} />
+              </div>
+
+              {/* Side label */}
+              {deal.side && (
+                <p className={"text-[9px] font-bold uppercase tracking-[0.3em] mb-1 " + getSideLabelColor(deal.side)}>{deal.side}</p>
+              )}
+
+              {/* Code + role badge */}
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-[10px] text-slate-400 tracking-wider">{deal.code}</span>
                 {isOriginator ? (
-                  <span className="text-[10px] font-bold text-[#D4AF37] bg-[#D4AF37]/10 px-3 py-1 rounded-lg border border-[#D4AF37]/20">Originator</span>
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-[#D4AF37]">Originator</span>
                 ) : (
-                  <span className="text-[10px] font-bold text-green-600 bg-green-50 px-3 py-1 rounded-lg border border-green-100">{level}</span>
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Accesso</span>
                 )}
               </div>
 
-              <div className="flex items-center gap-2 mb-3">
-                {deal.side && (
-                  <span className={"text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded " + getSideStyle(deal.side)}>{deal.side}</span>
-                )}
-                <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">{deal.sector}</span>
-                <span className="text-[10px] font-bold text-slate-900">{deal.deal_type}</span>
-              </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-1 group-hover:text-[#D4AF37] transition-colors leading-tight">{deal.title}</h3>
 
-              <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-[#D4AF37] transition-colors leading-tight">{deal.title}</h3>
+              {/* Meta line */}
+              {metaLine && <p className="text-xs text-slate-400 mb-3">{metaLine}</p>}
 
               {isAdmin && deal.originator_id && (
                 <p className="text-[10px] text-slate-400 mb-2">Originator: {originatorMap[deal.originator_id] || "—"}</p>

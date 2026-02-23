@@ -3,14 +3,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import RequestAccessButton from "./RequestAccessButton";
-import { Building2, Heart, Settings, Zap, Landmark, Beaker, Trophy, Monitor, Briefcase } from "lucide-react";
-
-function getSideStyle(side: string) {
-  const s = side.toUpperCase();
-  if (s.includes("SELL")) return "bg-[#001220] text-[#D4AF37]";
-  if (s.includes("BUY")) return "bg-[#D4AF37] text-white";
-  return "bg-slate-100 text-slate-700";
-}
+import { Building2, Heart, Settings, Zap, Landmark, FlaskConical, Trophy, Monitor, Briefcase } from "lucide-react";
 
 const sectorIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   "Real estate & hospitality": Building2,
@@ -18,14 +11,28 @@ const sectorIcons: Record<string, React.ComponentType<{ className?: string }>> =
   "Macchinari industriali": Settings,
   "Utility e rinnovabili": Zap,
   "Servizi finanziari": Landmark,
-  "Chimica": Beaker,
+  "Chimica": FlaskConical,
   "Sports goods": Trophy,
   "Tecnologia": Monitor,
 };
 
 function SectorIcon({ sector }: { sector: string }) {
   const Icon = sectorIcons[sector] || Briefcase;
-  return <Icon className="w-5 h-5 text-slate-300" />;
+  return <Icon className="w-5 h-5 text-slate-200" />;
+}
+
+function getSideBorderColor(side: string) {
+  const s = side?.toUpperCase() || "";
+  if (s.includes("SELL")) return "border-l-[#D4AF37]";
+  if (s.includes("BUY")) return "border-l-[#001220]";
+  return "border-l-slate-200";
+}
+
+function getSideLabelColor(side: string) {
+  const s = side?.toUpperCase() || "";
+  if (s.includes("SELL")) return "text-[#D4AF37]";
+  if (s.includes("BUY")) return "text-[#001220]";
+  return "text-slate-400";
 }
 
 type AccessStatus = "loading" | "none" | "pending" | "approved" | "rejected";
@@ -50,24 +57,22 @@ export default function DealCard({ deal: d, isAdmin }: { deal: any; isAdmin: boo
 
   const hasAccess = status === "approved" || isAdmin;
 
+  const metaLine = [d.sector, d.sub_sector, d.deal_type].filter(Boolean).join(" · ");
+
   return (
-    <div className="relative bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:border-[#D4AF37]/40 transition-all">
-      {/* Sector icon watermark */}
+    <div className={"relative bg-white border border-slate-100 border-l-4 rounded-2xl p-6 hover:shadow-lg hover:border-slate-100 hover:border-l-4 transition-all " + getSideBorderColor(d.side)}>
+      {/* Sector icon watermark — top right */}
       <div className="absolute top-5 right-5">
         <SectorIcon sector={d.sector} />
       </div>
 
-      {/* Top: Side badge + Code · Deal type */}
-      <div className="flex flex-wrap items-center gap-2 mb-1">
-        {d.side && (
-          <span className={"text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg " + getSideStyle(d.side)}>
-            {d.side}
-          </span>
-        )}
-        <span className="text-[10px] text-slate-400 tracking-wider">
-          {d.code}{d.deal_type ? ` · ${d.deal_type}` : ""}
-        </span>
-      </div>
+      {/* Side label */}
+      {d.side && (
+        <p className={"text-[9px] font-bold uppercase tracking-[0.3em] mb-1 " + getSideLabelColor(d.side)}>{d.side}</p>
+      )}
+
+      {/* Deal code */}
+      <p className="text-[10px] text-slate-400 tracking-wider mb-3">{d.code}</p>
 
       {/* Title — conditional behavior */}
       {hasAccess ? (
@@ -78,18 +83,16 @@ export default function DealCard({ deal: d, isAdmin }: { deal: any; isAdmin: boo
         <button onClick={() => setExpanded(prev => !prev)} className="text-left w-full group">
           <h3 className="text-slate-900 text-lg font-bold leading-snug mb-1 group-hover:text-[#D4AF37] transition-colors flex items-center gap-2">
             {d.title}
-            <svg className={"w-4 h-4 text-slate-400 transition-transform " + (expanded ? "rotate-180" : "")} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+            <svg className={"w-3.5 h-3.5 text-slate-300 transition-transform flex-shrink-0 " + (expanded ? "rotate-180" : "")} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
           </h3>
         </button>
       )}
 
-      {/* Sector · Sub-sector as plain text */}
-      <p className="text-xs text-slate-400 mb-3">
-        {d.sector || "Altro"}{d.sub_sector ? ` · ${d.sub_sector}` : ""}
-      </p>
+      {/* Sector · Sub-sector · Deal type */}
+      {metaLine && <p className="text-xs text-slate-400 mb-3">{metaLine}</p>}
 
       {/* Description */}
-      <p className="text-slate-500 text-sm leading-relaxed mb-4">{d.description || "Dettagli riservati"}</p>
+      <p className="text-slate-500 text-sm leading-relaxed line-clamp-2 mb-4">{d.description || "Dettagli riservati"}</p>
 
       {/* Expanded preview */}
       <div className={"overflow-hidden transition-all duration-300 ease-in-out " + (expanded ? "max-h-[500px] opacity-100 mb-4" : "max-h-0 opacity-0")}>
