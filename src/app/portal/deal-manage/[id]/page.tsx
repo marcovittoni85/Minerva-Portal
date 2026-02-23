@@ -11,7 +11,7 @@ export default async function DealManageDetailPage({ params }: { params: Promise
   if (!user) redirect("/login");
 
   const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  const isAdmin = prof?.role === "admin" || prof?.role === "equity_partner";
+  const isAdmin = prof?.role === "admin" || prof?.role === "partner";
   if (!isAdmin) redirect("/portal");
 
   const { data: deal } = await supabase.from("deals").select("*").eq("id", id).single();
