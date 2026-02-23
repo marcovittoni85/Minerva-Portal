@@ -21,14 +21,14 @@ export default async function AdminDashboard() {
     <div className="max-w-6xl mx-auto pb-20">
       <div className="mb-12">
         <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase">
-          Admin <span className="text-[#D4AF37]">Insights</span>
+          Admin <span className="text-[#F5A623]">Insights</span>
         </h1>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
         <div className="bg-[#001220] p-8 rounded-[2.5rem] text-white">
           <p className="text-[10px] uppercase tracking-widest text-white/40 mb-2 font-bold">Accessi Totali</p>
-          <p className="text-4xl font-black text-[#D4AF37]">{activity?.length || 0}</p>
+          <p className="text-4xl font-black text-[#F5A623]">{activity?.length || 0}</p>
         </div>
         {/* Aggiungeremo qui altri KPI come Deal più visti, etc. */}
       </div>

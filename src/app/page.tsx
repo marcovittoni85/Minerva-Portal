@@ -60,7 +60,7 @@ export default function HomePage() {
           position: absolute;
           width: 2px;
           height: 2px;
-          background: #D4AF37;
+          background: #F5A623;
           border-radius: 50%;
           opacity: 0;
           animation: mp-float 6s ease-in-out infinite;
@@ -106,7 +106,7 @@ export default function HomePage() {
           left: 50%;
           width: 4px;
           height: 4px;
-          background: #D4AF37;
+          background: #F5A623;
           border-radius: 50%;
         }
 
@@ -137,14 +137,14 @@ export default function HomePage() {
         }
 
         .mp-title h1 span {
-          color: #D4AF37;
+          color: #F5A623;
           font-weight: 400;
         }
 
         .mp-divider {
           margin: 1.8rem auto;
           height: 1px;
-          background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+          background: linear-gradient(90deg, transparent, #F5A623, transparent);
           transition: all 1.5s ease;
           width: 0;
           opacity: 0;
@@ -202,7 +202,7 @@ export default function HomePage() {
           gap: 12px;
           background: transparent;
           border: 1px solid rgba(212,175,55,0.3);
-          color: #D4AF37;
+          color: #F5A623;
           padding: 16px 40px;
           font-family: 'Montserrat', sans-serif;
           font-weight: 600;
@@ -225,7 +225,7 @@ export default function HomePage() {
         }
 
         .mp-cta-btn:hover {
-          border-color: #D4AF37;
+          border-color: #F5A623;
           box-shadow: 0 0 30px rgba(212,175,55,0.15), inset 0 0 30px rgba(212,175,55,0.05);
           transform: translateY(-2px);
         }

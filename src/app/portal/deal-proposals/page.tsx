@@ -23,8 +23,8 @@ export default async function DealProposalsPage() {
   return (
     <div className="p-8 max-w-4xl mx-auto">
       <header className="mb-10 pb-8 border-b border-slate-100">
-        <p className="text-[#D4AF37] text-[10px] uppercase tracking-[0.5em] font-medium mb-2">Amministrazione</p>
-        <h1 className="text-3xl font-bold text-slate-900">Proposte <span className="text-[#D4AF37]">Deal</span></h1>
+        <p className="text-[#F5A623] text-[10px] uppercase tracking-[0.5em] font-medium mb-2">Amministrazione</p>
+        <h1 className="text-3xl font-bold text-slate-900">Proposte <span className="text-[#F5A623]">Deal</span></h1>
         <p className="text-slate-500 text-sm mt-2">{proposals?.length || 0} proposte in attesa di revisione</p>
       </header>
 
@@ -56,7 +56,7 @@ export default async function DealProposalsPage() {
                 <div className="flex gap-2">
                   <form action="/portal/deal-proposals/approve" method="POST">
                     <input type="hidden" name="dealId" value={deal.id} />
-                    <button className="bg-[#D4AF37] text-white px-6 py-2.5 rounded-lg text-[10px] font-bold tracking-widest uppercase hover:bg-[#b8962d] transition-colors">Approva</button>
+                    <button className="bg-[#F5A623] text-white px-6 py-2.5 rounded-lg text-[10px] font-bold tracking-widest uppercase hover:bg-[#D4900A] transition-colors">Approva</button>
                   </form>
                   <form action="/portal/deal-proposals/reject" method="POST">
                     <input type="hidden" name="dealId" value={deal.id} />

@@ -45,8 +45,8 @@ export default async function AccessRequestsPage() {
   return (
     <div className="p-8 max-w-4xl mx-auto">
       <header className="mb-10 pb-8 border-b border-slate-100">
-        <p className="text-[#D4AF37] text-[10px] uppercase tracking-[0.5em] font-medium mb-2">{isAdmin ? "Amministrazione" : "I Tuoi Deal"}</p>
-        <h1 className="text-3xl font-bold text-slate-900">Richieste <span className="text-[#D4AF37]">Accesso</span></h1>
+        <p className="text-[#F5A623] text-[10px] uppercase tracking-[0.5em] font-medium mb-2">{isAdmin ? "Amministrazione" : "I Tuoi Deal"}</p>
+        <h1 className="text-3xl font-bold text-slate-900">Richieste <span className="text-[#F5A623]">Accesso</span></h1>
         <p className="text-slate-500 text-sm mt-2">{isAdmin ? "Tutte le richieste di accesso ai deal" : "Richieste di accesso ai deal che hai originato"}</p>
       </header>
 
@@ -62,7 +62,7 @@ export default async function AccessRequestsPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-slate-900 font-bold text-lg">{profileMap[req.user_id] || "Partner"}</span>
-                      <span className="text-[9px] text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-1 rounded uppercase tracking-wider font-bold">{dealMap[req.deal_id] || "Deal"}</span>
+                      <span className="text-[9px] text-[#F5A623] bg-[#F5A623]/10 px-2 py-1 rounded uppercase tracking-wider font-bold">{dealMap[req.deal_id] || "Deal"}</span>
                     </div>
                     <p className="text-slate-400 text-xs">{new Date(req.created_at).toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
                     {req.reason && (
@@ -72,7 +72,7 @@ export default async function AccessRequestsPage() {
                   <div className="flex gap-2">
                     <form action="/portal/access-requests/approve" method="POST">
                       <input type="hidden" name="requestId" value={req.id} />
-                      <button className="bg-[#D4AF37] text-white px-6 py-2.5 rounded-lg text-[10px] font-bold tracking-widest uppercase hover:bg-[#b8962d] transition-colors">Approva</button>
+                      <button className="bg-[#F5A623] text-white px-6 py-2.5 rounded-lg text-[10px] font-bold tracking-widest uppercase hover:bg-[#D4900A] transition-colors">Approva</button>
                     </form>
                     <form action="/portal/access-requests/rejects" method="POST">
                       <input type="hidden" name="requestId" value={req.id} />

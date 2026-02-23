@@ -21,14 +21,14 @@ export default function BoardClient({ deals, isAdmin, error }: { deals: any[]; i
 
   const hasFilters = sectorFilter !== "ALL" || dealTypeFilter !== "ALL" || geoFilter !== "ALL";
 
-  const selectClass = "bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-700 outline-none focus:border-[#D4AF37] transition-colors cursor-pointer";
+  const selectClass = "bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-700 outline-none focus:border-[#F5A623] transition-colors cursor-pointer";
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8 pb-8 border-b border-slate-100">
         <div>
-          <p className="text-[#D4AF37] text-[10px] uppercase tracking-[0.5em] font-medium mb-2">Minerva Partners</p>
-          <h1 className="text-3xl font-bold text-slate-900">Opportunita <span className="text-[#D4AF37]">Riservate</span></h1>
+          <p className="text-[#F5A623] text-[10px] uppercase tracking-[0.5em] font-medium mb-2">Minerva Partners</p>
+          <h1 className="text-3xl font-bold text-slate-900">Opportunita <span className="text-[#F5A623]">Riservate</span></h1>
           <p className="text-slate-500 text-sm mt-2">{filtered.length} operazioni {hasFilters ? "filtrate" : "disponibili"}</p>
         </div>
         <div className="flex gap-2">
@@ -36,7 +36,7 @@ export default function BoardClient({ deals, isAdmin, error }: { deals: any[]; i
             <button onClick={() => { setSectorFilter("ALL"); setDealTypeFilter("ALL"); setGeoFilter("ALL"); }} className="text-xs text-red-400 border border-red-200 px-4 py-2 rounded-lg hover:bg-red-50 transition-colors">Reset</button>
           )}
           {isAdmin && (
-            <Link href="/portal/access-requests" className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] border border-[#D4AF37]/30 px-5 py-2.5 rounded-lg hover:bg-[#D4AF37]/10 transition-colors">Richieste Pendenti</Link>
+            <Link href="/portal/access-requests" className="text-xs uppercase tracking-[0.2em] text-[#F5A623] border border-[#F5A623]/30 px-5 py-2.5 rounded-lg hover:bg-[#F5A623]/10 transition-colors">Richieste Pendenti</Link>
           )}
         </div>
       </header>

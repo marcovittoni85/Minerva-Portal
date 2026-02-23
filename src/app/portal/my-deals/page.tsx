@@ -23,14 +23,14 @@ function SectorIcon({ sector }: { sector: string }) {
 
 function getSideBorderColor(side: string) {
   const s = side?.toUpperCase() || "";
-  if (s.includes("SELL")) return "border-l-[#D4AF37]";
+  if (s.includes("SELL")) return "border-l-[#F5A623]";
   if (s.includes("BUY")) return "border-l-[#001220]";
   return "border-l-slate-200";
 }
 
 function getSideLabelColor(side: string) {
   const s = side?.toUpperCase() || "";
-  if (s.includes("SELL")) return "text-[#D4AF37]";
+  if (s.includes("SELL")) return "text-[#F5A623]";
   if (s.includes("BUY")) return "text-[#001220]";
   return "text-slate-400";
 }
@@ -64,7 +64,7 @@ export default async function MyDealsPage() {
         <p className="text-slate-500 text-sm mb-8">Qui trovi i deal a cui hai accesso approvato e quelli che hai originato. Puoi consultare il dossier completo e comunicare con l'originator o i membri approvati.</p>
         <div className="bg-white border rounded-2xl p-12 text-center">
           <p className="text-slate-400 text-lg mb-4">Non hai ancora accesso a nessun deal.</p>
-          <Link href="/portal/board" className="inline-block bg-[#D4AF37] text-white text-sm font-bold uppercase tracking-widest px-6 py-3 rounded-xl hover:bg-[#b8962d] transition-colors">Esplora la Bacheca</Link>
+          <Link href="/portal/board" className="inline-block bg-[#F5A623] text-white text-sm font-bold uppercase tracking-widest px-6 py-3 rounded-xl hover:bg-[#D4900A] transition-colors">Esplora la Bacheca</Link>
         </div>
       </div>
     );
@@ -132,13 +132,13 @@ export default async function MyDealsPage() {
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-[10px] text-slate-400 tracking-wider">{deal.code}</span>
                 {isOriginator ? (
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-[#D4AF37]">Originator</span>
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5A623]">Originator</span>
                 ) : (
                   <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Accesso</span>
                 )}
               </div>
 
-              <h3 className="text-lg font-bold text-slate-900 mb-1 group-hover:text-[#D4AF37] transition-colors leading-tight">{deal.title}</h3>
+              <h3 className="text-lg font-bold text-slate-900 mb-1 group-hover:text-[#F5A623] transition-colors leading-tight">{deal.title}</h3>
 
               {/* Meta line */}
               {metaLine && <p className="text-xs text-slate-400 mb-3">{metaLine}</p>}
@@ -162,7 +162,7 @@ export default async function MyDealsPage() {
                     </div>
                   )}
                 </div>
-                <span className="text-sm font-bold text-[#D4AF37] group-hover:underline">Apri →</span>
+                <span className="text-sm font-bold text-[#F5A623] group-hover:underline">Apri →</span>
               </div>
             </Link>
           );
