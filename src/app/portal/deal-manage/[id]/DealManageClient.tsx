@@ -112,7 +112,7 @@ export default function DealManageClient({
           "Content-Type": "application/json",
           ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
         },
-        body: JSON.stringify({ dealId: deal.id, userId }),
+        body: JSON.stringify({ dealId: deal.id, userId, dealTitle: deal.title }),
       });
       const data = await res.json();
       if (res.ok) {
