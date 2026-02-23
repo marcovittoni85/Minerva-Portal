@@ -1,13 +1,14 @@
 ﻿'use client';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, Briefcase, Settings, LogOut, Menu, ShieldCheck, PlusCircle, ClipboardList, Bell, Shield } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [role, setRole] = useState<string>("");
   const [isOriginator, setIsOriginator] = useState(false);
@@ -47,6 +48,18 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       await supabase.from("notifications").update({ is_read: true }).eq("user_id", user.id).eq("is_read", false);
       setUnreadCount(0);
       setNotifs(prev => prev.map(n => ({ ...n, is_read: true })));
+    }
+  };
+
+  const handleNotifClick = async (n: any) => {
+    if (!n.is_read) {
+      await supabase.from("notifications").update({ is_read: true }).eq("id", n.id);
+      setNotifs(prev => prev.map(x => x.id === n.id ? { ...x, is_read: true } : x));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    }
+    if (n.link) {
+      setShowNotifs(false);
+      router.push(n.link);
     }
   };
 
@@ -167,7 +180,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                 <div className="p-8 text-center text-slate-400 text-sm">Nessuna notifica</div>
               ) : (
                 notifs.map((n) => (
-                  <div key={n.id} className={"px-4 py-3 border-b border-slate-50 " + (!n.is_read ? "bg-[#D4AF37]/5" : "")}>
+                  <div key={n.id} onClick={() => handleNotifClick(n)} className={"px-4 py-3 border-b border-slate-50 cursor-pointer hover:bg-slate-50 transition-colors " + (!n.is_read ? "bg-[#D4AF37]/5" : "")}>
                     <div className="flex items-start gap-2">
                       {!n.is_read && <span className="w-2 h-2 rounded-full bg-[#D4AF37] mt-1.5 flex-shrink-0" />}
                       <div>
