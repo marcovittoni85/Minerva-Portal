@@ -27,8 +27,8 @@ export default function TestInvite() {
 
   return (
     <div className="min-h-screen bg-[#001220] flex items-center justify-center p-6 text-white font-sans">
-      <div className="max-w-md w-full bg-[#001c30] p-10 rounded-2xl border border-[#F5A623]/20 shadow-2xl">
-        <div className="text-center mb-10 text-[#F5A623] uppercase tracking-[0.3em]">
+      <div className="max-w-md w-full bg-[#001c30] p-10 rounded-2xl border border-[#D4AF37]/20 shadow-2xl">
+        <div className="text-center mb-10 text-[#D4AF37] uppercase tracking-[0.3em]">
           <Image 
             src="/icon.webp" 
             alt="Logo" 
@@ -43,7 +43,7 @@ export default function TestInvite() {
           <input 
             type="text" 
             placeholder="NOME PARTNER" 
-            className="w-full bg-[#001220] border border-slate-800 p-4 text-[10px] tracking-widest uppercase outline-none focus:border-[#F5A623]" 
+            className="w-full bg-[#001220] border border-slate-800 p-4 text-[10px] tracking-widest uppercase outline-none focus:border-[#D4AF37]" 
             value={name} 
             onChange={e => setName(e.target.value)} 
             required 
@@ -51,16 +51,16 @@ export default function TestInvite() {
           <input 
             type="email" 
             placeholder="EMAIL" 
-            className="w-full bg-[#001220] border border-slate-800 p-4 text-[10px] tracking-widest uppercase outline-none focus:border-[#F5A623]" 
+            className="w-full bg-[#001220] border border-slate-800 p-4 text-[10px] tracking-widest uppercase outline-none focus:border-[#D4AF37]" 
             value={email} 
             onChange={e => setEmail(e.target.value)} 
             required 
           />
-          <button className="w-full bg-[#F5A623] text-[#001220] font-bold py-4 tracking-widest uppercase hover:bg-[#FBE8A6]">
+          <button className="w-full bg-[#D4AF37] text-[#001220] font-bold py-4 tracking-widest uppercase hover:bg-[#FBE8A6]">
             {loading ? 'INVIO...' : 'INVIA ACCESSO'}
           </button>
         </form>
-        {status === 'success' && <p className="mt-4 text-[#F5A623] text-center uppercase tracking-widest text-[10px]">Invito inviato</p>}
+        {status === 'success' && <p className="mt-4 text-[#D4AF37] text-center uppercase tracking-widest text-[10px]">Invito inviato</p>}
         {status === 'error' && <p className="mt-4 text-red-500 text-center uppercase tracking-widest text-[10px]">Errore nell'invio</p>}
       </div>
     </div>

@@ -173,8 +173,8 @@ export default function DashboardPage() {
           <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 via-slate-900/60 to-slate-900/30" />
         </div>
         <div className="relative z-10 px-8 py-12 md:py-16">
-          <p className="text-[#F5A623] text-[10px] uppercase tracking-[0.5em] font-medium mb-2">Minerva Partners</p>
-          <h1 className="text-3xl md:text-4xl font-bold text-white">Bentornato, <span className="text-[#F5A623]">{name}</span></h1>
+          <p className="text-[#D4AF37] text-[10px] uppercase tracking-[0.5em] font-medium mb-2">Minerva Partners</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-white">Bentornato, <span className="text-[#D4AF37]">{name}</span></h1>
           <p className="text-white/60 text-sm mt-2 max-w-md">Ecco cosa sta succedendo nel tuo network</p>
         </div>
       </div>
@@ -204,7 +204,7 @@ export default function DashboardPage() {
         </div>
         <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
           <div className="flex items-center gap-3 mb-2">
-            <Briefcase className="w-4 h-4 text-[#F5A623]" />
+            <Briefcase className="w-4 h-4 text-[#D4AF37]" />
             <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Nuove Opportunita</p>
           </div>
           <p className="text-2xl font-bold text-slate-900">{latestDeals.length}</p>
@@ -222,22 +222,22 @@ export default function DashboardPage() {
                 <CheckCircle className="w-4 h-4 text-emerald-500" />
                 I Tuoi Deal
               </h2>
-              <Link href="/portal/my-deals" className="text-[10px] uppercase tracking-widest text-[#F5A623] font-bold hover:text-[#D4900A] transition-colors">Vedi tutti →</Link>
+              <Link href="/portal/my-deals" className="text-[10px] uppercase tracking-widest text-[#D4AF37] font-bold hover:text-[#b8962d] transition-colors">Vedi tutti →</Link>
             </div>
             {approvedDeals.length === 0 ? (
               <div className="bg-white border border-slate-100 rounded-2xl p-8 text-center">
                 <p className="text-slate-400 text-sm mb-3">Non hai ancora deal attivi</p>
-                <Link href="/portal/board" className="text-[10px] uppercase tracking-widest text-[#F5A623] font-bold">Esplora la Bacheca →</Link>
+                <Link href="/portal/board" className="text-[10px] uppercase tracking-widest text-[#D4AF37] font-bold">Esplora la Bacheca →</Link>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {approvedDeals.map((deal) => (
-                  <Link key={deal.id} href={"/portal/deals/" + deal.id} className="group bg-white border border-slate-100 rounded-2xl p-5 shadow-sm hover:shadow-xl hover:border-[#F5A623]/40 transition-all">
+                  <Link key={deal.id} href={"/portal/deals/" + deal.id} className="group bg-white border border-slate-100 rounded-2xl p-5 shadow-sm hover:shadow-xl hover:border-[#D4AF37]/40 transition-all">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100">Attivo</span>
                       <span className="text-[10px] text-slate-400 uppercase tracking-wider">{deal.side}</span>
                     </div>
-                    <h3 className="text-slate-900 text-sm font-bold mb-1 group-hover:text-[#F5A623] transition-colors">{deal.title}</h3>
+                    <h3 className="text-slate-900 text-sm font-bold mb-1 group-hover:text-[#D4AF37] transition-colors">{deal.title}</h3>
                     <p className="text-slate-400 text-xs">{deal.sector} • {deal.ev_range || "N/A"}</p>
                   </Link>
                 ))}
@@ -273,22 +273,22 @@ export default function DashboardPage() {
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-slate-900 text-lg font-bold flex items-center gap-2">
-                <Briefcase className="w-4 h-4 text-[#F5A623]" />
+                <Briefcase className="w-4 h-4 text-[#D4AF37]" />
                 Ultime Opportunita
               </h2>
-              <Link href="/portal/board" className="text-[10px] uppercase tracking-widest text-[#F5A623] font-bold hover:text-[#D4900A] transition-colors">Bacheca completa →</Link>
+              <Link href="/portal/board" className="text-[10px] uppercase tracking-widest text-[#D4AF37] font-bold hover:text-[#b8962d] transition-colors">Bacheca completa →</Link>
             </div>
             <div className="space-y-3">
               {latestDeals.map((deal) => (
-                <Link key={deal.id} href={"/portal/deals/" + deal.id} className="group bg-white border border-slate-100 rounded-xl p-4 flex items-center justify-between hover:shadow-md hover:border-[#F5A623]/30 transition-all">
+                <Link key={deal.id} href={"/portal/deals/" + deal.id} className="group bg-white border border-slate-100 rounded-xl p-4 flex items-center justify-between hover:shadow-md hover:border-[#D4AF37]/30 transition-all">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-slate-900 text-sm font-bold group-hover:text-[#F5A623] transition-colors">{deal.title}</h3>
+                      <h3 className="text-slate-900 text-sm font-bold group-hover:text-[#D4AF37] transition-colors">{deal.title}</h3>
                       <span className="text-[9px] text-slate-400 uppercase tracking-wider">{deal.side}</span>
                     </div>
                     <p className="text-slate-400 text-xs">{deal.sector} • {deal.ev_range || "N/A"}</p>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-[#F5A623] transition-colors" />
+                  <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-[#D4AF37] transition-colors" />
                 </Link>
               ))}
               {latestDeals.length === 0 && (
@@ -315,7 +315,7 @@ export default function DashboardPage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-transparent to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-5">
-                  <p className="text-[9px] uppercase tracking-widest text-[#F5A623] font-bold mb-1">Aggiornamenti dal Network</p>
+                  <p className="text-[9px] uppercase tracking-widest text-[#D4AF37] font-bold mb-1">Aggiornamenti dal Network</p>
                   <p className="text-white text-sm font-medium">Le ultime novita sugli investimenti della community</p>
                 </div>
               </div>
@@ -363,7 +363,7 @@ export default function DashboardPage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-5">
-                  <p className="text-[9px] uppercase tracking-widest text-[#F5A623] font-bold mb-1">Prossimo Evento</p>
+                  <p className="text-[9px] uppercase tracking-widest text-[#D4AF37] font-bold mb-1">Prossimo Evento</p>
                   <p className="text-white text-sm font-bold">{placeholderEvents[0]?.title}</p>
                   <p className="text-white/60 text-xs mt-1">{formatEventDate(placeholderEvents[0]?.date)}</p>
                 </div>
@@ -391,22 +391,22 @@ export default function DashboardPage() {
           <section>
             <p className="text-slate-400 text-[9px] uppercase tracking-widest font-bold mb-3">Azioni Rapide</p>
             <div className="space-y-2">
-              <Link href="/portal/board" className="group flex items-center gap-3 bg-white border border-slate-100 rounded-xl p-4 hover:shadow-md hover:border-[#F5A623]/30 transition-all">
-                <Briefcase className="w-4 h-4 text-[#F5A623]" />
-                <span className="text-slate-900 text-xs font-bold group-hover:text-[#F5A623] transition-colors">Bacheca Deal</span>
+              <Link href="/portal/board" className="group flex items-center gap-3 bg-white border border-slate-100 rounded-xl p-4 hover:shadow-md hover:border-[#D4AF37]/30 transition-all">
+                <Briefcase className="w-4 h-4 text-[#D4AF37]" />
+                <span className="text-slate-900 text-xs font-bold group-hover:text-[#D4AF37] transition-colors">Bacheca Deal</span>
               </Link>
-              <Link href="/portal/propose-deal" className="group flex items-center gap-3 bg-white border border-slate-100 rounded-xl p-4 hover:shadow-md hover:border-[#F5A623]/30 transition-all">
+              <Link href="/portal/propose-deal" className="group flex items-center gap-3 bg-white border border-slate-100 rounded-xl p-4 hover:shadow-md hover:border-[#D4AF37]/30 transition-all">
                 <PlusCircle className="w-4 h-4 text-emerald-500" />
-                <span className="text-slate-900 text-xs font-bold group-hover:text-[#F5A623] transition-colors">Proponi Deal</span>
+                <span className="text-slate-900 text-xs font-bold group-hover:text-[#D4AF37] transition-colors">Proponi Deal</span>
               </Link>
-              <Link href="/portal/settings" className="group flex items-center gap-3 bg-white border border-slate-100 rounded-xl p-4 hover:shadow-md hover:border-[#F5A623]/30 transition-all">
+              <Link href="/portal/settings" className="group flex items-center gap-3 bg-white border border-slate-100 rounded-xl p-4 hover:shadow-md hover:border-[#D4AF37]/30 transition-all">
                 <Settings className="w-4 h-4 text-slate-400" />
-                <span className="text-slate-900 text-xs font-bold group-hover:text-[#F5A623] transition-colors">Impostazioni</span>
+                <span className="text-slate-900 text-xs font-bold group-hover:text-[#D4AF37] transition-colors">Impostazioni</span>
               </Link>
               {isAdmin && (
-                <Link href="/portal/access-requests" className="group flex items-center gap-3 bg-white border border-slate-100 rounded-xl p-4 hover:shadow-md hover:border-[#F5A623]/30 transition-all">
-                  <ClipboardList className="w-4 h-4 text-[#F5A623]" />
-                  <span className="text-slate-900 text-xs font-bold group-hover:text-[#F5A623] transition-colors">Richieste Accesso</span>
+                <Link href="/portal/access-requests" className="group flex items-center gap-3 bg-white border border-slate-100 rounded-xl p-4 hover:shadow-md hover:border-[#D4AF37]/30 transition-all">
+                  <ClipboardList className="w-4 h-4 text-[#D4AF37]" />
+                  <span className="text-slate-900 text-xs font-bold group-hover:text-[#D4AF37] transition-colors">Richieste Accesso</span>
                 </Link>
               )}
             </div>

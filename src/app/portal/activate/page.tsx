@@ -34,20 +34,20 @@ export default function ActivatePage() {
 
   return (
     <div className="min-h-screen bg-[#001220] flex items-center justify-center p-6 text-white font-sans">
-      <div className="max-w-md w-full bg-[#001c30] p-10 rounded-2xl border border-[#F5A623]/20 shadow-2xl text-center">
+      <div className="max-w-md w-full bg-[#001c30] p-10 rounded-2xl border border-[#D4AF37]/20 shadow-2xl text-center">
         <Image src="/icon.webp" alt="Logo" width={100} height={100} className="mx-auto mb-8" unoptimized />
-        <h2 className="text-[#F5A623] text-xl tracking-[0.3em] uppercase font-light mb-6">Attiva Account</h2>
+        <h2 className="text-[#D4AF37] text-xl tracking-[0.3em] uppercase font-light mb-6">Attiva Account</h2>
         <form onSubmit={handleActivate} className="space-y-6">
           <input 
             type="password" 
             placeholder="NUOVA PASSWORD" 
-            className="w-full bg-[#001220] border border-slate-800 p-4 text-[10px] tracking-widest uppercase outline-none focus:border-[#F5A623] text-white" 
+            className="w-full bg-[#001220] border border-slate-800 p-4 text-[10px] tracking-widest uppercase outline-none focus:border-[#D4AF37] text-white" 
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={6}
           />
-          <button disabled={loading} className="w-full bg-[#F5A623] text-[#001220] font-bold py-4 tracking-widest uppercase hover:bg-[#FBE8A6] disabled:opacity-50">
+          <button disabled={loading} className="w-full bg-[#D4AF37] text-[#001220] font-bold py-4 tracking-widest uppercase hover:bg-[#FBE8A6] disabled:opacity-50">
             {loading ? 'ELABORAZIONE...' : 'CONFERMA E ACCEDI'}
           </button>
         </form>

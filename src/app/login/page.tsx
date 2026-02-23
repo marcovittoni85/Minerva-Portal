@@ -31,13 +31,13 @@ export default function LoginPage() {
         <div className="flex justify-center mb-6">
           <Image src="/icon.webp" alt="Minerva Partners" width={120} height={120} priority />
         </div>
-        <h2 className="text-[#F5A623] text-sm tracking-[0.3em] font-medium uppercase">Private Marketplace</h2>
+        <h2 className="text-[#D4AF37] text-sm tracking-[0.3em] font-medium uppercase">Private Marketplace</h2>
         <p className="text-slate-400 text-xs tracking-widest uppercase">Minerva Partners</p>
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           {error && <div className="text-red-600 text-sm bg-red-50 p-3 rounded-lg border border-red-200">{error}</div>}
-          <input type="email" required className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 outline-none focus:border-[#F5A623] transition-colors placeholder:text-slate-400" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <input type="password" required className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 outline-none focus:border-[#F5A623] transition-colors placeholder:text-slate-400" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-          <button type="submit" disabled={loading} className="w-full py-3 bg-[#F5A623] text-white font-bold rounded-lg hover:bg-[#D4900A] transition-colors disabled:opacity-50">{loading ? 'ACCESSO...' : 'ACCEDI'}</button>
+          <input type="email" required className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 outline-none focus:border-[#D4AF37] transition-colors placeholder:text-slate-400" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input type="password" required className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 outline-none focus:border-[#D4AF37] transition-colors placeholder:text-slate-400" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <button type="submit" disabled={loading} className="w-full py-3 bg-[#D4AF37] text-white font-bold rounded-lg hover:bg-[#b8962d] transition-colors disabled:opacity-50">{loading ? 'ACCESSO...' : 'ACCEDI'}</button>
         </form>
         <div className="pt-6 border-t border-slate-100">
           <p className="text-slate-400 text-[9px] uppercase tracking-[0.3em]">Minerva Partners • Private & Confidential</p>

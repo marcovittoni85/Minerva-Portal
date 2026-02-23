@@ -73,7 +73,7 @@ export default function ImportPartnersPage() {
         </p>
       </div>
 
-      <div className="bg-white border-4 border-dashed border-slate-200 rounded-[3rem] p-20 text-center hover:border-[#F5A623] transition-colors group">
+      <div className="bg-white border-4 border-dashed border-slate-200 rounded-[3rem] p-20 text-center hover:border-[#D4AF37] transition-colors group">
         <input 
           type="file" 
           accept=".csv" 
@@ -84,7 +84,7 @@ export default function ImportPartnersPage() {
         />
         <label 
           htmlFor="csv-upload" 
-          className="cursor-pointer bg-[#001220] text-[#F5A623] px-12 py-6 rounded-2xl font-bold text-lg hover:bg-black transition-all inline-block shadow-2xl active:scale-95 disabled:opacity-50"
+          className="cursor-pointer bg-[#001220] text-[#D4AF37] px-12 py-6 rounded-2xl font-bold text-lg hover:bg-black transition-all inline-block shadow-2xl active:scale-95 disabled:opacity-50"
         >
           {importing ? 'IMPORTAZIONE IN CORSO...' : 'SELEZIONA FILE CSV'}
         </label>

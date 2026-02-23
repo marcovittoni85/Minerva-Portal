@@ -72,7 +72,7 @@ const { data, error } = await supabase.from("deal_comments").insert({
           <span className={"text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded " + (sectorColors[deal.sector] || "bg-slate-50 text-slate-600")}>{deal.sector}</span>
           {deal.sub_sector && <span className="text-[10px] font-bold text-slate-500 bg-slate-50 px-2 py-0.5 rounded">{deal.sub_sector}</span>}
           {deal.deal_stage && deal.deal_stage !== "board" && (
-            <span className="text-[10px] font-bold text-white bg-[#F5A623] px-2 py-0.5 rounded capitalize">{deal.deal_stage.replace("_", " ")}</span>
+            <span className="text-[10px] font-bold text-white bg-[#D4AF37] px-2 py-0.5 rounded capitalize">{deal.deal_stage.replace("_", " ")}</span>
           )}
         </div>
 
@@ -80,8 +80,8 @@ const { data, error } = await supabase.from("deal_comments").insert({
 
         {isAdmin && originatorName && (
           <div className="flex items-center gap-2 mb-3">
-            <Shield className="w-3 h-3 text-[#F5A623]" />
-            <p className="text-sm text-[#F5A623] font-bold">Originator: {originatorName}</p>
+            <Shield className="w-3 h-3 text-[#D4AF37]" />
+            <p className="text-sm text-[#D4AF37] font-bold">Originator: {originatorName}</p>
           </div>
         )}
 
@@ -131,13 +131,13 @@ const { data, error } = await supabase.from("deal_comments").insert({
             <p className="text-slate-500 text-xs mb-4">Accedi al dossier completo dell'operazione.</p>
             <div className="space-y-3">
               {deal.dropbox_link && (
-                <a href={deal.dropbox_link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 hover:border-[#F5A623] transition-colors">
-                  <FileText className="w-4 h-4 text-[#F5A623]" /> Cartella Dropbox
+                <a href={deal.dropbox_link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 hover:border-[#D4AF37] transition-colors">
+                  <FileText className="w-4 h-4 text-[#D4AF37]" /> Cartella Dropbox
                 </a>
               )}
               {deal.vdr_link && (
-                <a href={deal.vdr_link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 hover:border-[#F5A623] transition-colors">
-                  <FileText className="w-4 h-4 text-[#F5A623]" /> Virtual Data Room
+                <a href={deal.vdr_link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 hover:border-[#D4AF37] transition-colors">
+                  <FileText className="w-4 h-4 text-[#D4AF37]" /> Virtual Data Room
                 </a>
               )}
               {!deal.dropbox_link && !deal.vdr_link && (
@@ -172,7 +172,7 @@ const { data, error } = await supabase.from("deal_comments").insert({
         <div className="lg:col-span-2 bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden flex flex-col" style={{ maxHeight: "600px" }}>
           <div className="p-5 border-b border-slate-100">
             <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-[#F5A623]" />
+              <Users className="w-4 h-4 text-[#D4AF37]" />
               <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Commenti</h2>
             </div>
             <p className="text-slate-500 text-xs mt-1">Comunica con l'originator e i membri approvati.</p>
@@ -187,8 +187,8 @@ const { data, error } = await supabase.from("deal_comments").insert({
                 const commenter = commenterMap[c.user_id];
                 return (
                   <div key={c.id} className={"flex " + (isMe ? "justify-end" : "justify-start")}>
-                    <div className={"max-w-sm rounded-2xl px-4 py-3 " + (isMe ? "bg-[#F5A623]/10 border border-[#F5A623]/20" : "bg-slate-50 border border-slate-100")}>
-                      <p className={"text-[10px] font-bold mb-1 " + (isMe ? "text-[#F5A623]" : "text-slate-500")}>
+                    <div className={"max-w-sm rounded-2xl px-4 py-3 " + (isMe ? "bg-[#D4AF37]/10 border border-[#D4AF37]/20" : "bg-slate-50 border border-slate-100")}>
+                      <p className={"text-[10px] font-bold mb-1 " + (isMe ? "text-[#D4AF37]" : "text-slate-500")}>
                         {isMe ? "Tu" : (commenter?.name || "Utente")}
                         {commenter?.role === "admin" && !isMe && <span className="ml-1 text-[9px] text-slate-400">(Admin)</span>}
                       </p>
@@ -211,9 +211,9 @@ const { data, error } = await supabase.from("deal_comments").insert({
               onChange={(e) => setNewMsg(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendComment()}
               placeholder="Scrivi un commento..."
-              className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-[#F5A623] transition-colors"
+              className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-[#D4AF37] transition-colors"
             />
-            <button onClick={sendComment} disabled={sending || !newMsg.trim()} className="bg-[#F5A623] text-white px-4 py-3 rounded-xl disabled:opacity-50 hover:bg-[#D4900A] transition-colors">
+            <button onClick={sendComment} disabled={sending || !newMsg.trim()} className="bg-[#D4AF37] text-white px-4 py-3 rounded-xl disabled:opacity-50 hover:bg-[#b8962d] transition-colors">
               <Send className="w-4 h-4" />
             </button>
           </div>

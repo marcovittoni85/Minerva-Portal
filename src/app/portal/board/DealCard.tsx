@@ -23,14 +23,14 @@ function SectorIcon({ sector }: { sector: string }) {
 
 function getSideBorderColor(side: string) {
   const s = side?.toUpperCase() || "";
-  if (s.includes("SELL")) return "border-l-[#F5A623]";
+  if (s.includes("SELL")) return "border-l-[#D4AF37]";
   if (s.includes("BUY")) return "border-l-[#001220]";
   return "border-l-slate-200";
 }
 
 function getSideLabelColor(side: string) {
   const s = side?.toUpperCase() || "";
-  if (s.includes("SELL")) return "text-[#F5A623]";
+  if (s.includes("SELL")) return "text-[#D4AF37]";
   if (s.includes("BUY")) return "text-[#001220]";
   return "text-slate-400";
 }
@@ -77,11 +77,11 @@ export default function DealCard({ deal: d, isAdmin }: { deal: any; isAdmin: boo
       {/* Title — conditional behavior */}
       {hasAccess ? (
         <Link href={"/portal/deals/" + d.id} className="group">
-          <h3 className="text-slate-900 text-lg font-bold leading-snug mb-1 group-hover:text-[#F5A623] transition-colors">{d.title}</h3>
+          <h3 className="text-slate-900 text-lg font-bold leading-snug mb-1 group-hover:text-[#D4AF37] transition-colors">{d.title}</h3>
         </Link>
       ) : (
         <button onClick={() => setExpanded(prev => !prev)} className="text-left w-full group">
-          <h3 className="text-slate-900 text-lg font-bold leading-snug mb-1 group-hover:text-[#F5A623] transition-colors flex items-center gap-2">
+          <h3 className="text-slate-900 text-lg font-bold leading-snug mb-1 group-hover:text-[#D4AF37] transition-colors flex items-center gap-2">
             {d.title}
             <svg className={"w-3.5 h-3.5 text-slate-300 transition-transform flex-shrink-0 " + (expanded ? "rotate-180" : "")} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
           </h3>

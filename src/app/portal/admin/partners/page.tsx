@@ -34,7 +34,7 @@ export default function AdminPartnersPage() {
 
   return (
     <div className="max-w-6xl mx-auto p-10">
-      <h1 className="text-4xl font-black uppercase tracking-tighter mb-8">Gestione <span className="text-[#F5A623]">Onboarding</span></h1>
+      <h1 className="text-4xl font-black uppercase tracking-tighter mb-8">Gestione <span className="text-[#D4AF37]">Onboarding</span></h1>
       
       <div className="space-y-4">
         {partners.map((p) => (

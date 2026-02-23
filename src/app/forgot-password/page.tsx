@@ -43,9 +43,9 @@ export default function ForgotPasswordPage() {
       <div className="w-full max-w-md z-10">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-black text-white tracking-tighter mb-4 uppercase">
-            Ripristino <span className="text-[#F5A623]">Accesso</span>
+            Ripristino <span className="text-[#D4AF37]">Accesso</span>
           </h1>
-          <p className="text-[#F5A623] text-[10px] uppercase tracking-[0.3em] font-bold opacity-60">
+          <p className="text-[#D4AF37] text-[10px] uppercase tracking-[0.3em] font-bold opacity-60">
             Protocollo di Sicurezza Minerva
           </p>
         </div>
@@ -62,7 +62,7 @@ export default function ForgotPasswordPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder:text-white/10 focus:outline-none focus:border-[#F5A623]/50 transition-all text-sm"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder:text-white/10 focus:outline-none focus:border-[#D4AF37]/50 transition-all text-sm"
                   placeholder="email@minervapartners.it"
                 />
               </div>
@@ -72,20 +72,20 @@ export default function ForgotPasswordPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-white text-[#001220] py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-[#F5A623] transition-all disabled:opacity-50"
+                className="w-full bg-white text-[#001220] py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-[#D4AF37] transition-all disabled:opacity-50"
               >
                 {loading ? "Invio in corso..." : "Invia Istruzioni"}
               </button>
             </form>
           ) : (
             <div className="text-center space-y-6">
-              <div className="text-[#F5A623] text-4xl">✓</div>
+              <div className="text-[#D4AF37] text-4xl">✓</div>
               <p className="text-white text-sm font-medium">{message}</p>
             </div>
           )}
           
           <div className="mt-8 text-center">
-            <Link href="/" className="text-white/30 hover:text-[#F5A623] text-[10px] uppercase tracking-widest transition-colors font-bold">
+            <Link href="/" className="text-white/30 hover:text-[#D4AF37] text-[10px] uppercase tracking-widest transition-colors font-bold">
               ← Torna al Login
             </Link>
           </div>

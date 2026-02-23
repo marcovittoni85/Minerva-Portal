@@ -40,29 +40,29 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#001220] flex items-center justify-center p-6 text-white">
-      <div className="w-full max-w-md bg-[#001c30] p-10 rounded-2xl border border-[#F5A623]/20 text-center shadow-2xl">
+      <div className="w-full max-w-md bg-[#001c30] p-10 rounded-2xl border border-[#D4AF37]/20 text-center shadow-2xl">
         <Image src="/icon.webp" alt="Logo" width={100} height={100} className="mx-auto mb-6" unoptimized />
-        <h1 className="text-[#F5A623] text-xl tracking-[0.4em] uppercase font-light mb-10">MINERVA V2</h1>
+        <h1 className="text-[#D4AF37] text-xl tracking-[0.4em] uppercase font-light mb-10">MINERVA V2</h1>
         
         <form onSubmit={handleMagicLink} className="space-y-6">
           <div className="relative">
-            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#F5A623] opacity-50" />
+            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4AF37] opacity-50" />
             <input 
               type="email" 
               placeholder="INSERISCI EMAIL PARTNER" 
-              className="w-full bg-[#001220] border border-slate-800 p-4 pl-12 text-[10px] tracking-[0.2em] uppercase outline-none focus:border-[#F5A623]" 
+              className="w-full bg-[#001220] border border-slate-800 p-4 pl-12 text-[10px] tracking-[0.2em] uppercase outline-none focus:border-[#D4AF37]" 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
-          <button disabled={loading} className="w-full bg-[#F5A623] text-[#001220] font-bold py-4 tracking-[0.3em] uppercase hover:bg-[#FBE8A6] flex items-center justify-center transition-all">
+          <button disabled={loading} className="w-full bg-[#D4AF37] text-[#001220] font-bold py-4 tracking-[0.3em] uppercase hover:bg-[#FBE8A6] flex items-center justify-center transition-all">
             {loading ? <Loader2 className="animate-spin" /> : <>Ricevi Link d'Accesso <ArrowRight className="ml-3 w-4 h-4" /></>}
           </button>
         </form>
 
         {message && (
-          <p className={`mt-8 text-[9px] uppercase tracking-[0.2em] ${message.type === 'error' ? 'text-red-500' : 'text-[#F5A623]'}`}>
+          <p className={`mt-8 text-[9px] uppercase tracking-[0.2em] ${message.type === 'error' ? 'text-red-500' : 'text-[#D4AF37]'}`}>
             {message.text}
           </p>
         )}
