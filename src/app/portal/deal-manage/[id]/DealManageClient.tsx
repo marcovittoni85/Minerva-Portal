@@ -104,23 +104,20 @@ export default function DealManageClient({
 
   const addToWorkgroup = async (userId: string, userName: string) => {
     setAddingUserId(userId);
-    const { error } = await supabase.from("deal_workgroup").insert({
-      deal_id: deal.id,
-      user_id: userId,
-      role_in_deal: "member",
-      added_by: adminId,
-    });
-    if (!error) {
-      // Send notification with declaration link
-      await supabase.from("notifications").insert({
-        user_id: userId,
-        type: "workgroup_added",
-        title: "Gruppo di lavoro",
-        message: "Sei stato selezionato per il gruppo di lavoro. Completa la dichiarazione obbligatoria per procedere.",
-        deal_id: deal.id,
-        is_read: false,
+    try {
+      const res = await fetch("/api/deal-manage/add-to-workgroup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dealId: deal.id, userId }),
       });
-      setWgMembers(prev => [...prev, { id: userId, name: userName, role: "", roleInDeal: "member", declarationStatus: "none" }]);
+      if (res.ok) {
+        setWgMembers(prev => [...prev, { id: userId, name: userName, role: "", roleInDeal: "member", declarationStatus: "none" }]);
+      } else {
+        const data = await res.json();
+        console.error("Errore aggiunta WG:", data.error);
+      }
+    } catch (e) {
+      console.error("Errore aggiunta WG:", e);
     }
     setAddingUserId(null);
   };
