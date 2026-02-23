@@ -3,30 +3,6 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import RequestAccessButton from "./RequestAccessButton";
-import { Hotel, Stethoscope, Factory, Wind, Banknote, FlaskConical, Bike, Cpu, BriefcaseBusiness, HardHat, Truck, Wheat, GraduationCap, Film, Plane, CircleDot } from "lucide-react";
-
-const sectorIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-  "Real estate & hospitality": Hotel,
-  "Healthcare": Stethoscope,
-  "Macchinari industriali": Factory,
-  "Utility e rinnovabili": Wind,
-  "Servizi finanziari": Banknote,
-  "Chimica": FlaskConical,
-  "Sports goods": Bike,
-  "Tecnologia": Cpu,
-  "Business services": BriefcaseBusiness,
-  "Infrastrutture e costruzioni": HardHat,
-  "Trasporti e logistica": Truck,
-  "Agribusiness": Wheat,
-  "Education": GraduationCap,
-  "Media & entertainment": Film,
-  "Aerospace e difesa": Plane,
-};
-
-function SectorIcon({ sector }: { sector: string }) {
-  const Icon = sectorIcons[sector] || CircleDot;
-  return <Icon className="w-8 h-8 text-[#F5A623]/30" />;
-}
 
 function getSideBorderColor(side: string) {
   const s = side?.toUpperCase() || "";
@@ -64,22 +40,19 @@ export default function DealCard({ deal: d, isAdmin }: { deal: any; isAdmin: boo
 
   const hasAccess = status === "approved" || isAdmin;
 
-  const metaParts = [d.sector, d.sub_sector, d.deal_type].filter(Boolean);
+  const subMeta = [d.sub_sector, d.deal_type].filter(Boolean).join(" · ");
 
   return (
-    <div className={"relative bg-white border border-slate-100 border-l-[5px] rounded-2xl p-6 hover:shadow-lg hover:border-slate-100 hover:border-l-[5px] transition-all " + getSideBorderColor(d.side)}>
-      {/* Sector icon watermark — top right */}
-      <div className="absolute top-5 right-5">
-        <SectorIcon sector={d.sector} />
-      </div>
-
+    <div className={"bg-white border border-slate-100 border-l-[5px] rounded-2xl p-6 hover:shadow-lg hover:border-slate-100 hover:border-l-[5px] transition-all " + getSideBorderColor(d.side)}>
       {/* Side label */}
       {d.side && (
         <p className={"text-[9px] font-bold uppercase tracking-[0.3em] mb-1 " + getSideLabelColor(d.side)}>{d.side}</p>
       )}
 
-      {/* Deal code */}
-      <p className="text-[10px] text-slate-400 tracking-wider mb-3">{d.code}</p>
+      {/* Code · Sector */}
+      <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-3">
+        {d.code}{d.sector ? ` · ${d.sector}` : ""}
+      </p>
 
       {/* Title — conditional behavior */}
       {hasAccess ? (
@@ -95,15 +68,8 @@ export default function DealCard({ deal: d, isAdmin }: { deal: any; isAdmin: boo
         </button>
       )}
 
-      {/* Sector · Sub-sector · Deal type */}
-      {metaParts.length > 0 && (
-        <p className="text-xs mb-3">
-          <span className="text-slate-600 font-medium">{metaParts[0]}</span>
-          {metaParts.slice(1).map((part, i) => (
-            <span key={i}><span className="text-[#D4AF37]"> · </span><span className="text-slate-400">{part}</span></span>
-          ))}
-        </p>
-      )}
+      {/* Sub-sector · Deal type */}
+      {subMeta && <p className="text-xs text-slate-500 mb-3">{subMeta}</p>}
 
       {/* Description */}
       <p className="text-slate-500 text-sm leading-relaxed line-clamp-2 mb-4">{d.description || "Dettagli riservati"}</p>

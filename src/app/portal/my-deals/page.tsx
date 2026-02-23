@@ -3,30 +3,7 @@ export const revalidate = 0;
 import { supabaseServer } from "@/lib/supabase-server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { MessageSquare, Hotel, Stethoscope, Factory, Wind, Banknote, FlaskConical, Bike, Cpu, BriefcaseBusiness, HardHat, Truck, Wheat, GraduationCap, Film, Plane, CircleDot } from "lucide-react";
-
-const sectorIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-  "Real estate & hospitality": Hotel,
-  "Healthcare": Stethoscope,
-  "Macchinari industriali": Factory,
-  "Utility e rinnovabili": Wind,
-  "Servizi finanziari": Banknote,
-  "Chimica": FlaskConical,
-  "Sports goods": Bike,
-  "Tecnologia": Cpu,
-  "Business services": BriefcaseBusiness,
-  "Infrastrutture e costruzioni": HardHat,
-  "Trasporti e logistica": Truck,
-  "Agribusiness": Wheat,
-  "Education": GraduationCap,
-  "Media & entertainment": Film,
-  "Aerospace e difesa": Plane,
-};
-
-function SectorIcon({ sector }: { sector: string }) {
-  const Icon = sectorIcons[sector] || CircleDot;
-  return <Icon className="w-8 h-8 text-[#F5A623]/30" />;
-}
+import { MessageSquare } from "lucide-react";
 
 function getSideBorderColor(side: string) {
   const s = side?.toUpperCase() || "";
@@ -121,23 +98,20 @@ export default async function MyDealsPage() {
         {deals?.map((deal) => {
           const isOriginator = deal.originator_id === user.id;
           const comments = commentMap[deal.id] || 0;
-          const metaParts = [deal.sector, deal.sub_sector, deal.deal_type].filter(Boolean);
+          const subMeta = [deal.sub_sector, deal.deal_type].filter(Boolean).join(" · ");
 
           return (
-            <Link key={deal.id} href={"/portal/deals/" + deal.id} className={"group relative bg-white border border-slate-100 border-l-[5px] rounded-2xl p-6 hover:shadow-lg transition-all " + getSideBorderColor(deal.side)}>
-              {/* Sector icon watermark */}
-              <div className="absolute top-5 right-5">
-                <SectorIcon sector={deal.sector} />
-              </div>
-
+            <Link key={deal.id} href={"/portal/deals/" + deal.id} className={"group bg-white border border-slate-100 border-l-[5px] rounded-2xl p-6 hover:shadow-lg transition-all " + getSideBorderColor(deal.side)}>
               {/* Side label */}
               {deal.side && (
                 <p className={"text-[9px] font-bold uppercase tracking-[0.3em] mb-1 " + getSideLabelColor(deal.side)}>{deal.side}</p>
               )}
 
-              {/* Code + role badge */}
+              {/* Code · Sector + role badge */}
               <div className="flex items-center gap-3 mb-3">
-                <span className="text-[10px] text-slate-400 tracking-wider">{deal.code}</span>
+                <span className="text-[10px] text-slate-400 uppercase tracking-widest">
+                  {deal.code}{deal.sector ? ` · ${deal.sector}` : ""}
+                </span>
                 {isOriginator ? (
                   <span className="text-[9px] font-bold uppercase tracking-widest text-[#D4AF37]">Originator</span>
                 ) : (
@@ -147,15 +121,8 @@ export default async function MyDealsPage() {
 
               <h3 className="text-lg font-bold text-slate-900 mb-1 group-hover:text-[#D4AF37] transition-colors leading-tight">{deal.title}</h3>
 
-              {/* Meta line */}
-              {metaParts.length > 0 && (
-                <p className="text-xs mb-3">
-                  <span className="text-slate-600 font-medium">{metaParts[0]}</span>
-                  {metaParts.slice(1).map((part, i) => (
-                    <span key={i}><span className="text-[#D4AF37]"> · </span><span className="text-slate-400">{part}</span></span>
-                  ))}
-                </p>
-              )}
+              {/* Sub-sector · Deal type */}
+              {subMeta && <p className="text-xs text-slate-500 mb-3">{subMeta}</p>}
 
               {isAdmin && deal.originator_id && (
                 <p className="text-[10px] text-slate-400 mb-2">Originator: {originatorMap[deal.originator_id] || "—"}</p>
