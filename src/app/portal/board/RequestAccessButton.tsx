@@ -18,7 +18,7 @@ export default function RequestAccessButton({ dealId, isAdmin }: { dealId: strin
       const { data: access } = await supabase.from("deal_access").select("*").eq("deal_id", dealId).eq("user_id", user.id).maybeSingle();
       if (access) { setStatus("approved"); return; }
       const { data: request } = await supabase.from("deal_access_requests").select("status").eq("deal_id", dealId).eq("user_id", user.id).maybeSingle();
-      if (request) { setStatus(request.status as any); } else { setStatus("none"); }
+      if (request) { setStatus(request.status === "ACCESS_APPROVED" ? "approved" : request.status as any); } else { setStatus("none"); }
     }
     checkStatus();
   }, [dealId, supabase, isAdmin]);
