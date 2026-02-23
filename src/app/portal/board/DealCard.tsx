@@ -3,22 +3,29 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import RequestAccessButton from "./RequestAccessButton";
-import { Building2, Heart, Settings, Zap, Landmark, FlaskConical, Trophy, Monitor, Briefcase } from "lucide-react";
+import { Hotel, Stethoscope, Factory, Wind, Banknote, FlaskConical, Bike, Cpu, BriefcaseBusiness, HardHat, Truck, Wheat, GraduationCap, Film, Plane, CircleDot } from "lucide-react";
 
 const sectorIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-  "Real estate & hospitality": Building2,
-  "Healthcare": Heart,
-  "Macchinari industriali": Settings,
-  "Utility e rinnovabili": Zap,
-  "Servizi finanziari": Landmark,
+  "Real estate & hospitality": Hotel,
+  "Healthcare": Stethoscope,
+  "Macchinari industriali": Factory,
+  "Utility e rinnovabili": Wind,
+  "Servizi finanziari": Banknote,
   "Chimica": FlaskConical,
-  "Sports goods": Trophy,
-  "Tecnologia": Monitor,
+  "Sports goods": Bike,
+  "Tecnologia": Cpu,
+  "Business services": BriefcaseBusiness,
+  "Infrastrutture e costruzioni": HardHat,
+  "Trasporti e logistica": Truck,
+  "Agribusiness": Wheat,
+  "Education": GraduationCap,
+  "Media & entertainment": Film,
+  "Aerospace e difesa": Plane,
 };
 
 function SectorIcon({ sector }: { sector: string }) {
-  const Icon = sectorIcons[sector] || Briefcase;
-  return <Icon className="w-5 h-5 text-slate-200" />;
+  const Icon = sectorIcons[sector] || CircleDot;
+  return <Icon className="w-6 h-6 text-slate-300" />;
 }
 
 function getSideBorderColor(side: string) {
