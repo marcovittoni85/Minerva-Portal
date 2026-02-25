@@ -1,5 +1,5 @@
 import { supabaseServer } from "@/lib/supabase-server";
-import { sendNotification, sendNotificationBulk } from "@/lib/notifications";
+import { sendNotification, notifyMatchingUsers } from "@/lib/notifications";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   // Get deal info before update
   const { data: deal } = await supabase
     .from("deals")
-    .select("title, created_by")
+    .select("id, title, created_by, sector, side, geography")
     .eq("id", dealId)
     .single();
 
@@ -37,22 +37,9 @@ export async function POST(req: Request) {
     });
   }
 
-  // Notify all partners/friends about new deal on board
-  const { data: partners } = await supabase
-    .from("profiles")
-    .select("id")
-    .in("role", ["partner", "friend"]);
-
-  const partnerIds = (partners ?? []).map((p) => p.id);
-  if (partnerIds.length > 0) {
-    await sendNotificationBulk(supabase, {
-      userIds: partnerIds,
-      type: "new_deal_board",
-      title: "Nuova Opportunità",
-      body: `Una nuova opportunità è disponibile in bacheca: "${deal?.title}"`,
-      link: "/portal/board",
-      dealTitle: deal?.title,
-    });
+  // Notify matching partners/friends about new deal on board
+  if (deal) {
+    await notifyMatchingUsers(supabase, deal);
   }
 
   return NextResponse.redirect(new URL("/portal/deal-proposals", req.url), { status: 303 });

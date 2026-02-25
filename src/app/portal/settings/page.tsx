@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { Lock, CheckCircle, AlertCircle, Loader2, Bell } from 'lucide-react';
+import { Lock, CheckCircle, AlertCircle, Loader2, Bell, SlidersHorizontal } from 'lucide-react';
 
 const notificationTypes = [
   { key: "access_approved", label: "Accesso approvato" },
@@ -16,7 +16,36 @@ const notificationTypes = [
   { key: "new_deal_board", label: "Nuovo deal in bacheca" },
 ] as const;
 
+const sectorOptions = [
+  "Real estate & hospitality",
+  "Healthcare",
+  "Macchinari industriali",
+  "Utility e rinnovabili",
+  "Servizi finanziari",
+  "Chimica",
+  "Sports goods",
+  "Petrolio e gas",
+  "Tecnologia",
+  "Food & Beverage",
+  "Trasporti e logistica",
+  "Media e intrattenimento",
+];
+
+const operationTypes = ["Buy-side", "Sell-side", "Club Deal", "Debt"];
+
+const geographyOptions = ["Nord Italia", "Centro Italia", "Sud Italia", "Europa", "Extra-EU"];
+
 type PrefsRow = Record<string, boolean>;
+
+interface DealPreferences {
+  sectors: string[];
+  operation_types: string[];
+  ev_min: number | null;
+  ev_max: number | null;
+  geographies: string[];
+}
+
+const inputCls = "w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-[#D4AF37] transition-colors";
 
 export default function SettingsPage() {
   const supabase = createClient();
@@ -28,12 +57,20 @@ export default function SettingsPage() {
   const [prefsLoading, setPrefsLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
 
+  // Deal preferences
+  const [dealPrefs, setDealPrefs] = useState<DealPreferences>({
+    sectors: [], operation_types: [], ev_min: null, ev_max: null, geographies: [],
+  });
+  const [dealPrefsLoading, setDealPrefsLoading] = useState(true);
+  const [dealPrefsSaved, setDealPrefsSaved] = useState(false);
+
   useEffect(() => {
-    async function loadPrefs() {
+    async function load() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
 
+      // Load notification preferences
       const { data } = await supabase
         .from("notification_preferences")
         .select("*")
@@ -43,13 +80,11 @@ export default function SettingsPage() {
       if (data) {
         setPrefs(data);
       } else {
-        // Create default preferences
         const defaults: Record<string, any> = { user_id: user.id };
         for (const t of notificationTypes) {
           defaults[`${t.key}_app`] = true;
           defaults[`${t.key}_email`] = false;
         }
-        // Some types default to email=true
         defaults.access_approved_email = true;
         defaults.access_request_email = true;
         defaults.workgroup_added_email = true;
@@ -65,45 +100,56 @@ export default function SettingsPage() {
         setPrefs(inserted || defaults);
       }
       setPrefsLoading(false);
+
+      // Load deal preferences from profiles.preferences jsonb
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("preferences")
+        .eq("id", user.id)
+        .single();
+
+      if (profile?.preferences) {
+        const p = profile.preferences as DealPreferences;
+        setDealPrefs({
+          sectors: p.sectors || [],
+          operation_types: p.operation_types || [],
+          ev_min: p.ev_min ?? null,
+          ev_max: p.ev_max ?? null,
+          geographies: p.geographies || [],
+        });
+      }
+      setDealPrefsLoading(false);
     }
-    loadPrefs();
+    load();
   }, []);
 
   const togglePref = useCallback(async (column: string, value: boolean) => {
     if (!userId) return;
     setPrefs(prev => prev ? { ...prev, [column]: value } : prev);
-
-    await supabase
-      .from("notification_preferences")
-      .update({ [column]: value })
-      .eq("user_id", userId);
+    await supabase.from("notification_preferences").update({ [column]: value }).eq("user_id", userId);
   }, [userId, supabase]);
+
+  const saveDealPrefs = useCallback(async (updated: DealPreferences) => {
+    if (!userId) return;
+    setDealPrefs(updated);
+    setDealPrefsSaved(false);
+    await supabase.from("profiles").update({ preferences: updated }).eq("id", userId);
+    setDealPrefsSaved(true);
+    setTimeout(() => setDealPrefsSaved(false), 2000);
+  }, [userId, supabase]);
+
+  const toggleMulti = (arr: string[], value: string) =>
+    arr.includes(value) ? arr.filter(v => v !== value) : [...arr, value];
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (password.length < 6) {
-      setMessage({ type: 'error', text: 'La password deve avere almeno 6 caratteri.' });
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setMessage({ type: 'error', text: 'Le password non coincidono.' });
-      return;
-    }
-
+    if (password.length < 6) { setMessage({ type: 'error', text: 'La password deve avere almeno 6 caratteri.' }); return; }
+    if (password !== confirmPassword) { setMessage({ type: 'error', text: 'Le password non coincidono.' }); return; }
     setLoading(true);
     setMessage(null);
-
     const { error } = await supabase.auth.updateUser({ password });
-
-    if (error) {
-      setMessage({ type: 'error', text: 'Errore: ' + error.message });
-    } else {
-      setMessage({ type: 'success', text: 'Password aggiornata con successo.' });
-      setPassword('');
-      setConfirmPassword('');
-    }
+    if (error) { setMessage({ type: 'error', text: 'Errore: ' + error.message }); }
+    else { setMessage({ type: 'success', text: 'Password aggiornata con successo.' }); setPassword(''); setConfirmPassword(''); }
     setLoading(false);
   };
 
@@ -114,6 +160,117 @@ export default function SettingsPage() {
         <h1 className="text-3xl font-bold text-slate-900">Impostazioni</h1>
         <p className="text-slate-500 text-sm mt-2">Gestione sicurezza account e preferenze</p>
       </header>
+
+      {/* Deal Preferences Section */}
+      <div className="bg-white border border-slate-100 rounded-2xl p-8 shadow-sm mb-8">
+        <div className="flex items-center gap-3 mb-6">
+          <SlidersHorizontal className="w-4 h-4 text-[#D4AF37]" />
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Preferenze Deal</h2>
+          {dealPrefsSaved && <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider ml-auto">Salvato</span>}
+        </div>
+
+        {dealPrefsLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Settori */}
+            <div>
+              <label className="text-[9px] uppercase tracking-widest text-slate-400 font-bold block mb-3">Settori di interesse</label>
+              <div className="grid grid-cols-2 gap-2">
+                {sectorOptions.map(s => {
+                  const on = dealPrefs.sectors.includes(s);
+                  return (
+                    <button
+                      key={s}
+                      onClick={() => saveDealPrefs({ ...dealPrefs, sectors: toggleMulti(dealPrefs.sectors, s) })}
+                      className={`text-left px-3 py-2 rounded-lg text-xs border transition-colors ${
+                        on ? "border-[#D4AF37] bg-[#D4AF37]/5 text-[#D4AF37] font-bold" : "border-slate-100 text-slate-600 hover:border-slate-200"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Tipo operazione */}
+            <div>
+              <label className="text-[9px] uppercase tracking-widest text-slate-400 font-bold block mb-3">Tipo operazione</label>
+              <div className="flex flex-wrap gap-2">
+                {operationTypes.map(t => {
+                  const on = dealPrefs.operation_types.includes(t);
+                  return (
+                    <button
+                      key={t}
+                      onClick={() => saveDealPrefs({ ...dealPrefs, operation_types: toggleMulti(dealPrefs.operation_types, t) })}
+                      className={`px-4 py-2 rounded-lg text-xs border transition-colors ${
+                        on ? "border-[#D4AF37] bg-[#D4AF37]/5 text-[#D4AF37] font-bold" : "border-slate-100 text-slate-600 hover:border-slate-200"
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* EV Range */}
+            <div>
+              <label className="text-[9px] uppercase tracking-widest text-slate-400 font-bold block mb-3">EV Range di interesse</label>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[9px] text-slate-400 block mb-1">Minimo (€)</label>
+                  <input
+                    type="number"
+                    value={dealPrefs.ev_min ?? ""}
+                    onChange={e => saveDealPrefs({ ...dealPrefs, ev_min: e.target.value ? Number(e.target.value) : null })}
+                    placeholder="es. 1000000"
+                    className={inputCls}
+                    min={0}
+                  />
+                </div>
+                <div>
+                  <label className="text-[9px] text-slate-400 block mb-1">Massimo (€)</label>
+                  <input
+                    type="number"
+                    value={dealPrefs.ev_max ?? ""}
+                    onChange={e => saveDealPrefs({ ...dealPrefs, ev_max: e.target.value ? Number(e.target.value) : null })}
+                    placeholder="es. 50000000"
+                    className={inputCls}
+                    min={0}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Aree geografiche */}
+            <div>
+              <label className="text-[9px] uppercase tracking-widest text-slate-400 font-bold block mb-3">Aree geografiche</label>
+              <div className="flex flex-wrap gap-2">
+                {geographyOptions.map(g => {
+                  const on = dealPrefs.geographies.includes(g);
+                  return (
+                    <button
+                      key={g}
+                      onClick={() => saveDealPrefs({ ...dealPrefs, geographies: toggleMulti(dealPrefs.geographies, g) })}
+                      className={`px-4 py-2 rounded-lg text-xs border transition-colors ${
+                        on ? "border-[#D4AF37] bg-[#D4AF37]/5 text-[#D4AF37] font-bold" : "border-slate-100 text-slate-600 hover:border-slate-200"
+                      }`}
+                    >
+                      {g}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <p className="text-[10px] text-slate-400">Le modifiche vengono salvate automaticamente. Riceverai notifiche quando nuovi deal compatibili vengono pubblicati.</p>
+          </div>
+        )}
+      </div>
 
       {/* Password Section */}
       <div className="bg-white border border-slate-100 rounded-2xl p-8 shadow-sm">
@@ -126,11 +283,11 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-[9px] uppercase tracking-widest text-slate-400 font-bold block mb-2">Nuova Password</label>
-              <input type="password" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#D4AF37] transition-colors" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
+              <input type="password" className={inputCls} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
             </div>
             <div>
               <label className="text-[9px] uppercase tracking-widest text-slate-400 font-bold block mb-2">Conferma Password</label>
-              <input type="password" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#D4AF37] transition-colors" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+              <input type="password" className={inputCls} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
             </div>
           </div>
 
@@ -160,7 +317,6 @@ export default function SettingsPage() {
           </div>
         ) : (
           <div className="space-y-1">
-            {/* Header row */}
             <div className="grid grid-cols-[1fr_80px_80px] gap-2 pb-3 border-b border-slate-100">
               <div />
               <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold text-center">In-App</p>
