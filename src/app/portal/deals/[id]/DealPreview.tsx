@@ -1,7 +1,28 @@
 "use client";
 import Link from "next/link";
-import { ArrowLeft, TrendingUp, FileText, MapPin, Clock, Lock } from "lucide-react";
+import { ArrowLeft, TrendingUp, FileText, MapPin, Clock, Lock, Briefcase } from "lucide-react";
 import RequestAccessButton from "../../board/RequestAccessButton";
+
+function getMacroCategory(sector: string) {
+  if (sector === "Real estate & hospitality") return "REAL ESTATE";
+  if (sector === "Utility e rinnovabili" || sector === "Petrolio e gas") return "ENERGY";
+  if (sector === "Servizi finanziari") return "FINANCE";
+  return "CORPORATE M&A";
+}
+
+function getSideBorderColor(side: string) {
+  const s = side?.toUpperCase() || "";
+  if (s.includes("SELL")) return "border-l-[#D4AF37]";
+  if (s.includes("BUY")) return "border-l-[#001220]";
+  return "border-l-slate-200";
+}
+
+function getSideLabelColor(side: string) {
+  const s = side?.toUpperCase() || "";
+  if (s.includes("SELL")) return "text-[#D4AF37]";
+  if (s.includes("BUY")) return "text-[#001220]";
+  return "text-slate-400";
+}
 
 export default function DealPreview({
   deal,
@@ -21,15 +42,7 @@ export default function DealPreview({
   };
   accessStatus: "none" | "pending" | "rejected";
 }) {
-  const sectorColors: Record<string, string> = {
-    "Real estate & hospitality": "bg-emerald-50 text-emerald-700",
-    "Healthcare": "bg-rose-50 text-rose-700",
-    "Macchinari industriali": "bg-blue-50 text-blue-700",
-    "Utility e rinnovabili": "bg-amber-50 text-amber-700",
-    "Servizi finanziari": "bg-purple-50 text-purple-700",
-    "Chimica": "bg-cyan-50 text-cyan-700",
-    "Sports goods": "bg-orange-50 text-orange-700",
-  };
+  const macro = deal.sector ? getMacroCategory(deal.sector) : null;
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
@@ -38,29 +51,45 @@ export default function DealPreview({
       </Link>
 
       {/* Header card */}
-      <div className="bg-white border border-slate-100 rounded-2xl p-8 shadow-sm mb-6">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{deal.code}</span>
-          <span className={"text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded " + (sectorColors[deal.sector] || "bg-slate-50 text-slate-600")}>{deal.sector}</span>
-          {deal.sub_sector && <span className="text-[10px] font-bold text-slate-500 bg-slate-50 px-2 py-0.5 rounded">{deal.sub_sector}</span>}
+      <div className={"bg-white border border-slate-100 border-l-[5px] rounded-2xl p-8 shadow-sm mb-6 " + getSideBorderColor(deal.side)}>
+        {/* Top row: side + code on left, macro category on right */}
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            {deal.side && (
+              <p className={"text-[9px] font-bold uppercase tracking-[0.3em] mb-1 " + getSideLabelColor(deal.side)}>{deal.side}</p>
+            )}
+            <p className="text-[10px] text-slate-400 uppercase tracking-widest">{deal.code}</p>
+          </div>
+          {macro && (
+            <span className="text-[11px] font-bold uppercase tracking-widest text-[#D4AF37] bg-[#D4AF37]/10 px-3 py-1.5 rounded-lg">{macro}</span>
+          )}
         </div>
 
         <h1 className="text-2xl font-bold text-slate-900 mb-6">{deal.title}</h1>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {/* Key metrics */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+          <div className="bg-slate-50 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Briefcase className="w-3 h-3 text-slate-400" />
+              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Settore</p>
+            </div>
+            <p className="text-sm font-bold text-slate-900">{deal.sector || "N/A"}</p>
+            {deal.sub_sector && <p className="text-xs text-slate-500 mt-0.5">{deal.sub_sector}</p>}
+          </div>
+          <div className="bg-slate-50 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <FileText className="w-3 h-3 text-slate-400" />
+              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Tipo Operazione</p>
+            </div>
+            <p className="text-sm font-bold text-slate-900">{deal.deal_type || "N/A"}</p>
+          </div>
           <div className="bg-slate-50 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-1">
               <TrendingUp className="w-3 h-3 text-slate-400" />
               <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">EV Range</p>
             </div>
             <p className="text-sm font-bold text-slate-900">{deal.ev_range || "N/A"}</p>
-          </div>
-          <div className="bg-slate-50 rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <FileText className="w-3 h-3 text-slate-400" />
-              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Tipo</p>
-            </div>
-            <p className="text-sm font-bold text-slate-900">{deal.deal_type || deal.side || "N/A"}</p>
           </div>
           <div className="bg-slate-50 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-1">
@@ -72,28 +101,78 @@ export default function DealPreview({
           <div className="bg-slate-50 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-1">
               <Clock className="w-3 h-3 text-slate-400" />
-              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Thematic</p>
+              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Area Tematica</p>
             </div>
             <p className="text-sm font-bold text-slate-900">{deal.thematic_area || "N/A"}</p>
           </div>
-        </div>
-
-        {deal.side && (
-          <div className="mt-4">
-            <div className="bg-slate-50 rounded-xl p-4 inline-block">
+          {deal.side && (
+            <div className="bg-slate-50 rounded-xl p-4">
               <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">Side</p>
-              <p className="text-sm font-bold text-slate-900">{deal.side}</p>
+              <p className={"text-sm font-bold " + getSideLabelColor(deal.side)}>{deal.side}</p>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      {/* Access required banner */}
-      <div className="bg-white border border-slate-100 rounded-2xl p-8 shadow-sm text-center">
-        <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Lock className="w-5 h-5 text-slate-400" />
+      {/* Blurred restricted section */}
+      <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm mb-6">
+        <div className="px-8 pt-6 pb-2">
+          <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold flex items-center gap-2">
+            <Lock className="w-3 h-3" /> Dettagli riservati
+          </p>
         </div>
-        <h2 className="text-lg font-bold text-slate-900 mb-2">Accesso Richiesto</h2>
+        <div className="relative px-8 pb-8">
+          {/* Blurred fake content */}
+          <div className="select-none pointer-events-none blur-[6px] opacity-40">
+            <div className="mb-6">
+              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-2">Descrizione</p>
+              <div className="space-y-2">
+                <div className="h-4 bg-slate-200 rounded w-full" />
+                <div className="h-4 bg-slate-200 rounded w-11/12" />
+                <div className="h-4 bg-slate-200 rounded w-9/12" />
+                <div className="h-4 bg-slate-200 rounded w-10/12" />
+              </div>
+            </div>
+            <div className="mb-6">
+              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-2">Documenti</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="h-12 bg-slate-100 rounded-lg border border-slate-200" />
+                <div className="h-12 bg-slate-100 rounded-lg border border-slate-200" />
+                <div className="h-12 bg-slate-100 rounded-lg border border-slate-200" />
+              </div>
+            </div>
+            <div>
+              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-2">Discussione</p>
+              <div className="space-y-3">
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 bg-slate-200 rounded-full flex-shrink-0" />
+                  <div className="flex-1 space-y-1">
+                    <div className="h-3 bg-slate-200 rounded w-24" />
+                    <div className="h-4 bg-slate-100 rounded w-3/4" />
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 bg-slate-200 rounded-full flex-shrink-0" />
+                  <div className="flex-1 space-y-1">
+                    <div className="h-3 bg-slate-200 rounded w-20" />
+                    <div className="h-4 bg-slate-100 rounded w-2/3" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Overlay gradient */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/60 to-white" />
+        </div>
+      </div>
+
+      {/* Access CTA */}
+      <div className="bg-white border border-slate-100 rounded-2xl p-8 shadow-sm text-center">
+        <div className="w-12 h-12 bg-[#D4AF37]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Lock className="w-5 h-5 text-[#D4AF37]" />
+        </div>
+        <h2 className="text-lg font-bold text-slate-900 mb-2">Richiedi Accesso</h2>
         <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto">
           Per visualizzare la descrizione completa, i documenti e partecipare alla discussione è necessario richiedere l&apos;accesso a questa operazione.
         </p>

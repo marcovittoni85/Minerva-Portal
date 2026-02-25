@@ -30,7 +30,6 @@ type AccessStatus = "loading" | "none" | "pending" | "approved" | "rejected";
 export default function DealCard({ deal: d, isAdmin }: { deal: any; isAdmin: boolean }) {
   const supabase = createClient();
   const [status, setStatus] = useState<AccessStatus>("loading");
-  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     if (isAdmin) { setStatus("approved"); return; }
@@ -65,19 +64,10 @@ export default function DealCard({ deal: d, isAdmin }: { deal: any; isAdmin: boo
         )}
       </div>
 
-      {/* Title — conditional behavior */}
-      {hasAccess ? (
-        <Link href={"/portal/deals/" + d.id} className="group">
-          <h3 className="text-slate-900 text-lg font-bold leading-snug mb-1 group-hover:text-[#D4AF37] transition-colors">{d.title}</h3>
-        </Link>
-      ) : (
-        <button onClick={() => setExpanded(prev => !prev)} className="text-left w-full group">
-          <h3 className="text-slate-900 text-lg font-bold leading-snug mb-1 group-hover:text-[#D4AF37] transition-colors flex items-center gap-2">
-            {d.title}
-            <svg className={"w-3.5 h-3.5 text-slate-300 transition-transform flex-shrink-0 " + (expanded ? "rotate-180" : "")} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-          </h3>
-        </button>
-      )}
+      {/* Title — always links to deal page (preview for non-approved) */}
+      <Link href={"/portal/deals/" + d.id} className="group">
+        <h3 className="text-slate-900 text-lg font-bold leading-snug mb-1 group-hover:text-[#D4AF37] transition-colors">{d.title}</h3>
+      </Link>
 
       {/* Sector · Sub-sector · Deal type */}
       {metaLine && <p className="text-xs text-slate-500 mb-3">{metaLine}</p>}
@@ -85,70 +75,20 @@ export default function DealCard({ deal: d, isAdmin }: { deal: any; isAdmin: boo
       {/* Description */}
       <p className="text-slate-500 text-sm leading-relaxed line-clamp-2 mb-4">{d.description || "Dettagli riservati"}</p>
 
-      {/* Expanded preview */}
-      <div className={"overflow-hidden transition-all duration-300 ease-in-out " + (expanded ? "max-h-[500px] opacity-100 mb-4" : "max-h-0 opacity-0")}>
-        <div className="pt-4 border-t border-slate-100">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
-            {d.deal_type && (
-              <div>
-                <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">Tipo Operazione</p>
-                <p className="text-slate-900 text-sm font-bold">{d.deal_type}</p>
-              </div>
-            )}
-            {d.thematic_area && (
-              <div>
-                <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">Area Tematica</p>
-                <p className="text-slate-900 text-sm font-bold">{d.thematic_area}</p>
-              </div>
-            )}
-            {d.mandate_type && (
-              <div>
-                <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">Tipo Mandato</p>
-                <p className="text-slate-900 text-sm font-bold">{d.mandate_type}</p>
-              </div>
-            )}
-            <div>
-              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">Settore</p>
-              <p className="text-slate-900 text-sm font-bold">{d.sector || "—"}</p>
-            </div>
-            {d.sub_sector && (
-              <div>
-                <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">Sotto-settore</p>
-                <p className="text-slate-900 text-sm font-bold">{d.sub_sector}</p>
-              </div>
-            )}
-            <div>
-              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">EV Range</p>
-              <p className="text-slate-900 text-sm font-bold">{d.ev_range || "Riservato"}</p>
-            </div>
-            <div>
-              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">Area Geografica</p>
-              <p className="text-slate-900 text-sm font-bold">{d.geography || "Italia"}</p>
-            </div>
+      {/* Bottom: Meta + Action */}
+      <div className="flex items-end justify-between pt-4 border-t border-slate-50">
+        <div className="flex gap-6">
+          <div>
+            <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">EV Range</p>
+            <p className="text-slate-900 text-sm font-bold">{d.ev_range || "Riservato"}</p>
           </div>
-          <div className="flex items-center justify-between">
-            <RequestAccessButton dealId={d.id} isAdmin={isAdmin} externalStatus={status} />
-            <button onClick={() => setExpanded(false)} className="text-[9px] uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors">Chiudi</button>
+          <div>
+            <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">Area</p>
+            <p className="text-slate-900 text-sm font-bold">{d.geography || "Italia"}</p>
           </div>
         </div>
+        <RequestAccessButton dealId={d.id} isAdmin={isAdmin} externalStatus={status} />
       </div>
-
-      {/* Bottom: Meta + Action (collapsed view) */}
-      {!expanded && (
-        <div className="flex items-end justify-between pt-4 border-t border-slate-50">
-          <div className="flex gap-6">
-            <div>
-              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">EV Range</p>
-              <p className="text-slate-900 text-sm font-bold">{d.ev_range || "Riservato"}</p>
-            </div>
-            <div>
-              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">Area</p>
-              <p className="text-slate-900 text-sm font-bold">{d.geography || "Italia"}</p>
-            </div>
-          </div>
-          <RequestAccessButton dealId={d.id} isAdmin={isAdmin} externalStatus={status} />
-        </div>
-      )}
     </div>
   );
 }
