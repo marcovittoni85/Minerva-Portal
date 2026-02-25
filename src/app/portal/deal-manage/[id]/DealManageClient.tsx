@@ -145,6 +145,16 @@ export default function DealManageClient({
         action: "stage_changed",
         details: { from: oldStage, to: newStage },
       });
+      // Notify workgroup members about stage change
+      try {
+        await fetch("/api/notifications/stage-changed", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ dealId: deal.id, fromStage: oldStage, toStage: newStage }),
+        });
+      } catch (e) {
+        console.error("stage-changed notification error:", e);
+      }
     }
     setLoading(false);
   };

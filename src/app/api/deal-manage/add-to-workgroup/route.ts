@@ -1,4 +1,5 @@
 import { supabaseServer } from "@/lib/supabase-server";
+import { sendNotification } from "@/lib/notifications";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -37,20 +38,16 @@ export async function POST(req: Request) {
     details: { added_user_id: userId, added_user_name: addedProfile?.full_name || "—", deal_title: dealTitle },
   });
 
-  // Send notification with link to declaration form
+  // Send notification via centralized helper
   const title = dealTitle || "il deal";
-  const { error: notifError } = await supabase.from("notifications").insert({
-    user_id: userId,
-    type: "step_changed",
+  await sendNotification(supabase, {
+    userId,
+    type: "workgroup_added",
     title: "Gruppo di lavoro",
     body: `Sei stato aggiunto al gruppo di lavoro per ${title}. Completa la dichiarazione obbligatoria.`,
     link: `/portal/declaration/${dealId}`,
+    dealTitle: title,
   });
-
-  if (notifError) {
-    console.error("Notification insert error:", notifError.message);
-    return NextResponse.json({ ok: true, notifError: notifError.message });
-  }
 
   return NextResponse.json({ ok: true });
 }

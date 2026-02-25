@@ -1,4 +1,5 @@
 import { supabaseServer } from "@/lib/supabase-server";
+import { sendNotification } from "@/lib/notifications";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -31,7 +32,7 @@ export async function POST(req: Request) {
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
 
   // Insert deal_access
- await supabase.from("deal_access").upsert({ deal_id: request.deal_id, user_id: request.user_id }, { onConflict: "deal_id,user_id" });
+  await supabase.from("deal_access").upsert({ deal_id: request.deal_id, user_id: request.user_id }, { onConflict: "deal_id,user_id" });
 
   // Log activity
   await supabase.from("deal_activity_log").insert({
@@ -40,14 +41,15 @@ export async function POST(req: Request) {
     action: "access_approved",
     details: { approved_user_id: request.user_id, approved_user_name: profile?.full_name },
   });
- 
-  // Notification to requester
-  await supabase.from("notifications").insert({
-    user_id: request.user_id,
+
+  // Notification to requester (via centralized helper)
+  await sendNotification(supabase, {
+    userId: request.user_id,
     type: "access_approved",
     title: "Accesso approvato",
-    body: "La tua richiesta per \"" + (deal?.title || "Deal") + "\" è stata approvata. Puoi ora accedere al dossier.",
+    body: `La tua richiesta per "${deal?.title || "Deal"}" è stata approvata. Puoi ora accedere al dossier.`,
     link: `/portal/deals/${request.deal_id}`,
+    dealTitle: deal?.title,
   });
 
   // Webhook Make (WhatsApp + Email)

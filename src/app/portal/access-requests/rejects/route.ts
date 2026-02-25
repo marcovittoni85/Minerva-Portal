@@ -1,4 +1,5 @@
 import { supabaseServer } from "@/lib/supabase-server";
+import { sendNotification } from "@/lib/notifications";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -26,13 +27,14 @@ export async function POST(req: Request) {
 
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
 
-  // Notification to requester
-  await supabase.from("notifications").insert({
-    user_id: request.user_id,
+  // Notification to requester (via centralized helper)
+  await sendNotification(supabase, {
+    userId: request.user_id,
     type: "access_rejected",
     title: "Richiesta rifiutata",
-    body: "La tua richiesta per \"" + (deal?.title || "Deal") + "\" non è stata approvata.",
+    body: `La tua richiesta per "${deal?.title || "Deal"}" non è stata approvata.`,
     link: "/portal/board",
+    dealTitle: deal?.title,
   });
 
   return NextResponse.redirect(new URL("/portal/access-requests", req.url), { status: 303 });

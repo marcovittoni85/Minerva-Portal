@@ -2,9 +2,25 @@
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Briefcase, Settings, LogOut, Menu, ShieldCheck, PlusCircle, ClipboardList, Bell, Shield, Columns3, FileText } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Settings, LogOut, Menu, ShieldCheck, PlusCircle, ClipboardList, Bell, Shield, Columns3, FileText, Key, Users, ArrowRightLeft, CheckCircle, XCircle, Megaphone } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+
+function notifTypeIcon(type: string) {
+  const map: Record<string, typeof Bell> = {
+    access_request: Key,
+    access_approved: CheckCircle,
+    access_rejected: XCircle,
+    workgroup_added: Users,
+    declaration_received: FileText,
+    step_changed: FileText,
+    stage_changed: ArrowRightLeft,
+    deal_proposal_approved: CheckCircle,
+    deal_proposal_rejected: XCircle,
+    new_deal_board: Megaphone,
+  };
+  return map[type] || Bell;
+}
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -179,22 +195,34 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             </div>
             <div className="flex-1 overflow-y-auto">
               {notifs.length === 0 ? (
-                <div className="p-8 text-center text-slate-400 text-sm">Nessuna notifica</div>
+                <div className="p-8 text-center">
+                  <Bell className="w-8 h-8 text-slate-200 mx-auto mb-3" />
+                  <p className="text-sm text-slate-400">Nessuna notifica</p>
+                  <p className="text-[10px] text-slate-300 mt-1">Le tue notifiche appariranno qui</p>
+                </div>
               ) : (
-                notifs.map((n) => (
-                  <div key={n.id} onClick={() => handleNotifClick(n)} className={"px-4 py-3 border-b border-slate-50 cursor-pointer hover:bg-slate-50 transition-colors " + (!n.is_read ? "bg-[#D4AF37]/5" : "")}>
-                    <div className="flex items-start gap-2">
-                      {!n.is_read && <span className="w-2 h-2 rounded-full bg-[#D4AF37] mt-1.5 flex-shrink-0" />}
-                      <div>
-                        <p className="text-xs font-bold text-slate-900">{n.title}</p>
-                        {n.body && <p className="text-xs text-slate-500 mt-0.5">{n.body}</p>}
-                        <p className="text-[10px] text-slate-400 mt-1">{new Date(n.created_at).toLocaleDateString("it-IT", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
+                notifs.map((n) => {
+                  const NotifIcon = notifTypeIcon(n.type);
+                  return (
+                    <div key={n.id} onClick={() => handleNotifClick(n)} className={"px-4 py-3 border-b border-slate-50 cursor-pointer hover:bg-slate-50 transition-colors " + (!n.is_read ? "bg-[#D4AF37]/5" : "")}>
+                      <div className="flex items-start gap-2.5">
+                        <div className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5 ${!n.is_read ? "bg-[#D4AF37]/10" : "bg-slate-50"}`}>
+                          <NotifIcon className={`w-3 h-3 ${!n.is_read ? "text-[#D4AF37]" : "text-slate-400"}`} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-slate-900">{n.title}</p>
+                          {n.body && <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{n.body}</p>}
+                          <p className="text-[10px] text-slate-400 mt-1">{new Date(n.created_at).toLocaleDateString("it-IT", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
+            <Link href="/portal/notifications" onClick={() => setShowNotifs(false)} className="block p-3 border-t border-slate-100 text-center text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] hover:bg-slate-50 transition-colors">
+              Vedi tutte
+            </Link>
           </div>
         </>
       )}

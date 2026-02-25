@@ -108,18 +108,20 @@ export default function DeclarationForm({
         details: { role_in_deal: roleInDeal, has_conflict: hasConflict === "yes" },
       });
 
-      // Notify admins
-      const { data: admins } = await supabase.from("profiles").select("id").in("role", ["admin"]);
-      if (admins) {
-        await Promise.all(admins.map(a =>
-          supabase.from("notifications").insert({
-            user_id: a.id,
-            type: "step_changed",
-            title: "Dichiarazione Ricevuta",
-            body: `Nuova dichiarazione per "${deal.title}" (${deal.code})${hasConflict === "yes" ? " — CONFLITTO SEGNALATO" : ""}`,
-            link: `/portal/deal-manage/${deal.id}`,
-          })
-        ));
+      // Notify admins via API (centralized helper)
+      try {
+        await fetch("/api/notifications/declaration-received", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            dealId: deal.id,
+            dealTitle: deal.title,
+            dealCode: deal.code,
+            hasConflict: hasConflict === "yes",
+          }),
+        });
+      } catch (e) {
+        console.error("declaration notification error:", e);
       }
       setSubmitted(true);
     }

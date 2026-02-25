@@ -1,4 +1,5 @@
 import { supabaseServer } from "@/lib/supabase-server";
+import { sendNotificationBulk } from "@/lib/notifications";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -15,28 +16,22 @@ export async function POST(req: Request) {
 
   // Notify all admins
   const { data: admins } = await supabase.from("profiles").select("id").in("role", ["admin"]);
+  const adminIds = (admins ?? []).map(a => a.id);
 
-  const notifications = (admins ?? []).map(a => ({
-    user_id: a.id,
-    type: "access_request",
-    title: "Nuova richiesta accesso",
-    body: (profile?.full_name || "Un utente") + " ha richiesto accesso a \"" + deal.title + "\"",
-    link: "/portal/access-requests",
-  }));
-
-  // Notify originator if different from admins
-  if (deal.originator_id && !(admins ?? []).find(a => a.id === deal.originator_id)) {
-    notifications.push({
-      user_id: deal.originator_id,
-      type: "access_request",
-      title: "Nuova richiesta accesso",
-      body: (profile?.full_name || "Un utente") + " ha richiesto accesso a \"" + deal.title + "\"",
-      link: "/portal/access-requests",
-    });
+  // Include originator if not already an admin
+  if (deal.originator_id && !adminIds.includes(deal.originator_id)) {
+    adminIds.push(deal.originator_id);
   }
 
-  if (notifications.length > 0) {
-    await supabase.from("notifications").insert(notifications);
+  if (adminIds.length > 0) {
+    await sendNotificationBulk(supabase, {
+      userIds: adminIds,
+      type: "access_request",
+      title: "Nuova richiesta accesso",
+      body: `${profile?.full_name || "Un utente"} ha richiesto accesso a "${deal.title}"`,
+      link: "/portal/access-requests",
+      dealTitle: deal.title,
+    });
   }
 
   return NextResponse.json({ ok: true });

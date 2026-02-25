@@ -75,6 +75,16 @@ export default function PipelineClient({ deals: initialDeals }: { deals: Deal[] 
         action: "stage_changed",
         details: { from: oldStage, to: dbStage },
       });
+      // Notify workgroup members about stage change
+      try {
+        await fetch("/api/notifications/stage-changed", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ dealId, fromStage: oldStage, toStage: dbStage }),
+        });
+      } catch (e) {
+        console.error("stage-changed notification error:", e);
+      }
     }
     setMoving(null);
   };
