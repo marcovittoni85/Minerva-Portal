@@ -101,6 +101,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     { name: 'Richieste Accesso', href: '/portal/access-requests', icon: ClipboardList },
     { name: 'Proposte Deal', href: '/portal/deal-proposals', icon: Briefcase },
     { name: 'Simulatore Fee', href: '/portal/fee-simulator', icon: Calculator },
+    { name: 'CRM', href: '/portal/crm', icon: Users },
   ];
 
   const originatorItems = [
