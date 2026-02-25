@@ -2,7 +2,7 @@
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Briefcase, Settings, LogOut, Menu, ShieldCheck, PlusCircle, ClipboardList, Bell, Shield, Columns3, FileText, Key, Users, ArrowRightLeft, CheckCircle, XCircle, Megaphone } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Settings, LogOut, Menu, ShieldCheck, PlusCircle, ClipboardList, Bell, Shield, Columns3, FileText, Key, Users, ArrowRightLeft, CheckCircle, XCircle, Megaphone, Calculator } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
@@ -100,6 +100,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     { name: 'Audit Log', href: '/portal/audit-log', icon: FileText },
     { name: 'Richieste Accesso', href: '/portal/access-requests', icon: ClipboardList },
     { name: 'Proposte Deal', href: '/portal/deal-proposals', icon: Briefcase },
+    { name: 'Simulatore Fee', href: '/portal/fee-simulator', icon: Calculator },
   ];
 
   const originatorItems = [
