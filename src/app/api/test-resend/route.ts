@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const data = await resend.emails.send({
       from: "Minerva Partners <info@minervapartners.it>",
-      to: "tua-email-personale@gmail.com", // METTI LA TUA EMAIL QUI
+      to: "info@minervapartners.it",
       subject: "Test Tecnico Resend - Minerva",
       html: "<h1>Funziona!</h1><p>Se ricevi questa mail, Resend e il dominio sono configurati correttamente.</p>"
     });
