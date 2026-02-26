@@ -12,9 +12,13 @@ export type NotificationType =
   | "deal_proposal_rejected"
   | "new_deal_board"
   | "comment_added"
-  | "document_uploaded";
+  | "document_uploaded"
+  | "presentation_requested"
+  | "presentation_approved"
+  | "presentation_rejected";
 
 // Maps notification types to the preference column prefix
+// presentation_* types reuse access_* preference columns (same user intent)
 const typeToPreferenceKey: Record<NotificationType, string> = {
   access_request: "access_request",
   access_approved: "access_approved",
@@ -27,6 +31,9 @@ const typeToPreferenceKey: Record<NotificationType, string> = {
   new_deal_board: "new_deal_board",
   comment_added: "stage_changed",
   document_uploaded: "document_uploaded",
+  presentation_requested: "access_request",
+  presentation_approved: "access_approved",
+  presentation_rejected: "access_rejected",
 };
 
 export async function sendNotification(

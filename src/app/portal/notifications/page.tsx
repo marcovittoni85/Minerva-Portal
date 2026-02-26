@@ -14,6 +14,7 @@ import {
   Bell,
   Trash2,
   Loader2,
+  Presentation,
 } from "lucide-react";
 
 const PAGE_SIZE = 20;
@@ -29,12 +30,16 @@ const typeConfig: Record<string, { icon: typeof Bell; label: string; filter: str
   deal_proposal_approved: { icon: CheckCircle, label: "Proposta approvata", filter: "deal" },
   deal_proposal_rejected: { icon: XCircle, label: "Proposta rifiutata", filter: "deal" },
   new_deal_board: { icon: Megaphone, label: "Nuovo deal", filter: "deal" },
+  presentation_requested: { icon: Presentation, label: "Richiesta presentazione", filter: "presentazioni" },
+  presentation_approved: { icon: CheckCircle, label: "Presentazione approvata", filter: "presentazioni" },
+  presentation_rejected: { icon: XCircle, label: "Presentazione rifiutata", filter: "presentazioni" },
 };
 
 const tabs = [
   { key: "tutte", label: "Tutte" },
   { key: "non_lette", label: "Non Lette" },
   { key: "accesso", label: "Accesso" },
+  { key: "presentazioni", label: "Presentazioni" },
   { key: "deal", label: "Deal" },
   { key: "dichiarazioni", label: "Dichiarazioni" },
 ];
