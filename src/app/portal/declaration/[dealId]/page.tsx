@@ -41,6 +41,7 @@ export default async function DeclarationPage({ params }: { params: Promise<{ de
     <DeclarationForm
       deal={deal}
       userId={user.id}
+      userEmail={user.email || ""}
       alreadyDeclared={!!existingDecl}
     />
   );

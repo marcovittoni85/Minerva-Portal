@@ -38,10 +38,12 @@ const chainRelationshipOptions = [
 export default function DeclarationForm({
   deal,
   userId,
+  userEmail,
   alreadyDeclared,
 }: {
   deal: { id: string; title: string; code: string; sector: string };
   userId: string;
+  userEmail: string;
   alreadyDeclared: boolean;
 }) {
   const supabase = createClient();
@@ -107,6 +109,39 @@ export default function DeclarationForm({
         action: "declaration_submitted",
         details: { role_in_deal: roleInDeal, has_conflict: hasConflict === "yes" },
       });
+
+      // Auto-populate CRM contact from chain mandate
+      if (isChainMandate && chainName.trim()) {
+        try {
+          // Parse contact field — could be email or phone
+          const contactVal = chainContact.trim();
+          const isEmail = contactVal.includes("@");
+
+          const { data: newContact } = await supabase
+            .from("crm_contacts")
+            .insert({
+              full_name: chainName.trim(),
+              company: chainCompany.trim() || null,
+              email: isEmail ? contactVal : null,
+              phone: !isEmail && contactVal ? contactVal : null,
+              category: "mandante_terzo",
+              status: "attivo",
+              referred_by: userEmail,
+              first_contact_date: new Date().toISOString(),
+            })
+            .select("id")
+            .single();
+
+          if (newContact) {
+            await supabase.from("crm_contact_deals").insert({
+              contact_id: newContact.id,
+              deal_id: deal.id,
+            });
+          }
+        } catch (e) {
+          console.error("CRM auto-populate error:", e);
+        }
+      }
 
       // Notify admins via API (centralized helper)
       try {

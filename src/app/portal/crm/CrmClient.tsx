@@ -40,11 +40,12 @@ interface LinkedDeal {
   deals: { code: string; title: string } | null;
 }
 
-const categoryOptions = ["prospect", "client", "partner", "other"];
+const categoryOptions = ["prospect", "client", "partner", "mandante_terzo", "other"];
 const categoryLabels: Record<string, string> = {
   prospect: "Prospect",
   client: "Cliente",
   partner: "Partner",
+  mandante_terzo: "Mandante Terzo",
   other: "Altro",
 };
 const statusOptions = ["attivo", "inattivo"];
@@ -79,6 +80,7 @@ function CategoryBadge({ cat }: { cat: string | null }) {
     prospect: "text-blue-600",
     client: "text-emerald-600",
     partner: "text-[#D4AF37]",
+    mandante_terzo: "text-violet-600",
     other: "text-slate-500",
   };
   return (
