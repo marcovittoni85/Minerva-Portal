@@ -10,7 +10,8 @@ export type NotificationType =
   | "stage_changed"
   | "deal_proposal_approved"
   | "deal_proposal_rejected"
-  | "new_deal_board";
+  | "new_deal_board"
+  | "comment_added";
 
 // Maps notification types to the preference column prefix
 const typeToPreferenceKey: Record<NotificationType, string> = {
@@ -23,6 +24,7 @@ const typeToPreferenceKey: Record<NotificationType, string> = {
   deal_proposal_approved: "deal_proposal_approved",
   deal_proposal_rejected: "deal_proposal_rejected",
   new_deal_board: "new_deal_board",
+  comment_added: "stage_changed",
 };
 
 export async function sendNotification(

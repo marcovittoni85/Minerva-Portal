@@ -45,6 +45,19 @@ const { data, error } = await supabase.from("deal_comments").insert({
     if (!error && data) {
       setComments([...comments, data]);
       setNewMsg("");
+
+      // Log activity + notify workgroup (fire-and-forget)
+      supabase.from("deal_activity_log").insert({
+        deal_id: deal.id,
+        user_id: userId,
+        action: "comment_added",
+        details: { deal_title: deal.title },
+      });
+      fetch("/api/notifications/comment-added", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dealId: deal.id, dealTitle: deal.title, userId }),
+      }).catch(() => {});
     }
     setSending(false);
   };
