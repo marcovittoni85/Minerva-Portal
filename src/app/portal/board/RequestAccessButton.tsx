@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 
-export default function RequestAccessButton({ dealId, isAdmin, externalStatus }: { dealId: string; isAdmin?: boolean; externalStatus?: "loading" | "none" | "pending" | "approved" | "rejected" }) {
+export default function RequestAccessButton({ dealId, isAdmin, externalStatus, presentationStatus }: { dealId: string; isAdmin?: boolean; externalStatus?: "loading" | "none" | "pending" | "approved" | "rejected"; presentationStatus?: "none" | "pending" | "approved" | "rejected" }) {
   const supabase = createClient();
   const [internalStatus, setInternalStatus] = useState<"loading" | "none" | "pending" | "approved" | "rejected">("loading");
   const [loading, setLoading] = useState(false);
@@ -51,7 +51,18 @@ export default function RequestAccessButton({ dealId, isAdmin, externalStatus }:
   if (status === "loading") return <div className="h-8 w-24 bg-slate-50 animate-pulse rounded" />;
 
   if (isAdmin || status === "approved") return (
-    <Link href={"/portal/deals/" + dealId} className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] hover:text-[#b8962d] transition-colors">Apri Dossier</Link>
+    <div className="flex flex-col items-end gap-0.5">
+      <Link href={"/portal/deals/" + dealId} className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] hover:text-[#b8962d] transition-colors">Apri Dossier</Link>
+      {presentationStatus === "pending" && (
+        <span className="text-[8px] uppercase tracking-wider text-amber-600">Presentazione in attesa</span>
+      )}
+      {presentationStatus === "approved" && (
+        <span className="text-[8px] uppercase tracking-wider text-emerald-600">NDA disponibile</span>
+      )}
+      {presentationStatus === "rejected" && (
+        <span className="text-[8px] uppercase tracking-wider text-red-500">Presentazione rifiutata</span>
+      )}
+    </div>
   );
 
   if (status === "pending") return (
