@@ -73,6 +73,18 @@ interface Member {
   declaration?: DeclarationData | null;
 }
 
+interface PresentationRequest {
+  id: string;
+  userName: string;
+  userId: string;
+  counterpartyName: string;
+  counterpartyCompany: string;
+  counterpartyRole: string;
+  notes: string;
+  status: string;
+  createdAt: string;
+}
+
 interface ActivityEntry {
   id: string;
   userName: string;
@@ -88,6 +100,10 @@ const actionLabels: Record<string, string> = {
   workgroup_added: "Ha aggiunto un membro al gruppo di lavoro",
   declaration_submitted: "Ha inviato la dichiarazione",
   stage_changed: "Ha cambiato lo stage",
+  presentation_requested: "Ha richiesto autorizzazione a presentare",
+  presentation_approved: "Ha approvato la presentazione",
+  presentation_rejected: "Ha rifiutato la presentazione",
+  nda_uploaded: "Ha caricato l'NDA firmato",
 };
 
 function getActionDescription(action: string, details: any): string {
@@ -105,6 +121,18 @@ function getActionDescription(action: string, details: any): string {
   if (action === "declaration_submitted" && details?.has_conflict) {
     return "Ha inviato la dichiarazione (conflitto segnalato)";
   }
+  if (action === "presentation_requested" && details?.counterparty_name) {
+    return `Ha richiesto di presentare a ${details.counterparty_name} (${details.counterparty_company || ""})`;
+  }
+  if (action === "presentation_approved" && details?.counterparty_name) {
+    return `Ha approvato la presentazione a ${details.counterparty_name}`;
+  }
+  if (action === "presentation_rejected" && details?.counterparty_name) {
+    return `Ha rifiutato la presentazione a ${details.counterparty_name}`;
+  }
+  if (action === "nda_uploaded" && details?.counterparty_company) {
+    return `Ha caricato l'NDA firmato per ${details.counterparty_company}`;
+  }
   return actionLabels[action] || action;
 }
 
@@ -115,6 +143,7 @@ export default function DealManageClient({
   workgroupMembers,
   adminId,
   activityLog = [],
+  presentationRequests: initialPresentationRequests = [],
 }: {
   deal: any;
   originatorName: string;
@@ -122,6 +151,7 @@ export default function DealManageClient({
   workgroupMembers: Member[];
   adminId: string;
   activityLog?: ActivityEntry[];
+  presentationRequests?: PresentationRequest[];
 }) {
   const supabase = createClient();
   const router = useRouter();
@@ -130,6 +160,8 @@ export default function DealManageClient({
   const [wgMembers, setWgMembers] = useState<Member[]>(workgroupMembers);
   const [addingUserId, setAddingUserId] = useState<string | null>(null);
   const [expandedMemberId, setExpandedMemberId] = useState<string | null>(null);
+  const [presRequests, setPresRequests] = useState<PresentationRequest[]>(initialPresentationRequests);
+  const [processingPresId, setProcessingPresId] = useState<string | null>(null);
 
   const currentIndex = stages.indexOf(currentStage);
 
@@ -187,6 +219,26 @@ export default function DealManageClient({
       alert("Errore di rete: " + (e.message || "Riprova più tardi"));
     }
     setAddingUserId(null);
+  };
+
+  const handlePresentationAction = async (requestId: string, action: "approved" | "rejected") => {
+    setProcessingPresId(requestId);
+    try {
+      const res = await fetch("/api/presentation-request/approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requestId, action }),
+      });
+      if (res.ok) {
+        setPresRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: action } : r));
+      } else {
+        const data = await res.json();
+        alert(data.error || "Errore");
+      }
+    } catch {
+      alert("Errore di rete");
+    }
+    setProcessingPresId(null);
   };
 
   const wgUserIds = new Set(wgMembers.map(m => m.id));
@@ -457,6 +509,79 @@ export default function DealManageClient({
           )}
         </div>
       </div>
+
+      {/* Presentation Requests */}
+      {presRequests.length > 0 && (
+        <div className="bg-white border border-slate-100 rounded-2xl p-6 mt-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Richieste di Presentazione</h2>
+            <span className="text-xs text-slate-400">{presRequests.filter(r => r.status === "pending").length} in attesa</span>
+          </div>
+          <div className="space-y-4">
+            {presRequests.map(req => {
+              const statusConfig = req.status === "pending"
+                ? { label: "In attesa", style: "text-amber-700 bg-amber-50 border-amber-200" }
+                : req.status === "approved"
+                ? { label: "Approvata", style: "text-emerald-700 bg-emerald-50 border-emerald-200" }
+                : { label: "Rifiutata", style: "text-red-700 bg-red-50 border-red-200" };
+
+              return (
+                <div key={req.id} className="border border-slate-100 rounded-xl p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <p className="text-sm font-bold text-slate-900">{req.userName}</p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        {new Date(req.createdAt).toLocaleDateString("it-IT", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
+                    <span className={"text-[9px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg border " + statusConfig.style}>
+                      {statusConfig.label}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-0.5">Controparte</p>
+                      <p className="text-xs text-slate-700">{req.counterpartyName}</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-0.5">Società</p>
+                      <p className="text-xs text-slate-700">{req.counterpartyCompany}</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-0.5">Ruolo</p>
+                      <p className="text-xs text-slate-700">{req.counterpartyRole}</p>
+                    </div>
+                    {req.notes && (
+                      <div>
+                        <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-0.5">Note</p>
+                        <p className="text-xs text-slate-700">{req.notes}</p>
+                      </div>
+                    )}
+                  </div>
+                  {req.status === "pending" && (
+                    <div className="flex items-center gap-2 pt-3 border-t border-slate-50">
+                      <button
+                        onClick={() => handlePresentationAction(req.id, "approved")}
+                        disabled={processingPresId === req.id}
+                        className="text-[9px] font-bold uppercase tracking-widest text-emerald-700 border border-emerald-200 px-4 py-2 rounded-lg hover:bg-emerald-50 transition-colors disabled:opacity-50"
+                      >
+                        {processingPresId === req.id ? "..." : "Approva"}
+                      </button>
+                      <button
+                        onClick={() => handlePresentationAction(req.id, "rejected")}
+                        disabled={processingPresId === req.id}
+                        className="text-[9px] font-bold uppercase tracking-widest text-red-600 border border-red-200 px-4 py-2 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                      >
+                        Rifiuta
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Deal Info */}
       <div className="bg-white border border-slate-100 rounded-2xl p-6 mt-8">

@@ -11,6 +11,9 @@ const actionOptions = [
   { value: "workgroup_added", label: "Aggiunto a WG" },
   { value: "declaration_submitted", label: "Dichiarazione" },
   { value: "stage_changed", label: "Stage cambiato" },
+  { value: "presentation_requested", label: "Presentazione richiesta" },
+  { value: "presentation_approved", label: "Presentazione approvata" },
+  { value: "nda_uploaded", label: "NDA caricato" },
 ];
 
 const actionLabels: Record<string, string> = {
@@ -20,6 +23,10 @@ const actionLabels: Record<string, string> = {
   workgroup_added: "Aggiunto a WG",
   declaration_submitted: "Dichiarazione inviata",
   stage_changed: "Stage cambiato",
+  presentation_requested: "Presentazione richiesta",
+  presentation_approved: "Presentazione approvata",
+  presentation_rejected: "Presentazione rifiutata",
+  nda_uploaded: "NDA firmato caricato",
 };
 
 const PAGE_SIZE = 50;

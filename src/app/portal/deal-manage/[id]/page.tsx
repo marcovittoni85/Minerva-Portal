@@ -93,6 +93,35 @@ export default async function DealManageDetailPage({ params }: { params: Promise
     createdAt: r.created_at,
   }));
 
+  // Fetch presentation requests
+  const { data: presentationRows } = await supabase
+    .from("presentation_requests")
+    .select("id, user_id, counterparty_name, counterparty_company, counterparty_role, notes, status, created_at")
+    .eq("deal_id", id)
+    .order("created_at", { ascending: false });
+
+  const presUserIds = [...new Set((presentationRows ?? []).map(r => r.user_id).filter(Boolean))];
+  const { data: presProfiles } = presUserIds.length > 0
+    ? await supabase.from("profiles").select("id, full_name").in("id", presUserIds)
+    : { data: [] };
+  const presNameMap: Record<string, string> = Object.fromEntries(
+    (presProfiles ?? []).map(p => [p.id, p.full_name])
+  );
+
+  const presentationRequests = (presentationRows ?? []).map(r => {
+    return {
+      id: r.id,
+      userName: presNameMap[r.user_id] || "Utente",
+      userId: r.user_id,
+      counterpartyName: r.counterparty_name || "",
+      counterpartyCompany: r.counterparty_company || "",
+      counterpartyRole: r.counterparty_role || "",
+      notes: r.notes || "",
+      status: r.status || "pending",
+      createdAt: r.created_at,
+    };
+  });
+
   return (
     <DealManageClient
       deal={deal}
@@ -101,6 +130,7 @@ export default async function DealManageDetailPage({ params }: { params: Promise
       workgroupMembers={(wgProfiles ?? []).map(p => ({ id: p.id, name: p.full_name, role: p.role, roleInDeal: wgRoleMap[p.id] || "", declarationStatus: declMap[p.id] || "none", declaration: declDataMap[p.id] || null }))}
       adminId={user.id}
       activityLog={activityLog}
+      presentationRequests={presentationRequests}
     />
   );
 }

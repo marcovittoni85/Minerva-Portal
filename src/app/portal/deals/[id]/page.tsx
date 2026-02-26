@@ -89,6 +89,21 @@ export default async function DealDetailPage({ params }: { params: Promise<{ id:
     uploader_name: d.uploader_id === user.id ? "Tu" : (uploaderMap[d.uploader_id] || "Utente"),
   }));
 
+  // Fetch presentation request status
+  const { data: presentationEntry } = await supabase
+    .from("presentation_requests")
+    .select("id, status")
+    .eq("deal_id", id)
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const presentationStatus: "none" | "pending" | "approved" | "rejected" =
+    presentationEntry?.status === "pending" ? "pending" :
+    presentationEntry?.status === "approved" ? "approved" :
+    presentationEntry?.status === "rejected" ? "rejected" : "none";
+
   // Log deal_viewed activity
   await supabase.from("deal_activity_log").insert({
     deal_id: id,
@@ -107,6 +122,7 @@ export default async function DealDetailPage({ params }: { params: Promise<{ id:
       isOriginator={isOriginator}
       userId={user.id}
       initialDocs={initialDocs}
+      presentationStatus={presentationStatus}
     />
   );
 }

@@ -3,7 +3,17 @@
     "allow": [
       "Bash(cd:*)",
       "Bash(cd /c/minerva/minerva-portal/minerva-portal && npx tsc --noEmit --pretty 2>&1)",
-      "Bash(start:*)"
+      "Bash(start:*)",
+      "Bash(tail:*)",
+      "Bash(npm run:*)",
+      "Bash(git diff:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(curl:*)",
+      "Bash(npm install:*)",
+      "Bash(npx next:*)",
+      "Bash(python3:*)"
     ]
   }
 }

@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
-import { ArrowLeft, Send, FileText, MapPin, TrendingUp, Users, Clock, Shield, FolderOpen } from "lucide-react";
+import { ArrowLeft, Send, FileText, MapPin, TrendingUp, Users, Clock, Shield, FolderOpen, X, Presentation, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import Documents, { type DocRow } from "./Documents";
 
 interface Comment {
@@ -13,7 +13,7 @@ interface Comment {
 }
 
 export default function DealDetailClient({
-  deal, comments: initialComments, commenterMap, originatorName, isAdmin, isOriginator, userId, initialDocs,
+  deal, comments: initialComments, commenterMap, originatorName, isAdmin, isOriginator, userId, initialDocs, presentationStatus: initialPresentationStatus = "none",
 }: {
   deal: any;
   comments: Comment[];
@@ -23,6 +23,7 @@ export default function DealDetailClient({
   isOriginator: boolean;
   userId: string;
   initialDocs: DocRow[];
+  presentationStatus?: "none" | "pending" | "approved" | "rejected";
 }) {
   const supabase = createClient();
   const [comments, setComments] = useState(initialComments);
@@ -30,6 +31,15 @@ export default function DealDetailClient({
   const [sending, setSending] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<"commenti" | "documenti">("commenti");
+  const [presentationStatus, setPresentationStatus] = useState(initialPresentationStatus);
+  const [showPresentationModal, setShowPresentationModal] = useState(false);
+  const [presentationForm, setPresentationForm] = useState({
+    counterparty_name: "",
+    counterparty_company: "",
+    counterparty_role: "Potenziale acquirente",
+    notes: "",
+  });
+  const [submittingPresentation, setSubmittingPresentation] = useState(false);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -63,6 +73,35 @@ const { data, error } = await supabase.from("deal_comments").insert({
       }).catch(() => {});
     }
     setSending(false);
+  };
+
+  const submitPresentationRequest = async () => {
+    if (!presentationForm.counterparty_name.trim()) return;
+    setSubmittingPresentation(true);
+    try {
+      const res = await fetch("/api/presentation-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dealId: deal.id,
+          counterparty_name: presentationForm.counterparty_name.trim(),
+          counterparty_company: presentationForm.counterparty_company.trim(),
+          counterparty_role: presentationForm.counterparty_role,
+          notes: presentationForm.notes.trim() || null,
+        }),
+      });
+      if (res.ok) {
+        setPresentationStatus("pending");
+        setShowPresentationModal(false);
+        setPresentationForm({ counterparty_name: "", counterparty_company: "", counterparty_role: "Potenziale acquirente", notes: "" });
+      } else {
+        const data = await res.json();
+        alert(data.error || "Errore nell'invio della richiesta");
+      }
+    } catch {
+      alert("Errore di rete");
+    }
+    setSubmittingPresentation(false);
   };
 
   const sectorColors: Record<string, string> = {
@@ -138,6 +177,54 @@ const { data, error } = await supabase.from("deal_comments").insert({
           </div>
         </div>
       </div>
+
+      {/* Presentation Request Section */}
+      {!isAdmin && (
+        <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Presentation className="w-5 h-5 text-[#D4AF37]" />
+              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Presentazione a Controparte</h2>
+            </div>
+            <div>
+              {presentationStatus === "none" && (
+                <button
+                  onClick={() => setShowPresentationModal(true)}
+                  className="bg-[#D4AF37] text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#b8962d] transition-colors"
+                >
+                  Richiedi autorizzazione a presentare
+                </button>
+              )}
+              {presentationStatus === "pending" && (
+                <span className="inline-flex items-center gap-2 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl">
+                  <Clock className="w-3.5 h-3.5" />
+                  Richiesta di presentazione in attesa
+                </span>
+              )}
+              {presentationStatus === "approved" && (
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-4 py-2 rounded-xl">
+                    <CheckCircle className="w-3.5 h-3.5" />
+                    Presentazione autorizzata
+                  </span>
+                  <a
+                    href={`/portal/nda-generator/${deal.id}`}
+                    className="bg-[#D4AF37] text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#b8962d] transition-colors"
+                  >
+                    Genera NDA
+                  </a>
+                </div>
+              )}
+              {presentationStatus === "rejected" && (
+                <span className="inline-flex items-center gap-2 text-xs font-bold text-red-700 bg-red-50 border border-red-200 px-4 py-2 rounded-xl">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  Richiesta rifiutata
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Documents — left column */}
@@ -267,6 +354,81 @@ const { data, error } = await supabase.from("deal_comments").insert({
           )}
         </div>
       </div>
+
+      {/* Presentation Request Modal */}
+      {showPresentationModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-8">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Richiesta di Presentazione</h3>
+              <button onClick={() => setShowPresentationModal(false)} className="p-2 rounded-lg hover:bg-slate-100 transition-colors">
+                <X className="w-4 h-4 text-slate-500" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1 block">Nome controparte *</label>
+                <input
+                  type="text"
+                  value={presentationForm.counterparty_name}
+                  onChange={(e) => setPresentationForm({ ...presentationForm, counterparty_name: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-[#D4AF37] transition-colors"
+                  placeholder="Nome e cognome"
+                />
+              </div>
+              <div>
+                <label className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1 block">Società controparte</label>
+                <input
+                  type="text"
+                  value={presentationForm.counterparty_company}
+                  onChange={(e) => setPresentationForm({ ...presentationForm, counterparty_company: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-[#D4AF37] transition-colors"
+                  placeholder="Ragione sociale"
+                />
+              </div>
+              <div>
+                <label className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1 block">Ruolo controparte *</label>
+                <select
+                  value={presentationForm.counterparty_role}
+                  onChange={(e) => setPresentationForm({ ...presentationForm, counterparty_role: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 outline-none focus:border-[#D4AF37] transition-colors"
+                >
+                  <option value="Potenziale acquirente">Potenziale acquirente</option>
+                  <option value="Potenziale investitore">Potenziale investitore</option>
+                  <option value="Potenziale venditore">Potenziale venditore</option>
+                  <option value="Altro">Altro</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1 block">Note (opzionale)</label>
+                <textarea
+                  value={presentationForm.notes}
+                  onChange={(e) => setPresentationForm({ ...presentationForm, notes: e.target.value })}
+                  rows={3}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-[#D4AF37] transition-colors resize-none"
+                  placeholder="Eventuali note aggiuntive..."
+                />
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-slate-100 flex justify-end gap-3">
+              <button
+                onClick={() => setShowPresentationModal(false)}
+                className="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest text-slate-500 border border-slate-200 hover:bg-slate-50 transition-colors"
+              >
+                Annulla
+              </button>
+              <button
+                onClick={submitPresentationRequest}
+                disabled={submittingPresentation || !presentationForm.counterparty_name.trim()}
+                className="bg-[#D4AF37] text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#b8962d] transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {submittingPresentation && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                Invia Richiesta
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

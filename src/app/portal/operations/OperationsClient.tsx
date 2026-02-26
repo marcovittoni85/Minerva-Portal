@@ -64,6 +64,10 @@ const actionLabels: Record<string, string> = {
   declaration_submitted: "Dichiarazione inviata",
   comment_added: "Commento aggiunto",
   document_uploaded: "Documento caricato",
+  presentation_requested: "Presentazione richiesta",
+  presentation_approved: "Presentazione approvata",
+  presentation_rejected: "Presentazione rifiutata",
+  nda_uploaded: "NDA firmato caricato",
 };
 
 function formatTimeAgo(dateStr: string) {
