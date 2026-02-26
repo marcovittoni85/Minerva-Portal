@@ -21,17 +21,23 @@ export async function POST(req: Request, { params }: any) {
 
   const isAdmin = (prof?.role ?? "").toLowerCase() === "admin";
 
-  // accesso editor sul deal
-  const { data: du } = await supabase
-    .from("deal_users")
-    .select("role_on_deal")
+  // check deal access or originator
+  const { data: access } = await supabase
+    .from("deal_access")
+    .select("id")
     .eq("deal_id", dealId)
     .eq("user_id", user.id)
     .maybeSingle();
 
-  const isEditor = (du?.role_on_deal ?? "").toLowerCase() === "editor";
+  const { data: deal } = await supabase
+    .from("deals")
+    .select("originator_id")
+    .eq("id", dealId)
+    .single();
 
-  if (!isAdmin && !isEditor) {
+  const isOriginator = deal?.originator_id === user.id;
+
+  if (!isAdmin && !isOriginator && !access) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

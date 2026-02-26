@@ -71,6 +71,24 @@ export default async function DealDetailPage({ params }: { params: Promise<{ id:
     : { data: [] };
   const commenterMap = Object.fromEntries((commenterProfiles ?? []).map((p) => [p.id, { name: p.full_name, role: p.role?.toString() }]));
 
+  // Fetch documents with uploader names
+  const { data: rawDocs } = await supabase
+    .from("deal_documents")
+    .select("id, file_name, storage_path, mime_type, size_bytes, category, created_at, uploader_id")
+    .eq("deal_id", id)
+    .order("created_at", { ascending: false });
+
+  const uploaderIds = [...new Set((rawDocs ?? []).map((d) => d.uploader_id))];
+  const { data: uploaderProfiles } = uploaderIds.length > 0
+    ? await supabase.from("profiles").select("id, full_name").in("id", uploaderIds)
+    : { data: [] };
+  const uploaderMap = Object.fromEntries((uploaderProfiles ?? []).map((p) => [p.id, p.full_name]));
+
+  const initialDocs = (rawDocs ?? []).map((d) => ({
+    ...d,
+    uploader_name: d.uploader_id === user.id ? "Tu" : (uploaderMap[d.uploader_id] || "Utente"),
+  }));
+
   // Log deal_viewed activity
   await supabase.from("deal_activity_log").insert({
     deal_id: id,
@@ -88,6 +106,7 @@ export default async function DealDetailPage({ params }: { params: Promise<{ id:
       isAdmin={isAdmin}
       isOriginator={isOriginator}
       userId={user.id}
+      initialDocs={initialDocs}
     />
   );
 }

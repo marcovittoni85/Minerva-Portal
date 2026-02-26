@@ -2,7 +2,8 @@
 import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
-import { ArrowLeft, Send, FileText, MapPin, TrendingUp, Users, Clock, Shield } from "lucide-react";
+import { ArrowLeft, Send, FileText, MapPin, TrendingUp, Users, Clock, Shield, FolderOpen } from "lucide-react";
+import Documents, { type DocRow } from "./Documents";
 
 interface Comment {
   id: string;
@@ -12,7 +13,7 @@ interface Comment {
 }
 
 export default function DealDetailClient({
-  deal, comments: initialComments, commenterMap, originatorName, isAdmin, isOriginator, userId,
+  deal, comments: initialComments, commenterMap, originatorName, isAdmin, isOriginator, userId, initialDocs,
 }: {
   deal: any;
   comments: Comment[];
@@ -21,12 +22,14 @@ export default function DealDetailClient({
   isAdmin: boolean;
   isOriginator: boolean;
   userId: string;
+  initialDocs: DocRow[];
 }) {
   const supabase = createClient();
   const [comments, setComments] = useState(initialComments);
   const [newMsg, setNewMsg] = useState("");
   const [sending, setSending] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState<"commenti" | "documenti">("commenti");
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -181,55 +184,87 @@ const { data, error } = await supabase.from("deal_comments").insert({
           )}
         </div>
 
-        {/* Chat — right column */}
+        {/* Tabbed right column */}
         <div className="lg:col-span-2 bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden flex flex-col" style={{ maxHeight: "600px" }}>
-          <div className="p-5 border-b border-slate-100">
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-[#D4AF37]" />
-              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Commenti</h2>
-            </div>
-            <p className="text-slate-500 text-xs mt-1">Comunica con l'originator e i membri approvati.</p>
-          </div>
-
-          <div className="flex-1 p-5 overflow-y-auto space-y-3">
-            {comments.length === 0 ? (
-              <p className="text-slate-400 text-sm text-center py-12">Nessun commento. Inizia la conversazione.</p>
-            ) : (
-              comments.map((c) => {
-                const isMe = c.user_id === userId;
-                const commenter = commenterMap[c.user_id];
-                return (
-                  <div key={c.id} className={"flex " + (isMe ? "justify-end" : "justify-start")}>
-                    <div className={"max-w-sm rounded-2xl px-4 py-3 " + (isMe ? "bg-[#D4AF37]/10 border border-[#D4AF37]/20" : "bg-slate-50 border border-slate-100")}>
-                      <p className={"text-[10px] font-bold mb-1 " + (isMe ? "text-[#D4AF37]" : "text-slate-500")}>
-                        {isMe ? "Tu" : (commenter?.name || "Utente")}
-                        {commenter?.role === "admin" && !isMe && <span className="ml-1 text-[9px] text-slate-400">(Admin)</span>}
-                      </p>
-                    <p className="text-sm text-slate-900">{c.content}</p>
-                      <p className="text-[10px] text-slate-400 mt-1">
-                        {new Date(c.created_at).toLocaleDateString("it-IT", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-            <div ref={chatEndRef} />
-          </div>
-
-          <div className="p-4 border-t border-slate-100 flex gap-3">
-            <input
-              type="text"
-              value={newMsg}
-              onChange={(e) => setNewMsg(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendComment()}
-              placeholder="Scrivi un commento..."
-              className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-[#D4AF37] transition-colors"
-            />
-            <button onClick={sendComment} disabled={sending || !newMsg.trim()} className="bg-[#D4AF37] text-white px-4 py-3 rounded-xl disabled:opacity-50 hover:bg-[#b8962d] transition-colors">
-              <Send className="w-4 h-4" />
+          {/* Tab header */}
+          <div className="flex border-b border-slate-100">
+            <button
+              onClick={() => setActiveTab("commenti")}
+              className={"flex items-center gap-2 px-5 py-4 text-sm font-bold uppercase tracking-widest transition-colors border-b-2 " +
+                (activeTab === "commenti"
+                  ? "text-[#D4AF37] border-[#D4AF37]"
+                  : "text-slate-400 border-transparent hover:text-slate-600")}
+            >
+              <Users className="w-4 h-4" />
+              Commenti
+            </button>
+            <button
+              onClick={() => setActiveTab("documenti")}
+              className={"flex items-center gap-2 px-5 py-4 text-sm font-bold uppercase tracking-widest transition-colors border-b-2 " +
+                (activeTab === "documenti"
+                  ? "text-[#D4AF37] border-[#D4AF37]"
+                  : "text-slate-400 border-transparent hover:text-slate-600")}
+            >
+              <FolderOpen className="w-4 h-4" />
+              Documenti
             </button>
           </div>
+
+          {/* Commenti tab */}
+          {activeTab === "commenti" && (
+            <>
+              <div className="flex-1 p-5 overflow-y-auto space-y-3">
+                {comments.length === 0 ? (
+                  <p className="text-slate-400 text-sm text-center py-12">Nessun commento. Inizia la conversazione.</p>
+                ) : (
+                  comments.map((c) => {
+                    const isMe = c.user_id === userId;
+                    const commenter = commenterMap[c.user_id];
+                    return (
+                      <div key={c.id} className={"flex " + (isMe ? "justify-end" : "justify-start")}>
+                        <div className={"max-w-sm rounded-2xl px-4 py-3 " + (isMe ? "bg-[#D4AF37]/10 border border-[#D4AF37]/20" : "bg-slate-50 border border-slate-100")}>
+                          <p className={"text-[10px] font-bold mb-1 " + (isMe ? "text-[#D4AF37]" : "text-slate-500")}>
+                            {isMe ? "Tu" : (commenter?.name || "Utente")}
+                            {commenter?.role === "admin" && !isMe && <span className="ml-1 text-[9px] text-slate-400">(Admin)</span>}
+                          </p>
+                          <p className="text-sm text-slate-900">{c.content}</p>
+                          <p className="text-[10px] text-slate-400 mt-1">
+                            {new Date(c.created_at).toLocaleDateString("it-IT", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              <div className="p-4 border-t border-slate-100 flex gap-3">
+                <input
+                  type="text"
+                  value={newMsg}
+                  onChange={(e) => setNewMsg(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendComment()}
+                  placeholder="Scrivi un commento..."
+                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-[#D4AF37] transition-colors"
+                />
+                <button onClick={sendComment} disabled={sending || !newMsg.trim()} className="bg-[#D4AF37] text-white px-4 py-3 rounded-xl disabled:opacity-50 hover:bg-[#b8962d] transition-colors">
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* Documenti tab */}
+          {activeTab === "documenti" && (
+            <Documents
+              dealId={deal.id}
+              dealTitle={deal.title}
+              userId={userId}
+              isAdmin={isAdmin}
+              initialDocs={initialDocs}
+            />
+          )}
         </div>
       </div>
     </div>

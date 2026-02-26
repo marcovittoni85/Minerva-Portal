@@ -14,6 +14,7 @@ const notificationTypes = [
   { key: "deal_proposal_approved", label: "Proposta deal approvata" },
   { key: "deal_proposal_rejected", label: "Proposta deal rifiutata" },
   { key: "new_deal_board", label: "Nuovo deal in bacheca" },
+  { key: "document_uploaded", label: "Nuovo documento caricato" },
 ] as const;
 
 const sectorOptions = [
