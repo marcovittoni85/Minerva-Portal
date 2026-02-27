@@ -93,6 +93,15 @@ export default async function DealManageDetailPage({ params }: { params: Promise
     createdAt: r.created_at,
   }));
 
+  // Fetch signed mandate (for fee import)
+  const { data: signedMandate } = await supabase
+    .from("mandates")
+    .select("id, status")
+    .eq("deal_id", id)
+    .eq("status", "signed")
+    .limit(1)
+    .maybeSingle();
+
   // Fetch presentation requests
   const { data: presentationRows } = await supabase
     .from("presentation_requests")
@@ -131,6 +140,7 @@ export default async function DealManageDetailPage({ params }: { params: Promise
       adminId={user.id}
       activityLog={activityLog}
       presentationRequests={presentationRequests}
+      signedMandateId={signedMandate?.id || null}
     />
   );
 }

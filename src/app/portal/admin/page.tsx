@@ -1,4 +1,5 @@
 import { supabaseServer } from "@/lib/supabase-server";
+import FeeOverviewSection from "./FeeOverviewSection";
 
 export default async function AdminDashboard() {
   const supabase = await supabaseServer();
@@ -31,6 +32,10 @@ export default async function AdminDashboard() {
           <p className="text-4xl font-black text-[#D4AF37]">{activity?.length || 0}</p>
         </div>
         {/* Aggiungeremo qui altri KPI come Deal più visti, etc. */}
+      </div>
+
+      <div className="mb-12">
+        <FeeOverviewSection />
       </div>
 
       <div className="bg-white border border-slate-100 rounded-[2.5rem] overflow-hidden">

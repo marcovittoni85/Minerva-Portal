@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { Plus, Trash2, Save, Loader2, Check, X } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 
 /* ─── Types ─────────────────────────────────────────────────── */
 
@@ -254,6 +255,7 @@ function SummaryRow({ label, amount, gold }: { label: string; amount: number; go
 
 export default function FeeSimulatorClient() {
   const [mode, setMode] = useState<Mode>("A");
+  const [showSaveModal, setShowSaveModal] = useState(false);
 
   // Fees
   const [fl1, setFl1] = useState(100000);
@@ -689,8 +691,163 @@ export default function FeeSimulatorClient() {
                 </div>
               </div>
             )}
+
+            {/* Save as Fee Stream */}
+            {w1.fl > 0 && (
+              <div className="mt-4 pt-3 border-t border-slate-100">
+                <button
+                  onClick={() => setShowSaveModal(true)}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#b8962d] text-white text-[10px] font-bold uppercase tracking-widest hover:shadow-lg hover:shadow-[#D4AF37]/25 transition-all"
+                >
+                  <Save size={14} /> Salva come Fee Stream
+                </button>
+              </div>
+            )}
           </div>
         </div>
+      </div>
+
+      {/* Save Fee Stream Modal */}
+      {showSaveModal && (
+        <SaveFeeStreamModal
+          feeData={{
+            projected_amount: w1.fl,
+            percentage: w1.minervaPct > 0 ? w1.minervaPct : undefined,
+            calculation_base: "Enterprise Value",
+            fee_type: w1.advisorPct > 0 ? "advisory" : "success",
+          }}
+          onClose={() => setShowSaveModal(false)}
+          onSaved={() => setShowSaveModal(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ─── Save Fee Stream Modal ───────────────────────────────── */
+
+function SaveFeeStreamModal({
+  feeData,
+  onClose,
+  onSaved,
+}: {
+  feeData: { projected_amount: number; percentage?: number; calculation_base: string; fee_type: string };
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [deals, setDeals] = useState<{ id: string; title: string }[]>([]);
+  const [selectedDeal, setSelectedDeal] = useState("");
+  const [label, setLabel] = useState(
+    feeData.percentage
+      ? `Success Fee ${feeData.percentage}%`
+      : `Advisory Fee ${fmt(feeData.projected_amount)}`
+  );
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("deals")
+      .select("id, title")
+      .eq("active", true)
+      .order("title")
+      .then(({ data }) => setDeals(data || []));
+  }, []);
+
+  const handleSave = async () => {
+    if (!selectedDeal) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/fees", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          deal_id: selectedDeal,
+          fee_type: feeData.fee_type,
+          label,
+          projected_amount: feeData.projected_amount,
+          percentage: feeData.percentage || null,
+          calculation_base: feeData.percentage ? feeData.calculation_base : null,
+          vat_rate: 22.0,
+          status: "projected",
+        }),
+      });
+      if (res.ok) {
+        setSaved(true);
+        setTimeout(onSaved, 1200);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-5">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-bold text-[#001220]">Salva come Fee Stream</h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+            <X size={20} />
+          </button>
+        </div>
+
+        {saved ? (
+          <div className="flex items-center gap-3 p-4 rounded-lg bg-emerald-50 text-emerald-700">
+            <Check size={20} />
+            <span className="font-medium">Fee Stream salvato con successo!</span>
+          </div>
+        ) : (
+          <>
+            <div>
+              <label className={labelCls}>Deal *</label>
+              <select
+                className={inputCls}
+                value={selectedDeal}
+                onChange={e => setSelectedDeal(e.target.value)}
+              >
+                <option value="">Seleziona un deal...</option>
+                {deals.map(d => (
+                  <option key={d.id} value={d.id}>{d.title}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className={labelCls}>Etichetta</label>
+              <input className={inputCls} value={label} onChange={e => setLabel(e.target.value)} />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className={labelCls}>Importo Previsto</label>
+                <p className="text-lg font-bold text-[#001220]">{fmt(feeData.projected_amount)}</p>
+              </div>
+              {feeData.percentage && (
+                <div>
+                  <label className={labelCls}>Percentuale</label>
+                  <p className="text-lg font-bold text-[#D4AF37]">{feeData.percentage}%</p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button onClick={onClose} className="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-all">
+                Annulla
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving || !selectedDeal}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#b8962d] text-white text-sm font-medium hover:shadow-lg hover:shadow-[#D4AF37]/25 transition-all disabled:opacity-50"
+              >
+                {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                Salva
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

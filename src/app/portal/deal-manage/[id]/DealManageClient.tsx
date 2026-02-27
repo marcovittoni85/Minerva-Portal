@@ -3,7 +3,8 @@ import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Clock, ScrollText } from "lucide-react";
+import { Clock, ScrollText, CircleDollarSign } from "lucide-react";
+import FeeTracker from "@/components/fees/FeeTracker";
 
 const stages = ["board", "in_review", "workgroup", "in_progress", "closed_won", "closed_lost"];
 const stageLabels: Record<string, string> = {
@@ -144,6 +145,7 @@ export default function DealManageClient({
   adminId,
   activityLog = [],
   presentationRequests: initialPresentationRequests = [],
+  signedMandateId = null,
 }: {
   deal: any;
   originatorName: string;
@@ -152,6 +154,7 @@ export default function DealManageClient({
   adminId: string;
   activityLog?: ActivityEntry[];
   presentationRequests?: PresentationRequest[];
+  signedMandateId?: string | null;
 }) {
   const supabase = createClient();
   const router = useRouter();
@@ -590,6 +593,19 @@ export default function DealManageClient({
           </div>
         </div>
       )}
+
+      {/* Fee & Revenue */}
+      <div className="bg-white border border-slate-100 rounded-2xl p-6 mt-8">
+        <div className="flex items-center gap-2 mb-6">
+          <CircleDollarSign className="w-4 h-4 text-[#D4AF37]" />
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Fee & Revenue</h2>
+        </div>
+        <FeeTracker
+          dealId={deal.id}
+          dealTitle={deal.title}
+          mandateId={signedMandateId || undefined}
+        />
+      </div>
 
       {/* Deal Info */}
       <div className="bg-white border border-slate-100 rounded-2xl p-6 mt-8">
