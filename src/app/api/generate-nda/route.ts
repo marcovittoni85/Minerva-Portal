@@ -288,20 +288,18 @@ export async function POST(req: Request) {
 
   // Verify user has approved presentation request
   const { data: request } = await supabase
-    .from("deal_activity_log")
-    .select("id, details")
+    .from("presentation_requests")
+    .select("id, counterparty_name, counterparty_company, status")
     .eq("deal_id", dealId)
     .eq("user_id", user.id)
-    .eq("action", "presentation_requested")
+    .eq("status", "approved")
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
 
-  if (!request || (request.details as any)?.status !== "approved") {
+  if (!request) {
     return NextResponse.json({ error: "Nessuna richiesta di presentazione approvata" }, { status: 403 });
   }
-
-  const details = request.details as any;
 
   // Get deal info
   const { data: deal } = await supabase.from("deals").select("code, title").eq("id", dealId).single();
@@ -309,8 +307,8 @@ export async function POST(req: Request) {
 
   // Build NDA document
   const doc = buildNDADocument(language as "it" | "en", deal, {
-    name: details.counterparty_name,
-    company: details.counterparty_company,
+    name: request.counterparty_name,
+    company: request.counterparty_company,
     vat: counterparty_vat,
     address: counterparty_address,
     legalRep: counterparty_legal_rep,
@@ -319,7 +317,8 @@ export async function POST(req: Request) {
 
   const buffer = await Packer.toBuffer(doc);
 
-  const filename = `NDA_${deal.code}_${details.counterparty_company.replace(/[^a-zA-Z0-9]/g, "_")}_${language.toUpperCase()}.docx`;
+  const companySlug = (request.counterparty_company || "counterparty").replace(/[^a-zA-Z0-9]/g, "_");
+  const filename = `NDA_${deal.code}_${companySlug}_${language.toUpperCase()}.docx`;
 
   return new Response(buffer as unknown as BodyInit, {
     headers: {
