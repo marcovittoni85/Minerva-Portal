@@ -1,4 +1,5 @@
 import { SupabaseClient } from "@supabase/supabase-js";
+import { supabaseAdmin } from "./supabase-admin";
 import { sendNotificationEmail } from "./send-notification-email";
 
 export type NotificationType =
@@ -37,7 +38,7 @@ const typeToPreferenceKey: Record<NotificationType, string> = {
 };
 
 export async function sendNotification(
-  supabase: SupabaseClient,
+  _supabase: SupabaseClient,
   {
     userId,
     type,
@@ -54,12 +55,15 @@ export async function sendNotification(
     dealTitle?: string;
   }
 ) {
+  // Use service-role client to bypass RLS — notifications are cross-user by nature
+  const adminClient = supabaseAdmin();
+
   const prefKey = typeToPreferenceKey[type];
   const appCol = `${prefKey}_app`;
   const emailCol = `${prefKey}_email`;
 
   // Fetch user preferences (defaults: app=true, email=false)
-  const { data: prefs } = await supabase
+  const { data: prefs } = await adminClient
     .from("notification_preferences")
     .select(`${appCol}, ${emailCol}`)
     .eq("user_id", userId)
@@ -71,18 +75,22 @@ export async function sendNotification(
 
   // In-app notification
   if (appEnabled) {
-    await supabase.from("notifications").insert({
+    const { error: insertError } = await adminClient.from("notifications").insert({
       user_id: userId,
       type,
       title,
       body,
       link: link || null,
     });
+
+    if (insertError) {
+      console.error(`[notifications] Failed to insert notification for ${userId}:`, insertError.message);
+    }
   }
 
   // Email notification
   if (emailEnabled) {
-    const { data: profile } = await supabase
+    const { data: profile } = await adminClient
       .from("profiles")
       .select("email, full_name")
       .eq("id", userId)

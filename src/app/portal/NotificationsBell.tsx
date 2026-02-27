@@ -34,7 +34,7 @@ export default function NotificationsBell() {
         .channel(`notif-${uid}`)
         .on(
           "postgres_changes",
-          { event: "*", schema: "public", table: "notifications" },
+          { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${uid}` },
           () => refresh()
         )
         .subscribe();
