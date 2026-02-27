@@ -321,7 +321,7 @@ export async function POST(req: Request) {
 
   const filename = `NDA_${deal.code}_${details.counterparty_company.replace(/[^a-zA-Z0-9]/g, "_")}_${language.toUpperCase()}.docx`;
 
-  return new Response(buffer, {
+  return new Response(buffer as unknown as BodyInit, {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "Content-Disposition": `attachment; filename="${filename}"`,

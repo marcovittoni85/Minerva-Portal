@@ -3,7 +3,7 @@ import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Clock } from "lucide-react";
+import { Clock, ScrollText } from "lucide-react";
 
 const stages = ["board", "in_review", "workgroup", "in_progress", "closed_won", "closed_lost"];
 const stageLabels: Record<string, string> = {
@@ -260,7 +260,15 @@ export default function DealManageClient({
               )}
             </div>
           </div>
-          <p className="text-xs text-slate-400">Originator: <span className="text-slate-600 font-medium">{originatorName}</span></p>
+          <div className="flex flex-col items-end gap-2">
+            <p className="text-xs text-slate-400">Originator: <span className="text-slate-600 font-medium">{originatorName}</span></p>
+            <Link
+              href={`/portal/mandates?deal_id=${deal.id}&deal_title=${encodeURIComponent(deal.title)}`}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#D4AF37] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[#b8962d] transition-colors"
+            >
+              <ScrollText className="w-3.5 h-3.5" /> Genera Mandato
+            </Link>
+          </div>
         </div>
       </div>
 
