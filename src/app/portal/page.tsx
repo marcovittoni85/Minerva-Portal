@@ -78,6 +78,9 @@ const activityLabelMap: Record<string, string> = {
   workgroup_added: "ha aggiunto a WG",
   declaration_submitted: "ha inviato dichiarazione",
   stage_changed: "ha cambiato stage",
+  presentation_requested: "ha richiesto presentazione",
+  presentation_approved: "ha approvato presentazione",
+  presentation_rejected: "ha rifiutato presentazione",
 };
 function activityLabel(action: string) { return activityLabelMap[action] || action; }
 
@@ -95,6 +98,7 @@ export default function DashboardPage() {
     activeDeals: number;
     stageCounts: Record<string, number>;
     pendingAccessRequests: number;
+    pendingPresentations: number;
     totalMembers: number;
     wgMembers: number;
     pendingDeclarations: number;
@@ -161,6 +165,9 @@ export default function DashboardPage() {
     // Pending access requests
     const { count: pendingAccessRequests } = await supabase.from("deal_access_requests").select("id", { count: "exact", head: true }).eq("status", "pending");
 
+    // Pending presentation requests (NDA)
+    const { count: pendingPresentations } = await supabase.from("presentation_requests").select("id", { count: "exact", head: true }).eq("status", "pending");
+
     // Total members
     const { count: totalMembers } = await supabase.from("profiles").select("id", { count: "exact", head: true });
 
@@ -206,6 +213,7 @@ export default function DashboardPage() {
       activeDeals,
       stageCounts,
       pendingAccessRequests: pendingAccessRequests ?? 0,
+      pendingPresentations: pendingPresentations ?? 0,
       totalMembers: totalMembers ?? 0,
       wgMembers,
       pendingDeclarations,
@@ -274,14 +282,18 @@ export default function DashboardPage() {
       {isAdmin && adminStats && (
         <div className="mb-10">
           {/* Top-level counts */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
             <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
               <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">Deal Attivi</p>
               <p className="text-2xl font-bold text-slate-900">{adminStats.activeDeals}</p>
             </div>
             <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
-              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">Richieste Pendenti</p>
+              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">Richieste Accesso</p>
               <p className="text-2xl font-bold text-amber-600">{adminStats.pendingAccessRequests}</p>
+            </div>
+            <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+              <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">Presentazioni Pendenti</p>
+              <p className="text-2xl font-bold text-amber-600">{adminStats.pendingPresentations}</p>
             </div>
             <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
               <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-1">Membri Totali</p>
