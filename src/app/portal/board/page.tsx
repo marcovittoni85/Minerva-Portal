@@ -14,5 +14,22 @@ export default async function BoardPage() {
 
   const { data: deals, error } = await supabase.rpc("get_board_deals");
 
-  return <BoardClient deals={deals ?? []} isAdmin={isAdmin} error={error?.message} />;
+  // For admins, batch-fetch originator names
+  let originatorMap: Record<string, string> = {};
+  if (isAdmin && deals && deals.length > 0) {
+    const originatorIds = [...new Set(deals.map((d: any) => d.originator_id).filter(Boolean))] as string[];
+    if (originatorIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", originatorIds);
+      if (profiles) {
+        for (const p of profiles) {
+          originatorMap[p.id] = p.full_name || "N/A";
+        }
+      }
+    }
+  }
+
+  return <BoardClient deals={deals ?? []} isAdmin={isAdmin} originatorMap={originatorMap} error={error?.message} />;
 }

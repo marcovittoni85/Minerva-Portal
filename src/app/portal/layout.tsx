@@ -127,7 +127,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         <Image src="/icon.webp" alt="Minerva" width={30} height={30} unoptimized />
         <div className="flex items-center gap-3">
           <button onClick={loadNotifs} className="relative">
-            <Bell className={"w-5 h-5 " + (unreadCount > 0 ? "text-[#F5A623]" : "text-slate-400")} style={unreadCount > 0 ? { animation: "bell-ring 0.8s ease-in-out 3", transformOrigin: "top center" } : undefined} />
+            <Bell className={"w-5 h-5 " + (unreadCount > 0 ? "text-[#D4AF37]" : "text-slate-400")} style={unreadCount > 0 ? { animation: "bell-ring 0.8s ease-in-out 3", transformOrigin: "top center" } : undefined} />
             {unreadCount > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-bold w-4 h-4 rounded-full flex items-center justify-center">{unreadCount}</span>}
           </button>
           <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}><Menu className="w-5 h-5" /></button>
@@ -141,7 +141,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-900">Minerva Partners</span>
           </div>
           <button onClick={loadNotifs} className="relative hidden md:block">
-            <Bell className={"w-4 h-4 transition-colors " + (unreadCount > 0 ? "text-[#F5A623]" : "text-slate-400 hover:text-[#D4AF37]")} style={unreadCount > 0 ? { animation: "bell-ring 0.8s ease-in-out 3", transformOrigin: "top center" } : undefined} />
+            <Bell className={"w-4 h-4 transition-colors " + (unreadCount > 0 ? "text-[#D4AF37]" : "text-slate-400 hover:text-[#D4AF37]")} style={unreadCount > 0 ? { animation: "bell-ring 0.8s ease-in-out 3", transformOrigin: "top center" } : undefined} />
             {unreadCount > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-bold w-4 h-4 rounded-full flex items-center justify-center">{unreadCount}</span>}
           </button>
         </div>
@@ -180,7 +180,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
           )}
         </nav>
 
-        <div className="p-4 border-t border-slate-50">
+        <div className="p-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-slate-50">
           <button onClick={handleLogout} className="w-full flex items-center space-x-3 px-4 py-3 text-xs font-bold uppercase tracking-widest text-red-400 hover:bg-red-50 rounded-xl transition-all">
             <LogOut className="w-4 h-4" /> <span>Esci</span>
           </button>
@@ -191,7 +191,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       {showNotifs && (
         <>
           <div className="fixed inset-0 z-50" onClick={() => setShowNotifs(false)} />
-          <div className="fixed top-0 right-0 z-50 w-80 max-h-screen bg-white border-l border-slate-100 shadow-2xl flex flex-col">
+          <div className="fixed top-0 right-0 z-50 w-full sm:w-80 max-h-screen bg-white border-l border-slate-100 shadow-2xl flex flex-col">
             <div className="p-4 border-b border-slate-100 flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-900">Notifiche</h3>
               {unreadCount > 0 && (
@@ -234,7 +234,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
       {isMobileMenuOpen && <div className="fixed inset-0 bg-black/50 z-30 md:hidden" onClick={() => setIsMobileMenuOpen(false)} />}
 
-      <main className="flex-1 bg-white">{children}</main>
+      <main className={"flex-1 bg-white " + (isMobileMenuOpen ? "overflow-hidden max-h-screen" : "")}>{children}</main>
     </div>
   );
 }
