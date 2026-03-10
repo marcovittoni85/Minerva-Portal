@@ -14,10 +14,13 @@ export default async function BoardPage() {
 
   const { data: deals, error } = await supabase.rpc("get_board_deals");
 
+  // Filter out deals hidden from board (is_visible_board = false)
+  let visibleDeals = (deals ?? []).filter((d: any) => d.is_visible_board !== false);
+
   // For admins, batch-fetch originator names
   let originatorMap: Record<string, string> = {};
-  if (isAdmin && deals && deals.length > 0) {
-    const originatorIds = [...new Set(deals.map((d: any) => d.originator_id).filter(Boolean))] as string[];
+  if (isAdmin && visibleDeals.length > 0) {
+    const originatorIds = [...new Set(visibleDeals.map((d: any) => d.originator_id).filter(Boolean))] as string[];
     if (originatorIds.length > 0) {
       const { data: profiles } = await supabase
         .from("profiles")
@@ -31,5 +34,5 @@ export default async function BoardPage() {
     }
   }
 
-  return <BoardClient deals={deals ?? []} isAdmin={isAdmin} originatorMap={originatorMap} error={error?.message} />;
+  return <BoardClient deals={visibleDeals} isAdmin={isAdmin} originatorMap={originatorMap} error={error?.message} />;
 }
