@@ -2,7 +2,7 @@
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Briefcase, Settings, LogOut, Menu, ShieldCheck, PlusCircle, ClipboardList, Bell, Shield, Columns3, FileText, Key, Users, ArrowRightLeft, CheckCircle, XCircle, Megaphone, Calculator, Activity, ScrollText, CircleDollarSign } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Settings, LogOut, Menu, ShieldCheck, PlusCircle, ClipboardList, Bell, Shield, Columns3, FileText, Key, Users, ArrowRightLeft, CheckCircle, XCircle, Megaphone, Calculator, Activity, ScrollText, CircleDollarSign, HeartHandshake } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
@@ -105,6 +105,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     { name: 'CRM', href: '/portal/crm', icon: Users },
     { name: 'Mandati', href: '/portal/mandates', icon: ScrollText },
     { name: 'Fee & Revenue', href: '/portal/fees', icon: CircleDollarSign },
+    { name: 'Relazioni', href: '/portal/admin/relationships', icon: HeartHandshake },
   ];
 
   const originatorItems = [
