@@ -12,8 +12,9 @@ import {
   InteractionType,
 } from '@/types/relationship';
 import AddInteractionForm from './AddInteractionForm';
+import ContactImporter from './ContactImporter';
 import {
-  Search, Plus, ArrowUpDown, X, Filter, ChevronDown,
+  Search, Plus, ArrowUpDown, X, Filter, ChevronDown, Upload,
   Users, Phone, Video, Send, Mail, StickyNote, UserPlus,
   Calendar, Briefcase, FileText, Clock, MoreHorizontal, Tag,
 } from 'lucide-react';
@@ -55,6 +56,7 @@ export default function ContactList() {
 
   // Modals
   const [showNewContact, setShowNewContact] = useState(false);
+  const [showImporter, setShowImporter] = useState(false);
   const [interactionContactId, setInteractionContactId] = useState<string | null>(null);
   const [deals, setDeals] = useState<{ id: string; title: string }[]>([]);
 
@@ -156,12 +158,20 @@ export default function ContactList() {
           </h1>
           <p className="text-sm text-slate-500 mt-1">{total} contatti</p>
         </div>
-        <button
-          onClick={() => setShowNewContact(true)}
-          className="bg-[#D4AF37] hover:bg-[#b8962d] text-white font-bold px-6 py-3 rounded-xl transition-colors text-xs uppercase tracking-widest flex items-center gap-2"
-        >
-          <Plus size={16} /> Nuovo Contatto
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowImporter(true)}
+            className="border border-slate-200 text-slate-600 font-bold px-5 py-3 rounded-xl transition-colors text-xs uppercase tracking-widest flex items-center gap-2 hover:border-[#D4AF37] hover:text-[#D4AF37]"
+          >
+            <Upload size={14} /> Importa CSV
+          </button>
+          <button
+            onClick={() => setShowNewContact(true)}
+            className="bg-[#D4AF37] hover:bg-[#b8962d] text-white font-bold px-6 py-3 rounded-xl transition-colors text-xs uppercase tracking-widest flex items-center gap-2"
+          >
+            <Plus size={16} /> Nuovo Contatto
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -415,6 +425,13 @@ export default function ContactList() {
           })}
         </div>
       )}
+
+      {/* Contact Importer */}
+      <ContactImporter
+        open={showImporter}
+        onClose={() => setShowImporter(false)}
+        onImported={() => fetchContacts()}
+      />
     </div>
   );
 }
