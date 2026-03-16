@@ -3,9 +3,11 @@ import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Clock, ScrollText, CircleDollarSign, X, Plus, Trash2, LayoutGrid, CheckSquare } from "lucide-react";
+import { Clock, ScrollText, CircleDollarSign, X, Plus, Trash2, LayoutGrid, CheckSquare, Calendar } from "lucide-react";
 import FeeTracker from "@/components/fees/FeeTracker";
 import AddTaskModal from "@/components/cockpit/AddTaskModal";
+import EventForm from "@/components/calendar/EventForm";
+import DealEvents from "@/components/calendar/DealEvents";
 import { DEAL_TYPE_OPTIONS } from "@/lib/deal-config";
 
 const stages = ["board", "in_review", "workgroup", "in_progress", "closed_won", "closed_lost"];
@@ -170,6 +172,9 @@ export default function DealManageClient({
 
   // Task modal
   const [showTaskModal, setShowTaskModal] = useState(false);
+  // Event modal
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [eventsRefresh, setEventsRefresh] = useState(0);
 
   // Board editor drawer state
   const [boardDrawerOpen, setBoardDrawerOpen] = useState(false);
@@ -324,6 +329,12 @@ export default function DealManageClient({
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-[10px] font-bold uppercase tracking-widest hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors"
               >
                 <CheckSquare className="w-3.5 h-3.5" /> Crea Task
+              </button>
+              <button
+                onClick={() => setShowEventModal(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-[10px] font-bold uppercase tracking-widest hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors"
+              >
+                <Calendar className="w-3.5 h-3.5" /> Evento
               </button>
               <button
                 onClick={() => setBoardDrawerOpen(true)}
@@ -719,6 +730,21 @@ export default function DealManageClient({
         )}
       </div>
 
+      {/* Eventi collegati */}
+      <div className="bg-white border border-slate-100 rounded-2xl p-6 mt-8">
+        <div className="flex items-center gap-2 mb-4">
+          <Calendar className="w-4 h-4 text-slate-400" />
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Eventi</h2>
+          <button
+            onClick={() => setShowEventModal(true)}
+            className="ml-auto text-[10px] font-bold text-[#D4AF37] hover:text-[#b8962d] uppercase tracking-widest transition-colors"
+          >
+            + Nuovo
+          </button>
+        </div>
+        <DealEvents dealId={deal.id} refresh={eventsRefresh} />
+      </div>
+
       {/* Activity Timeline */}
       {activityLog.length > 0 && (
         <div className="bg-white border border-slate-100 rounded-2xl p-6 mt-8">
@@ -756,6 +782,15 @@ export default function DealManageClient({
         open={showTaskModal}
         onClose={() => setShowTaskModal(false)}
         onSaved={() => {}}
+        prefillDealId={deal.id}
+        prefillDealTitle={deal.title}
+      />
+
+      {/* Event Modal */}
+      <EventForm
+        open={showEventModal}
+        onClose={() => setShowEventModal(false)}
+        onSaved={() => { setShowEventModal(false); setEventsRefresh(r => r + 1); }}
         prefillDealId={deal.id}
         prefillDealTitle={deal.title}
       />

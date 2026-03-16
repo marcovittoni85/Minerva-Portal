@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { CockpitData, Task, PRIORITY_CONFIG } from '@/types/cockpit';
 import { INTERACTION_TYPE_CONFIG } from '@/types/relationship';
 import AddTaskModal from './AddTaskModal';
+import MiniCalendar from '@/components/calendar/MiniCalendar';
+import { CalendarEvent, EVENT_TYPE_CONFIG } from '@/types/calendar';
 import {
   CheckSquare, Clock, Users, Briefcase, TrendingUp, MessageSquare,
   Plus, AlertTriangle, FileText, DollarSign,
@@ -73,6 +75,7 @@ export default function CockpitDashboard() {
   const [data, setData] = useState<CockpitData | null>(null);
   const [loading, setLoading] = useState(true);
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [upcomingEvents, setUpcomingEvents] = useState<CalendarEvent[]>([]);
   const [quickTask, setQuickTask] = useState('');
   const [completing, setCompleting] = useState<Set<string>>(new Set());
   const quickRef = useRef<HTMLInputElement>(null);
@@ -89,7 +92,16 @@ export default function CockpitDashboard() {
     }
   }
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    fetchData();
+    // Fetch next 3 events
+    const today = new Date().toISOString().slice(0, 10);
+    const nextMonth = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+    fetch(`/api/calendar?start=${today}&end=${nextMonth}`)
+      .then(r => r.json())
+      .then(d => setUpcomingEvents((d.events || []).slice(0, 3)))
+      .catch(() => {});
+  }, []);
 
   async function toggleTask(taskId: string, completed: boolean) {
     setCompleting(prev => new Set(prev).add(taskId));
@@ -283,6 +295,42 @@ export default function CockpitDashboard() {
 
         {/* RIGHT — 2 cols */}
         <div className="lg:col-span-2 space-y-6">
+
+          {/* Mini Calendar */}
+          <MiniCalendar />
+
+          {/* Prossimi Appuntamenti */}
+          {upcomingEvents.length > 0 && (
+            <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden">
+              <div className="p-5 border-b border-slate-50">
+                <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">Prossimi Appuntamenti</h3>
+              </div>
+              <div className="divide-y divide-slate-50">
+                {upcomingEvents.map(ev => {
+                  const cfg = EVENT_TYPE_CONFIG[ev.event_type] || EVENT_TYPE_CONFIG.meeting;
+                  const EvIcon = INTERACTION_ICON_MAP[cfg.icon] || Calendar;
+                  const c = ev.color || cfg.defaultColor;
+                  const d = new Date(ev.start_at);
+                  return (
+                    <div key={ev.id} onClick={() => router.push('/portal/admin/calendar')}
+                      className="flex items-center gap-3 p-4 hover:bg-slate-50/50 cursor-pointer transition-colors">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: c + '15' }}>
+                        <EvIcon size={14} style={{ color: c }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-slate-900 truncate">{ev.title}</p>
+                        <p className="text-[10px] text-slate-400">
+                          {d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })} · {d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
+                          {ev.contact_name && ` · ${ev.contact_name}`}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Deal Caldi */}
           <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden">

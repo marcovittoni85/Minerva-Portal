@@ -10,12 +10,16 @@ import {
 } from '@/types/relationship';
 import AddInteractionForm from './AddInteractionForm';
 import AddTaskModal from '@/components/cockpit/AddTaskModal';
+import EventForm from '@/components/calendar/EventForm';
+import { CalendarEvent, EVENT_TYPE_CONFIG } from '@/types/calendar';
 import {
   ArrowLeft, Mail, Phone, Linkedin, MapPin, ExternalLink,
   Users, Video, Send, StickyNote, UserPlus, Calendar as CalendarIcon,
   Briefcase, FileText, Clock, MoreHorizontal, Star, Check,
-  ChevronDown, Plus, Tag, CheckSquare,
+  ChevronDown, Plus, Tag, CheckSquare, Bell,
 } from 'lucide-react';
+
+const EVENT_ICON_MAP: Record<string, React.ElementType> = { Users, Phone, Video, Calendar: CalendarIcon, Clock, Bell };
 
 const ICON_MAP: Record<string, React.ElementType> = {
   Users, Phone, Video, Send, Mail, StickyNote, UserPlus,
@@ -56,6 +60,16 @@ export default function ContactDetail({ contactId }: ContactDetailProps) {
   const [loading, setLoading] = useState(true);
   const [showInteractionForm, setShowInteractionForm] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showEventForm, setShowEventForm] = useState(false);
+  const [contactEvents, setContactEvents] = useState<CalendarEvent[]>([]);
+
+  async function fetchContactEvents() {
+    try {
+      const res = await fetch(`/api/calendar?contact_id=${contactId}`);
+      const data = await res.json();
+      setContactEvents(data.events || []);
+    } catch { /* silent */ }
+  }
 
   async function fetchContact() {
     setLoading(true);
@@ -75,6 +89,7 @@ export default function ContactDetail({ contactId }: ContactDetailProps) {
 
   useEffect(() => {
     fetchContact();
+    fetchContactEvents();
   }, [contactId]);
 
   async function handleSaveInteraction(data: any) {
@@ -137,12 +152,18 @@ export default function ContactDetail({ contactId }: ContactDetailProps) {
       </button>
 
       {/* Action buttons */}
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-end gap-2">
         <button
           onClick={() => setShowTaskModal(true)}
           className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-[10px] font-bold uppercase tracking-widest hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors"
         >
           <CheckSquare size={14} /> Crea Task
+        </button>
+        <button
+          onClick={() => setShowEventForm(true)}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-[10px] font-bold uppercase tracking-widest hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors"
+        >
+          <CalendarIcon size={14} /> Evento
         </button>
       </div>
 
@@ -400,11 +421,70 @@ export default function ContactDetail({ contactId }: ContactDetailProps) {
         </div>
       </div>
 
+      {/* Eventi collegati */}
+      <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden">
+        <div className="p-5 border-b border-slate-50 flex items-center justify-between">
+          <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">Eventi</h3>
+          <button
+            onClick={() => setShowEventForm(true)}
+            className="flex items-center gap-1.5 text-[#D4AF37] hover:text-[#b8962d] text-xs font-bold uppercase tracking-widest transition-colors"
+          >
+            <Plus size={14} /> Nuovo
+          </button>
+        </div>
+        {contactEvents.length === 0 ? (
+          <p className="p-5 text-sm text-slate-400">Nessun evento collegato</p>
+        ) : (
+          <div className="divide-y divide-slate-50">
+            {contactEvents.map(ev => {
+              const cfg = EVENT_TYPE_CONFIG[ev.event_type] || EVENT_TYPE_CONFIG.meeting;
+              const Icon = EVENT_ICON_MAP[cfg.icon] || CalendarIcon;
+              const c = ev.color || cfg.defaultColor;
+              const startTime = new Date(ev.start_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+              const startDate = new Date(ev.start_at).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' });
+              const isPast = new Date(ev.start_at) < new Date();
+
+              return (
+                <div key={ev.id} className={"p-4 flex items-center gap-3 " + (isPast ? "opacity-60" : "")}>
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: c + '15' }}
+                  >
+                    <Icon size={14} style={{ color: c }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-slate-900 truncate">{ev.title}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[10px] text-slate-500">{startDate} · {startTime}</span>
+                      {ev.deal_title && <span className="text-[10px] text-slate-400">· {ev.deal_title}</span>}
+                    </div>
+                  </div>
+                  {ev.outcome && (
+                    <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full uppercase tracking-widest">
+                      Esito
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       {/* Task Modal */}
       <AddTaskModal
         open={showTaskModal}
         onClose={() => setShowTaskModal(false)}
         onSaved={() => {}}
+        prefillContactId={contactId}
+        prefillContactName={contact.full_name}
+      />
+
+      {/* Event Modal */}
+      <EventForm
+        open={showEventForm}
+        onClose={() => setShowEventForm(false)}
+        onSaved={() => { setShowEventForm(false); fetchContactEvents(); }}
         prefillContactId={contactId}
         prefillContactName={contact.full_name}
       />
