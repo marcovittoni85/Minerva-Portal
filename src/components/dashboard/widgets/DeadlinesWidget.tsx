@@ -9,6 +9,7 @@ interface Props { config: WidgetConfig; }
 interface Deadline { id: string; label: string; date: string; type: string; }
 
 export default function DeadlinesWidget({ config }: Props) {
+  config = config || { title: 'Scadenze Imminenti' };
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -16,16 +17,27 @@ export default function DeadlinesWidget({ config }: Props) {
     async function load() {
       try {
         const res = await fetch('/api/cockpit');
+        if (!res.ok) { setLoading(false); return; }
         const d = await res.json();
         const items: Deadline[] = [];
-        (d.upcoming_deadlines || []).forEach((dl: any) => {
-          items.push({ id: dl.id, label: dl.title || dl.deal_title || 'Scadenza', date: dl.due_date || dl.end_date, type: dl.type || 'task' });
+        (Array.isArray(d.upcoming_deadlines) ? d.upcoming_deadlines : []).forEach((dl: any) => {
+          const date = dl.due_date || dl.end_date;
+          if (date) items.push({ id: dl.id || crypto.randomUUID(), label: dl.title || dl.deal_title || 'Scadenza', date, type: dl.type || 'task' });
         });
-        // Also check tasks with due_date
-        (d.overdue_tasks || []).forEach((t: any) => {
-          items.push({ id: t.id, label: t.title, date: t.due_date, type: 'task' });
+        // Also include overdue tasks from tasks_today if available
+        (Array.isArray(d.tasks_today) ? d.tasks_today : []).forEach((t: any) => {
+          if (t.due_date && new Date(t.due_date) < new Date()) {
+            items.push({ id: t.id || crypto.randomUUID(), label: t.title || 'Task', date: t.due_date, type: 'task' });
+          }
         });
-        items.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        items.sort((a, b) => {
+          const ta = new Date(a.date).getTime();
+          const tb = new Date(b.date).getTime();
+          if (isNaN(ta) && isNaN(tb)) return 0;
+          if (isNaN(ta)) return 1;
+          if (isNaN(tb)) return -1;
+          return ta - tb;
+        });
         setDeadlines(items.slice(0, config.limit || 5));
       } catch { /* silent */ }
       finally { setLoading(false); }
@@ -34,8 +46,10 @@ export default function DeadlinesWidget({ config }: Props) {
   }, []);
 
   function daysUntil(dateStr: string) {
-    const diff = Math.ceil((new Date(dateStr).getTime() - Date.now()) / 86400000);
-    return diff;
+    if (!dateStr) return 999;
+    const t = new Date(dateStr).getTime();
+    if (isNaN(t)) return 999;
+    return Math.ceil((t - Date.now()) / 86400000);
   }
 
   return (

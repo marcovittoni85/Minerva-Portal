@@ -35,43 +35,58 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-        setRole(data?.role || "");
-        const { count } = await supabase.from("deals").select("id", { count: "exact", head: true }).eq("originator_id", user.id).eq("active", true);
-        setIsOriginator((count ?? 0) > 0);
-        // Load unread count
-        const { count: unread } = await supabase.from("notifications").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("is_read", false);
-        setUnreadCount(unread ?? 0);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+          setRole(data?.role || "");
+          const { count } = await supabase.from("deals").select("id", { count: "exact", head: true }).eq("originator_id", user.id).eq("active", true);
+          setIsOriginator((count ?? 0) > 0);
+          const { count: unread } = await supabase.from("notifications").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("is_read", false);
+          setUnreadCount(unread ?? 0);
+        }
+      } catch {
+        // Auth or data fetch failed — continue with defaults
       }
     }
     load();
   }, [pathname]);
 
   const loadNotifs = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data } = await supabase.from("notifications").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20);
-      setNotifs(data ?? []);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase.from("notifications").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20);
+        setNotifs(data ?? []);
+      }
+    } catch {
+      // Notification load failed — silent
     }
     setShowNotifs(!showNotifs);
   };
 
   const markAllRead = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      await supabase.from("notifications").update({ is_read: true }).eq("user_id", user.id).eq("is_read", false);
-      setUnreadCount(0);
-      setNotifs(prev => prev.map(n => ({ ...n, is_read: true })));
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from("notifications").update({ is_read: true }).eq("user_id", user.id).eq("is_read", false);
+        setUnreadCount(0);
+        setNotifs(prev => prev.map(n => ({ ...n, is_read: true })));
+      }
+    } catch {
+      // Mark read failed — silent
     }
   };
 
   const handleNotifClick = async (n: any) => {
-    if (!n.is_read) {
-      await supabase.from("notifications").update({ is_read: true }).eq("id", n.id);
-      setNotifs(prev => prev.map(x => x.id === n.id ? { ...x, is_read: true } : x));
-      setUnreadCount(prev => Math.max(0, prev - 1));
+    try {
+      if (!n.is_read) {
+        await supabase.from("notifications").update({ is_read: true }).eq("id", n.id);
+        setNotifs(prev => prev.map(x => x.id === n.id ? { ...x, is_read: true } : x));
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+    } catch {
+      // silent
     }
     if (n.link) {
       setShowNotifs(false);

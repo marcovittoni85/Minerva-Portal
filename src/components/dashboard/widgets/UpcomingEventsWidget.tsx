@@ -12,6 +12,7 @@ const ICON_MAP: Record<string, React.ElementType> = { Users, Phone, Video, Calen
 interface Props { config: WidgetConfig; }
 
 export default function UpcomingEventsWidget({ config }: Props) {
+  config = config || { title: 'Prossimi Appuntamenti' };
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -21,8 +22,9 @@ export default function UpcomingEventsWidget({ config }: Props) {
       const end = new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0];
       try {
         const res = await fetch(`/api/calendar?start=${today}&end=${end}`);
+        if (!res.ok) return;
         const d = await res.json();
-        setEvents((d.events || []).slice(0, config.limit || 5));
+        setEvents((Array.isArray(d.events) ? d.events : []).slice(0, config.limit || 5));
       } catch { /* silent */ }
       finally { setLoading(false); }
     }

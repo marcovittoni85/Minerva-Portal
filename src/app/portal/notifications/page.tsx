@@ -65,20 +65,24 @@ export default function NotificationsPage() {
   const [userId, setUserId] = useState<string | null>(null);
 
   const loadNotifications = useCallback(async (offset = 0, append = false) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    setUserId(user.id);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setLoading(false); return; }
+      setUserId(user.id);
 
-    const { data, error } = await supabase
-      .from("notifications")
-      .select("id, type, title, body, link, is_read, created_at")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .range(offset, offset + PAGE_SIZE);
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("id, type, title, body, link, is_read, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .range(offset, offset + PAGE_SIZE);
 
-    if (!error && data) {
-      setNotifs(prev => append ? [...prev, ...data] : data);
-      setHasMore(data.length > PAGE_SIZE);
+      if (!error && data) {
+        setNotifs(prev => append ? [...prev, ...data] : data);
+        setHasMore(data.length > PAGE_SIZE);
+      }
+    } catch {
+      // Notification load failed — continue with empty list
     }
     setLoading(false);
     setLoadingMore(false);
@@ -86,15 +90,18 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     loadNotifications();
-    // Mark all as read
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase
-          .from("notifications")
-          .update({ is_read: true })
-          .eq("user_id", user.id)
-          .eq("is_read", false);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase
+            .from("notifications")
+            .update({ is_read: true })
+            .eq("user_id", user.id)
+            .eq("is_read", false);
+        }
+      } catch {
+        // Mark read failed — silent
       }
     })();
   }, [loadNotifications]);
@@ -130,10 +137,10 @@ export default function NotificationsPage() {
   const readCount = notifs.filter(n => n.is_read).length;
 
   return (
-    <div className="p-8 max-w-3xl mx-auto">
+    <div className="p-4 md:p-8 max-w-3xl mx-auto">
       <header className="mb-8 pb-8 border-b border-slate-100">
         <p className="text-[#D4AF37] text-[10px] uppercase tracking-[0.5em] font-medium mb-2">Minerva Partners</p>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">Notifiche</h1>
             <p className="text-slate-500 text-sm mt-2">Aggiornamenti e richieste</p>
@@ -210,7 +217,7 @@ export default function NotificationsPage() {
 
                   <button
                     onClick={() => deleteNotif(n.id)}
-                    className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-50 text-slate-300 hover:text-red-400 transition-all flex-shrink-0"
+                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-50 text-slate-300 hover:text-red-400 transition-all flex-shrink-0"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>

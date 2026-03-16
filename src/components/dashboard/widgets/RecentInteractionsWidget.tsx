@@ -14,6 +14,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
 interface Props { config: WidgetConfig; }
 
 export default function RecentInteractionsWidget({ config }: Props) {
+  config = config || { title: 'Ultime Interazioni' };
   const [interactions, setInteractions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -21,8 +22,9 @@ export default function RecentInteractionsWidget({ config }: Props) {
     async function load() {
       try {
         const res = await fetch('/api/interactions?limit=' + (config.limit || 5));
+        if (!res.ok) return;
         const d = await res.json();
-        setInteractions(d.interactions || []);
+        setInteractions(Array.isArray(d.interactions) ? d.interactions : []);
       } catch { /* silent */ }
       finally { setLoading(false); }
     }

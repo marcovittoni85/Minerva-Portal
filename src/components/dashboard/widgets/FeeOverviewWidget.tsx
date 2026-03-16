@@ -7,6 +7,7 @@ import WidgetWrapper from '../WidgetWrapper';
 interface Props { config: WidgetConfig; }
 
 export default function FeeOverviewWidget({ config }: Props) {
+  config = config || { title: 'Revenue Overview' };
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -14,8 +15,9 @@ export default function FeeOverviewWidget({ config }: Props) {
     async function load() {
       try {
         const res = await fetch('/api/fees');
+        if (!res.ok) return;
         const d = await res.json();
-        const fees = d.fees || [];
+        const fees = Array.isArray(d.fees) ? d.fees : [];
         const projected = fees.filter((f: any) => f.status === 'projected').reduce((s: number, f: any) => s + (f.projected_amount || 0), 0);
         const accrued = fees.filter((f: any) => f.status === 'accrued').reduce((s: number, f: any) => s + (f.projected_amount || 0), 0);
         const collected = fees.filter((f: any) => f.status === 'collected').reduce((s: number, f: any) => s + (f.projected_amount || 0), 0);
@@ -27,6 +29,7 @@ export default function FeeOverviewWidget({ config }: Props) {
   }, []);
 
   function fmtK(n: number) {
+    if (!n || isNaN(n)) return '€0';
     if (n >= 1_000_000) return `€${(n / 1_000_000).toFixed(1)}M`;
     if (n >= 1_000) return `€${(n / 1_000).toFixed(0)}k`;
     return `€${n.toFixed(0)}`;

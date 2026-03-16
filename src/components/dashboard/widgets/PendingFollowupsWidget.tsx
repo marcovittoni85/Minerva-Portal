@@ -8,6 +8,7 @@ import { Check } from 'lucide-react';
 interface Props { config: WidgetConfig; }
 
 export default function PendingFollowupsWidget({ config }: Props) {
+  config = config || { title: 'Follow-up Pendenti' };
   const [followups, setFollowups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -15,8 +16,9 @@ export default function PendingFollowupsWidget({ config }: Props) {
     async function load() {
       try {
         const res = await fetch('/api/interactions?pending_followups=true&limit=' + (config.limit || 5));
+        if (!res.ok) return;
         const d = await res.json();
-        setFollowups(d.interactions || []);
+        setFollowups(Array.isArray(d.interactions) ? d.interactions : []);
       } catch { /* silent */ }
       finally { setLoading(false); }
     }

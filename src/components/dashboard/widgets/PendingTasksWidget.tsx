@@ -8,6 +8,7 @@ import { CheckSquare } from 'lucide-react';
 interface Props { config: WidgetConfig; }
 
 export default function PendingTasksWidget({ config }: Props) {
+  config = config || { title: 'Task Urgenti' };
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -15,8 +16,9 @@ export default function PendingTasksWidget({ config }: Props) {
     async function load() {
       try {
         const res = await fetch('/api/tasks?completed=false&sort=due_date&limit=' + (config.limit || 5));
+        if (!res.ok) return;
         const d = await res.json();
-        setTasks(d.tasks || []);
+        setTasks(Array.isArray(d.tasks) ? d.tasks : []);
       } catch { /* silent */ }
       finally { setLoading(false); }
     }

@@ -7,6 +7,7 @@ import WidgetWrapper from '../WidgetWrapper';
 interface Props { config: WidgetConfig; }
 
 export default function MyTasksWidget({ config }: Props) {
+  config = config || { title: 'I Miei Task' };
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -14,8 +15,9 @@ export default function MyTasksWidget({ config }: Props) {
     async function load() {
       try {
         const res = await fetch('/api/tasks?completed=false&sort=due_date&limit=' + (config.limit || 5));
+        if (!res.ok) return;
         const d = await res.json();
-        setTasks(d.tasks || []);
+        setTasks(Array.isArray(d.tasks) ? d.tasks : []);
       } catch { /* silent */ }
       finally { setLoading(false); }
     }
