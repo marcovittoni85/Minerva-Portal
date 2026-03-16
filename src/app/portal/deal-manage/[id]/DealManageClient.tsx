@@ -3,8 +3,9 @@ import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Clock, ScrollText, CircleDollarSign, X, Plus, Trash2, LayoutGrid } from "lucide-react";
+import { Clock, ScrollText, CircleDollarSign, X, Plus, Trash2, LayoutGrid, CheckSquare } from "lucide-react";
 import FeeTracker from "@/components/fees/FeeTracker";
+import AddTaskModal from "@/components/cockpit/AddTaskModal";
 import { DEAL_TYPE_OPTIONS } from "@/lib/deal-config";
 
 const stages = ["board", "in_review", "workgroup", "in_progress", "closed_won", "closed_lost"];
@@ -167,6 +168,9 @@ export default function DealManageClient({
   const [presRequests, setPresRequests] = useState<PresentationRequest[]>(initialPresentationRequests);
   const [processingPresId, setProcessingPresId] = useState<string | null>(null);
 
+  // Task modal
+  const [showTaskModal, setShowTaskModal] = useState(false);
+
   // Board editor drawer state
   const [boardDrawerOpen, setBoardDrawerOpen] = useState(false);
   const [boardForm, setBoardForm] = useState({
@@ -315,6 +319,12 @@ export default function DealManageClient({
           <div className="flex flex-col items-start md:items-end gap-2">
             <p className="text-xs text-slate-400">Originator: <span className="text-slate-600 font-medium">{originatorName}</span></p>
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowTaskModal(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-[10px] font-bold uppercase tracking-widest hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors"
+              >
+                <CheckSquare className="w-3.5 h-3.5" /> Crea Task
+              </button>
               <button
                 onClick={() => setBoardDrawerOpen(true)}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 text-slate-600 text-[10px] font-bold uppercase tracking-widest hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors"
@@ -740,6 +750,15 @@ export default function DealManageClient({
           </div>
         </div>
       )}
+
+      {/* Task Modal */}
+      <AddTaskModal
+        open={showTaskModal}
+        onClose={() => setShowTaskModal(false)}
+        onSaved={() => {}}
+        prefillDealId={deal.id}
+        prefillDealTitle={deal.title}
+      />
 
       {/* Board Editor Drawer */}
       {boardDrawerOpen && (

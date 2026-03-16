@@ -9,11 +9,12 @@ import {
   InteractionType,
 } from '@/types/relationship';
 import AddInteractionForm from './AddInteractionForm';
+import AddTaskModal from '@/components/cockpit/AddTaskModal';
 import {
   ArrowLeft, Mail, Phone, Linkedin, MapPin, ExternalLink,
   Users, Video, Send, StickyNote, UserPlus, Calendar as CalendarIcon,
   Briefcase, FileText, Clock, MoreHorizontal, Star, Check,
-  ChevronDown, Plus, Tag,
+  ChevronDown, Plus, Tag, CheckSquare,
 } from 'lucide-react';
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -54,6 +55,7 @@ export default function ContactDetail({ contactId }: ContactDetailProps) {
   const [pendingFollowups, setPendingFollowups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showInteractionForm, setShowInteractionForm] = useState(false);
+  const [showTaskModal, setShowTaskModal] = useState(false);
 
   async function fetchContact() {
     setLoading(true);
@@ -133,6 +135,16 @@ export default function ContactDetail({ contactId }: ContactDetailProps) {
       >
         <ArrowLeft size={16} /> Torna alla lista
       </button>
+
+      {/* Action buttons */}
+      <div className="flex items-center justify-end">
+        <button
+          onClick={() => setShowTaskModal(true)}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-[10px] font-bold uppercase tracking-widest hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors"
+        >
+          <CheckSquare size={14} /> Crea Task
+        </button>
+      </div>
 
       {/* Header Card */}
       <div className="bg-white border border-slate-100 rounded-2xl p-8">
@@ -387,6 +399,15 @@ export default function ContactDetail({ contactId }: ContactDetailProps) {
           </div>
         </div>
       </div>
+
+      {/* Task Modal */}
+      <AddTaskModal
+        open={showTaskModal}
+        onClose={() => setShowTaskModal(false)}
+        onSaved={() => {}}
+        prefillContactId={contactId}
+        prefillContactName={contact.full_name}
+      />
     </div>
   );
 }
