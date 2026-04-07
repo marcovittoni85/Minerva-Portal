@@ -74,9 +74,13 @@ export async function middleware(request: NextRequest) {
   // Check trial expiry
   const { data: profile } = await supabase
     .from('profiles')
-    .select('trial_ends_at, documents_signed')
+    .select('role, trial_ends_at, documents_signed')
     .eq('id', user.id)
     .maybeSingle()
+
+  if (profile?.role === 'admin') {
+    return response
+  }
 
   if (profile?.trial_ends_at && !profile.documents_signed) {
     const expired = new Date(profile.trial_ends_at).getTime() < Date.now()
