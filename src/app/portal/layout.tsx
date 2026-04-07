@@ -126,6 +126,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     { name: 'Relazioni', href: '/portal/admin/relationships', icon: HeartHandshake },
     { name: 'Knowledge Base', href: '/portal/admin/knowledge-base', icon: BookOpen },
     { name: 'Dashboard Builder', href: '/portal/admin/dashboard-editor', icon: Palette },
+    { name: 'Gestione Partner', href: '/portal/admin/partners', icon: Users },
+    { name: 'Nuovo Deal', href: '/portal/admin/new-deal', icon: PlusCircle },
   ];
 
   const originatorItems = [

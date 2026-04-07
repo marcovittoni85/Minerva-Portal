@@ -28,7 +28,7 @@ export default function ActivatePage() {
       setError("Il link è scaduto o non valido. Riprova.");
       setLoading(false);
     } else {
-      router.push('/portal/deals');
+      router.push('/portal');
     }
   };
 

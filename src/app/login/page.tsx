@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
 
 export default function LoginPage() {
@@ -21,26 +22,73 @@ export default function LoginPage() {
       email: email.toLowerCase().trim(),
       password,
     });
-    if (authError) { setError(authError.message); setLoading(false); }
-    else { router.push('/portal'); router.refresh(); }
+    if (authError) {
+      setError(authError.message);
+      setLoading(false);
+    } else {
+      router.push('/portal');
+      router.refresh();
+    }
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4 text-slate-900">
-      <div className="max-w-md w-full space-y-8 bg-white border border-slate-100 p-10 rounded-xl shadow-lg text-center">
+    <div className="min-h-screen bg-[#001220] flex flex-col items-center justify-center p-6 text-white">
+      <div className="max-w-md w-full bg-[#001c30] p-10 rounded-2xl border border-[#D4AF37]/20 shadow-2xl text-center">
         <div className="flex justify-center mb-6">
-          <Image src="/icon.webp" alt="Minerva Partners" width={120} height={120} priority />
+          <Image src="/icon.webp" alt="Minerva Partners" width={100} height={100} priority unoptimized />
         </div>
-        <h2 className="text-[#D4AF37] text-sm tracking-[0.3em] font-medium uppercase">Private Marketplace</h2>
-        <p className="text-slate-400 text-xs tracking-widest uppercase">Minerva Partners</p>
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          {error && <div className="text-red-600 text-sm bg-red-50 p-3 rounded-lg border border-red-200">{error}</div>}
-          <input type="email" required className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 outline-none focus:border-[#D4AF37] transition-colors placeholder:text-slate-400" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <input type="password" required className="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 outline-none focus:border-[#D4AF37] transition-colors placeholder:text-slate-400" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-          <button type="submit" disabled={loading} className="w-full py-3 bg-[#D4AF37] text-white font-bold rounded-lg hover:bg-[#b8962d] transition-colors disabled:opacity-50">{loading ? 'ACCESSO...' : 'ACCEDI'}</button>
+        <h1
+          className="text-[#D4AF37] text-4xl font-light mb-2"
+          style={{ fontFamily: 'var(--font-cormorant), serif' }}
+        >
+          Minerva Partners
+        </h1>
+        <p className="text-slate-400 text-[10px] tracking-[0.3em] uppercase mb-8">Private Marketplace</p>
+
+        <form className="space-y-5" onSubmit={handleLogin}>
+          {error && (
+            <div className="text-red-400 text-[10px] uppercase tracking-widest bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+              {error}
+            </div>
+          )}
+          <input
+            type="email"
+            required
+            className="w-full bg-[#001220] border border-slate-800 p-4 text-[11px] tracking-widest uppercase outline-none focus:border-[#D4AF37] text-white placeholder:text-slate-500 rounded-lg"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <input
+            type="password"
+            required
+            className="w-full bg-[#001220] border border-slate-800 p-4 text-[11px] tracking-widest uppercase outline-none focus:border-[#D4AF37] text-white placeholder:text-slate-500 rounded-lg"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-[#D4AF37] text-[#001220] font-bold py-4 tracking-[0.3em] uppercase text-xs hover:bg-[#FBE8A6] transition-colors disabled:opacity-50 rounded-lg"
+          >
+            {loading ? 'Accesso...' : 'Accedi'}
+          </button>
         </form>
-        <div className="pt-6 border-t border-slate-100">
-          <p className="text-slate-400 text-[9px] uppercase tracking-[0.3em]">Minerva Partners • Private & Confidential</p>
+
+        <div className="mt-6">
+          <Link
+            href="/forgot-password"
+            className="text-[10px] text-slate-400 hover:text-[#D4AF37] uppercase tracking-[0.2em] transition-colors"
+          >
+            Password dimenticata?
+          </Link>
+        </div>
+
+        <div className="pt-8 mt-8 border-t border-[#D4AF37]/10">
+          <p className="text-slate-500 text-[9px] uppercase tracking-[0.3em]">
+            Minerva Partners • Private &amp; Confidential
+          </p>
         </div>
       </div>
     </div>
