@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { ASSET_CLASS_OPTIONS, type AssetClass } from "@/lib/deal-config";
@@ -79,6 +79,10 @@ export default function ProposeNewDeal() {
 
   const [assetClass, setAssetClass] = useState<AssetClass | "">("");
   const [formData, setFormData] = useState<Record<string, string>>({});
+  const [aiFilledKeys, setAiFilledKeys] = useState<Set<string>>(new Set());
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null);
+  const uploadedPathsRef = useRef<string[]>([]);
 
   const allFields = useMemo(() => {
     if (!assetClass) return COMMON_FIELDS;
@@ -100,7 +104,66 @@ export default function ProposeNewDeal() {
   };
 
   const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) { setFiles(Array.from(e.target.files)); setFileError(null); }
+    if (e.target.files) {
+      setFiles(Array.from(e.target.files));
+      setFileError(null);
+      uploadedPathsRef.current = [];
+    }
+  };
+
+  const handleAnalyze = async () => {
+    if (!assetClass) { setAnalyzeError("Seleziona prima il tipo di operazione"); return; }
+    if (files.length === 0) { setAnalyzeError("Carica almeno un documento"); return; }
+    setAnalyzing(true);
+    setAnalyzeError(null);
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setAnalyzeError("Non autenticato"); setAnalyzing(false); return; }
+
+    // Upload files to Supabase Storage (temp folder) if not already uploaded
+    if (uploadedPathsRef.current.length === 0) {
+      const tempId = crypto.randomUUID();
+      const paths: string[] = [];
+      for (const file of files) {
+        const filePath = `proposals/tmp_${tempId}/${file.name}`;
+        const { error: upErr } = await supabase.storage.from("deal-documents").upload(filePath, file);
+        if (!upErr) paths.push(filePath);
+      }
+      uploadedPathsRef.current = paths;
+    }
+
+    if (uploadedPathsRef.current.length === 0) {
+      setAnalyzeError("Errore nel caricamento dei file");
+      setAnalyzing(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/analyze-deal-documents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ asset_class: assetClass, file_paths: uploadedPathsRef.current }),
+      });
+      const json = await res.json();
+      if (!res.ok) { setAnalyzeError(json.error || "Errore analisi"); setAnalyzing(false); return; }
+
+      const extracted = json.data as Record<string, unknown>;
+      const filled = new Set<string>();
+      setFormData(prev => {
+        const next = { ...prev };
+        for (const [key, value] of Object.entries(extracted)) {
+          if (value !== null && value !== undefined) {
+            next[key] = String(value);
+            filled.add(key);
+          }
+        }
+        return next;
+      });
+      setAiFilledKeys(filled);
+    } catch {
+      setAnalyzeError("Errore di rete durante l'analisi");
+    }
+    setAnalyzing(false);
   };
 
   const formatFileSize = (bytes: number) => {
@@ -224,48 +287,53 @@ export default function ProposeNewDeal() {
           </div>
 
           {/* Dynamic fields */}
-          {assetClass && allFields.map(field => (
-            <div key={field.key}>
-              <label className={"text-[10px] uppercase tracking-widest font-medium block mb-2 " + (field.required ? "text-[#D4AF37]" : "text-slate-400")}>
-                {field.label} {field.required && "*"}
-              </label>
-              {field.type === "select" ? (
-                <select
-                  value={formData[field.key] || ""}
-                  onChange={e => setField(field.key, e.target.value)}
-                  required={field.required}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-900 text-sm outline-none focus:border-[#D4AF37]"
-                >
-                  <option value="">Seleziona...</option>
-                  {field.options?.map(opt => <option key={opt} value={opt}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</option>)}
-                </select>
-              ) : field.type === "textarea" ? (
-                <div>
-                  <textarea
+          {assetClass && allFields.map(field => {
+            const isAiFilled = aiFilledKeys.has(field.key);
+            const aiBorder = isAiFilled ? "border-blue-400 bg-blue-50/30" : "border-slate-200 bg-slate-50";
+            return (
+              <div key={field.key}>
+                <label className={"text-[10px] uppercase tracking-widest font-medium block mb-2 " + (field.required ? "text-[#D4AF37]" : "text-slate-400")}>
+                  {field.label} {field.required && "*"}
+                  {isAiFilled && <span className="ml-2 text-blue-500 normal-case tracking-normal font-normal">&#10024; compilato da AI</span>}
+                </label>
+                {field.type === "select" ? (
+                  <select
                     value={formData[field.key] || ""}
-                    onChange={e => setField(field.key, e.target.value)}
+                    onChange={e => { setField(field.key, e.target.value); setAiFilledKeys(prev => { const n = new Set(prev); n.delete(field.key); return n; }); }}
+                    required={field.required}
+                    className={`w-full rounded-lg px-4 py-3 text-slate-900 text-sm outline-none focus:border-[#D4AF37] border ${aiBorder}`}
+                  >
+                    <option value="">Seleziona...</option>
+                    {field.options?.map(opt => <option key={opt} value={opt}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</option>)}
+                  </select>
+                ) : field.type === "textarea" ? (
+                  <div>
+                    <textarea
+                      value={formData[field.key] || ""}
+                      onChange={e => { setField(field.key, e.target.value); setAiFilledKeys(prev => { const n = new Set(prev); n.delete(field.key); return n; }); }}
+                      required={field.required}
+                      placeholder={field.placeholder}
+                      rows={3}
+                      maxLength={field.key === "blind_description" ? 300 : undefined}
+                      className={`w-full rounded-lg px-4 py-3 text-slate-900 text-sm outline-none focus:border-[#D4AF37] transition-colors placeholder:text-slate-400 resize-none border ${aiBorder}`}
+                    />
+                    {field.key === "blind_description" && (
+                      <p className="text-[10px] text-slate-400 mt-1">{(formData[field.key] || "").length}/300</p>
+                    )}
+                  </div>
+                ) : (
+                  <input
+                    type={field.type === "number" ? "number" : "text"}
+                    value={formData[field.key] || ""}
+                    onChange={e => { setField(field.key, e.target.value); setAiFilledKeys(prev => { const n = new Set(prev); n.delete(field.key); return n; }); }}
                     required={field.required}
                     placeholder={field.placeholder}
-                    rows={3}
-                    maxLength={field.key === "blind_description" ? 300 : undefined}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-900 text-sm outline-none focus:border-[#D4AF37] transition-colors placeholder:text-slate-400 resize-none"
+                    className={`w-full rounded-lg px-4 py-3 text-slate-900 text-sm outline-none focus:border-[#D4AF37] transition-colors placeholder:text-slate-400 border ${aiBorder}`}
                   />
-                  {field.key === "blind_description" && (
-                    <p className="text-[10px] text-slate-400 mt-1">{(formData[field.key] || "").length}/300</p>
-                  )}
-                </div>
-              ) : (
-                <input
-                  type={field.type === "number" ? "number" : "text"}
-                  value={formData[field.key] || ""}
-                  onChange={e => setField(field.key, e.target.value)}
-                  required={field.required}
-                  placeholder={field.placeholder}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-slate-900 text-sm outline-none focus:border-[#D4AF37] transition-colors placeholder:text-slate-400"
-                />
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            );
+          })}
 
           {/* File upload */}
           {assetClass && (
@@ -289,6 +357,27 @@ export default function ProposeNewDeal() {
                       </div>
                     ))}
                   </div>
+                )}
+                {files.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleAnalyze}
+                    disabled={analyzing}
+                    className="mt-4 w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-lg text-xs font-bold tracking-widest uppercase hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  >
+                    {analyzing ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                        Analisi in corso...
+                      </>
+                    ) : (
+                      <>&#10024; Analizza Documenti con AI</>
+                    )}
+                  </button>
+                )}
+                {analyzeError && <p className="text-red-500 text-xs mt-2">{analyzeError}</p>}
+                {aiFilledKeys.size > 0 && (
+                  <p className="text-blue-500 text-xs mt-2">&#10024; {aiFilledKeys.size} campi precompilati dall&apos;AI — rivedi e correggi se necessario</p>
                 )}
               </div>
 
