@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { sendNotification } from "@/lib/notifications";
-import { createClient } from "@supabase/supabase-js";
 
 /**
  * Cron job: handles all deal-related timeouts.
@@ -10,8 +9,8 @@ import { createClient } from "@supabase/supabase-js";
  * 1. L1→L2 timeout: reminder at day 7, revoke at day 10 (14 calendar days)
  * 2. Negotiation 5-day expiry: move deal to "assigned"
  * 3. Integration deadline: reminder at 25 days, archive at 30 days
- * 4. Parked deal reminders: notify originator when parked_until is reached
- * 5. Post-5-day originator 72h timeout
+ * 4. Post-5-day originator 72h timeout: return deal to board if no confirmation
+ * 5. Parked deal reminders: notify originator when parked_until is reached
  */
 export async function GET(req: Request) {
   // Verify cron secret if set
@@ -41,7 +40,7 @@ export async function GET(req: Request) {
 
     for (const r of needsReminder ?? []) {
       const deal = r.deals as any;
-      await sendNotification(admin as any, {
+      await sendNotification(admin, {
         userId: r.requester_id,
         type: "l1_reminder",
         title: "Reminder: Autorizzazione L1 in scadenza",
@@ -64,7 +63,7 @@ export async function GET(req: Request) {
     for (const r of expired ?? []) {
       const deal = r.deals as any;
       await admin.from("deal_interest_requests").update({ l1_status: "declined", l1_decline_reason: "Scaduto — nessuna richiesta L2 entro il termine" }).eq("id", r.id);
-      await sendNotification(admin as any, {
+      await sendNotification(admin, {
         userId: r.requester_id,
         type: "l1_expired",
         title: "Autorizzazione L1 Scaduta",
@@ -102,7 +101,7 @@ export async function GET(req: Request) {
         details: { reason: "5-day negotiation period expired" },
       });
 
-      await sendNotification(admin as any, {
+      await sendNotification(admin, {
         userId: deal.originator_id,
         type: "deal_assigned",
         title: "Deal Assegnato",
@@ -129,7 +128,7 @@ export async function GET(req: Request) {
 
     for (const deal of needsIntegrationReminder ?? []) {
       if (deal.created_by) {
-        await sendNotification(admin as any, {
+        await sendNotification(admin, {
           userId: deal.created_by,
           type: "deal_integration_reminder",
           title: "Reminder: Integrazioni in scadenza",
@@ -141,7 +140,7 @@ export async function GET(req: Request) {
       // Also notify admins
       const { data: admins } = await admin.from("profiles").select("id").eq("role", "admin");
       for (const a of admins ?? []) {
-        await sendNotification(admin as any, {
+        await sendNotification(admin, {
           userId: a.id,
           type: "deal_integration_reminder",
           title: "Deal senza integrazioni da 25 giorni",
@@ -168,7 +167,7 @@ export async function GET(req: Request) {
       }).eq("id", deal.id);
 
       if (deal.created_by) {
-        await sendNotification(admin as any, {
+        await sendNotification(admin, {
           userId: deal.created_by,
           type: "deal_proposal_rejected",
           title: "Proposta Archiviata",
@@ -181,7 +180,63 @@ export async function GET(req: Request) {
     }
   }
 
-  // ─── 4. Parked deal reminders ──────────────────────────────
+  // ─── 4. Post-5-day originator 72h timeout ──────────────────
+  // After deal moves to "assigned", originator has 72h to confirm.
+  // If not confirmed, admin is alerted and deal returns to board.
+  {
+    const assignedCutoff = new Date(now);
+    assignedCutoff.setHours(assignedCutoff.getHours() - 72);
+
+    const { data: staleAssigned } = await admin
+      .from("deals")
+      .select("id, title, originator_id, negotiation_expires_at")
+      .eq("board_status", "assigned")
+      .lte("negotiation_expires_at", assignedCutoff.toISOString());
+
+    for (const deal of staleAssigned ?? []) {
+      // Return to board as active
+      await admin.from("deals").update({
+        board_status: "active",
+        negotiation_started_at: null,
+        negotiation_expires_at: null,
+      }).eq("id", deal.id);
+
+      await admin.from("deal_activity_log").insert({
+        deal_id: deal.id,
+        user_id: deal.originator_id,
+        action: "deal_post5_timeout",
+        details: { reason: "Originator did not confirm within 72h after assignment" },
+      });
+
+      // Notify originator
+      if (deal.originator_id) {
+        await sendNotification(admin, {
+          userId: deal.originator_id,
+          type: "deal_post5_timeout",
+          title: "Deal Tornato in Bacheca",
+          body: `"${deal.title}" è tornato attivo in bacheca — non è stata ricevuta conferma entro 72h dall'assegnazione.`,
+          link: `/portal/deals/${deal.id}`,
+          dealTitle: deal.title,
+        });
+      }
+
+      // Alert admins
+      const { data: admins } = await admin.from("profiles").select("id").eq("role", "admin");
+      for (const a of admins ?? []) {
+        await sendNotification(admin, {
+          userId: a.id,
+          type: "deal_post5_timeout",
+          title: "Timeout Post-Assegnazione",
+          body: `"${deal.title}" è tornato in bacheca dopo 72h senza conferma dall'originator.`,
+          link: `/portal/deals/${deal.id}`,
+          dealTitle: deal.title,
+        });
+      }
+      results.push(`Post-5-day 72h timeout, deal back to active: ${deal.id}`);
+    }
+  }
+
+  // ─── 5. Parked deal reminders ──────────────────────────────
   {
     const { data: parkedReady } = await admin
       .from("deals")
@@ -191,7 +246,7 @@ export async function GET(req: Request) {
 
     for (const deal of parkedReady ?? []) {
       if (deal.created_by) {
-        await sendNotification(admin as any, {
+        await sendNotification(admin, {
           userId: deal.created_by,
           type: "deal_parked_reminder",
           title: "Proposta Ripresentabile",

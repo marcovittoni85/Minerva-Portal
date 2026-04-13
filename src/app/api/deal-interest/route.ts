@@ -140,7 +140,15 @@ export async function GET(req: Request) {
     });
   }
 
-  // Originator view: no requester identity
+  // Originator view: reveal requester identity only after L2 admin verification
+  const verifiedRequesterIds = [...new Set(
+    (requests ?? []).filter(r => r.l2_admin_verified).map(r => r.requester_id)
+  )];
+  const { data: verifiedProfiles } = verifiedRequesterIds.length > 0
+    ? await admin.from("profiles").select("id, full_name").in("id", verifiedRequesterIds)
+    : { data: [] };
+  const verifiedMap = Object.fromEntries((verifiedProfiles ?? []).map(p => [p.id, p.full_name]));
+
   return NextResponse.json({
     requests: (requests ?? []).map(r => ({
       id: r.id,
@@ -148,17 +156,25 @@ export async function GET(req: Request) {
       interest_message: r.interest_message,
       l1_status: r.l1_status,
       l1_decided_at: r.l1_decided_at,
+      l1_decline_reason: r.l1_decline_reason,
+      l1_decline_forwarded: r.l1_decline_forwarded,
       l2_status: r.l2_status,
       l2_client_name: r.l2_status !== "not_requested" ? r.l2_client_name : undefined,
       l2_client_surname: r.l2_status !== "not_requested" ? r.l2_client_surname : undefined,
       l2_client_company: r.l2_status !== "not_requested" ? r.l2_client_company : undefined,
+      l2_client_email: r.l2_admin_verified ? r.l2_client_email : undefined,
       l2_fee_from_client: r.l2_status === "pending_originator" || r.l2_status === "approved" ? r.l2_fee_from_client : undefined,
       l2_fee_from_minerva: r.l2_status === "pending_originator" || r.l2_status === "approved" ? r.l2_fee_from_minerva : undefined,
       l2_mandate_type: r.l2_status !== "not_requested" ? r.l2_mandate_type : undefined,
       l2_mandate_file_url: r.l2_admin_verified ? r.l2_mandate_file_url : undefined,
+      l2_nda_file_url: r.l2_admin_verified ? r.l2_nda_file_url : undefined,
+      l2_admin_verified: r.l2_admin_verified,
+      l2_admin_notes: r.l2_admin_notes,
+      l2_decline_reason: r.l2_decline_reason,
+      l2_decline_forwarded: r.l2_decline_forwarded,
+      l2_requested_at: r.l2_requested_at,
       created_at: r.created_at,
-      // Only reveal requester name after L2 admin verification
-      requester_name: r.l2_admin_verified ? undefined : undefined, // will be set below
+      requester_name: r.l2_admin_verified ? verifiedMap[r.requester_id] || undefined : undefined,
     })),
   });
 }
