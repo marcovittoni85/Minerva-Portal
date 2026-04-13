@@ -20,7 +20,7 @@ function isPublicPath(pathname: string): boolean {
   return false
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   let response = NextResponse.next({ request })
@@ -100,6 +100,6 @@ export async function middleware(request: NextRequest) {
   return response
 }
 
-export const config = {
+export const proxyConfig = {
   matcher: ['/portal/:path*', '/api/admin/:path*'],
 }
