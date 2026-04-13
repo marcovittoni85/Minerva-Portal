@@ -15,38 +15,61 @@ type Deal = {
 };
 
 const stages = [
-  { key: "board", label: "Board" },
-  { key: "in_review", label: "In Review" },
-  { key: "workgroup", label: "Workgroup" },
-  { key: "in_progress", label: "In Progress" },
+  { key: "proposed", label: "Proposto" },
+  { key: "admin_review", label: "Revisione" },
+  { key: "on_board", label: "Bacheca" },
+  { key: "l1_requested", label: "L1 Richiesta" },
+  { key: "l1_approved", label: "L1 Approvata" },
+  { key: "l2_requested", label: "L2 Richiesta" },
+  { key: "l2_approved", label: "L2 Approvata" },
+  { key: "in_negotiation", label: "Trattativa" },
+  { key: "fee_agreement", label: "Fee Agr." },
+  { key: "execution", label: "Esecuzione" },
   { key: "closing", label: "Closing" },
-  { key: "closed", label: "Closed" },
+  { key: "closed", label: "Chiuso" },
 ];
 
 const stageKeys = stages.map(s => s.key);
 
 const columnColors: Record<string, string> = {
-  board: "border-slate-300",
-  in_review: "border-amber-400",
-  workgroup: "border-blue-400",
-  in_progress: "border-[#D4AF37]",
+  proposed: "border-slate-300",
+  admin_review: "border-amber-400",
+  on_board: "border-blue-400",
+  l1_requested: "border-yellow-400",
+  l1_approved: "border-emerald-400",
+  l2_requested: "border-yellow-400",
+  l2_approved: "border-emerald-400",
+  in_negotiation: "border-[#D4AF37]",
+  fee_agreement: "border-purple-400",
+  execution: "border-[#D4AF37]",
   closing: "border-emerald-400",
   closed: "border-slate-400",
 };
 
 const countBg: Record<string, string> = {
-  board: "bg-slate-100 text-slate-600",
-  in_review: "bg-amber-50 text-amber-700",
-  workgroup: "bg-blue-50 text-blue-700",
-  in_progress: "bg-[#D4AF37]/10 text-[#D4AF37]",
+  proposed: "bg-slate-100 text-slate-600",
+  admin_review: "bg-amber-50 text-amber-700",
+  on_board: "bg-blue-50 text-blue-700",
+  l1_requested: "bg-yellow-50 text-yellow-700",
+  l1_approved: "bg-emerald-50 text-emerald-700",
+  l2_requested: "bg-yellow-50 text-yellow-700",
+  l2_approved: "bg-emerald-50 text-emerald-700",
+  in_negotiation: "bg-[#D4AF37]/10 text-[#D4AF37]",
+  fee_agreement: "bg-purple-50 text-purple-700",
+  execution: "bg-[#D4AF37]/10 text-[#D4AF37]",
   closing: "bg-emerald-50 text-emerald-700",
   closed: "bg-slate-100 text-slate-600",
 };
 
 function getColumn(stage: string): string {
-  if (stage === "closed_won" || stage === "closed_lost") return "closed";
+  if (stage === "closed_won" || stage === "closed_lost" || stage === "fee_distributed") return "closed";
+  if (stage === "board") return "on_board";
+  if (stage === "in_review") return "admin_review";
+  if (stage === "in_progress") return "execution";
+  if (stage === "workgroup") return "l1_approved";
+  if (stage === "call_scheduled") return "in_negotiation";
   if (stageKeys.includes(stage)) return stage;
-  return "board";
+  return "proposed";
 }
 
 export default function PipelineClient({ deals: initialDeals }: { deals: Deal[] }) {
@@ -104,7 +127,7 @@ export default function PipelineClient({ deals: initialDeals }: { deals: Deal[] 
 
       <div className="flex gap-4 overflow-x-auto pb-4">
         {columns.map(col => (
-          <div key={col.key} className="flex-shrink-0 w-64">
+          <div key={col.key} className="flex-shrink-0 w-52">
             {/* Column header */}
             <div className={`border-t-[3px] ${columnColors[col.key]} pt-3 pb-3 px-1 flex items-center justify-between`}>
               <h3 className="text-xs font-bold uppercase tracking-widest text-slate-700">{col.label}</h3>

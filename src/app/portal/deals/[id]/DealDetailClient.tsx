@@ -14,6 +14,7 @@ interface Comment {
 
 export default function DealDetailClient({
   deal, comments: initialComments, commenterMap, originatorName, isAdmin, isOriginator, userId, initialDocs, presentationStatus: initialPresentationStatus = "none",
+  authLevel = "full", interestRequest,
 }: {
   deal: any;
   comments: Comment[];
@@ -24,6 +25,14 @@ export default function DealDetailClient({
   userId: string;
   initialDocs: DocRow[];
   presentationStatus?: "none" | "pending" | "approved" | "rejected";
+  authLevel?: "blind" | "l1" | "l2" | "full";
+  interestRequest?: {
+    id: string;
+    anonymousCode: string;
+    l1Status: string;
+    l2Status: string;
+    l1ExpiresAt: string | null;
+  };
 }) {
   const supabase = createClient();
   const [comments, setComments] = useState(initialComments);
@@ -119,6 +128,54 @@ const { data, error } = await supabase.from("deal_comments").insert({
       <Link href="/portal/my-deals" className="inline-flex items-center gap-2 text-slate-400 hover:text-slate-900 text-sm mb-8 transition-colors">
         <ArrowLeft className="w-4 h-4" /> Torna ai Miei Deal
       </Link>
+
+      {/* L1 Authorization Banner */}
+      {authLevel === "l1" && interestRequest && (
+        <div className="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-6 mb-6 text-center">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <CheckCircle className="w-5 h-5 text-emerald-600" />
+            <span className="text-xs font-bold uppercase tracking-widest text-emerald-700">Autorizzazione Livello 1</span>
+          </div>
+          <p className="text-lg font-bold text-emerald-800">Codice Minerva: {interestRequest.anonymousCode}</p>
+          {interestRequest.l2Status === "not_requested" && (
+            <Link
+              href={`/portal/deals/${deal.id}/l2-request`}
+              className="inline-flex items-center gap-2 mt-4 bg-[#D4AF37] text-white px-6 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-[#b8962d] transition-colors"
+            >
+              Procedi con Richiesta L2 →
+            </Link>
+          )}
+          {interestRequest.l1ExpiresAt && (
+            <p className="text-[10px] text-emerald-600 mt-2">
+              Scadenza L1: {new Date(interestRequest.l1ExpiresAt).toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* L2 Authorization Banner */}
+      {authLevel === "l2" && interestRequest && (
+        <div className="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-6 mb-6 text-center">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Shield className="w-5 h-5 text-emerald-600" />
+            <span className="text-xs font-bold uppercase tracking-widest text-emerald-700">Autorizzazione Livello 2</span>
+          </div>
+          <p className="text-lg font-bold text-emerald-800">Codice Minerva: {interestRequest.anonymousCode}</p>
+          <p className="text-xs text-emerald-600 mt-1">Accesso completo — In trattativa</p>
+        </div>
+      )}
+
+      {/* Originator: link to L1/L2 review */}
+      {isOriginator && (
+        <div className="flex gap-3 mb-6">
+          <Link href={`/portal/deals/${deal.id}/l1-review`} className="bg-white border border-slate-200 rounded-xl px-5 py-3 text-xs font-bold uppercase tracking-widest text-slate-700 hover:border-[#D4AF37] transition-colors">
+            Richieste L1
+          </Link>
+          <Link href={`/portal/deals/${deal.id}/l2-review`} className="bg-white border border-slate-200 rounded-xl px-5 py-3 text-xs font-bold uppercase tracking-widest text-slate-700 hover:border-[#D4AF37] transition-colors">
+            Richieste L2
+          </Link>
+        </div>
+      )}
 
       {/* Header */}
       <div className="bg-white border border-slate-100 rounded-2xl p-4 md:p-8 shadow-sm mb-6">

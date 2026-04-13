@@ -16,7 +16,31 @@ export type NotificationType =
   | "document_uploaded"
   | "presentation_requested"
   | "presentation_approved"
-  | "presentation_rejected";
+  | "presentation_rejected"
+  // L1/L2 flow
+  | "l1_interest_received"
+  | "l1_approved"
+  | "l1_declined"
+  | "l1_reminder"
+  | "l1_expired"
+  | "l2_request_received"
+  | "l2_docs_uploaded"
+  | "l2_admin_verified"
+  | "l2_approved"
+  | "l2_declined"
+  | "l2_integration_needed"
+  // Deal lifecycle
+  | "deal_in_negotiation"
+  | "deal_assigned"
+  | "deal_post5_request"
+  | "deal_post5_timeout"
+  | "mandate_uploaded"
+  | "duplicate_alert"
+  | "ic_alert"
+  | "deal_parked_reminder"
+  | "deal_integration_reminder"
+  | "client_invited"
+  | "fee_agreement_created";
 
 // Maps notification types to the preference column prefix
 // presentation_* types reuse access_* preference columns (same user intent)
@@ -35,6 +59,29 @@ const typeToPreferenceKey: Record<NotificationType, string> = {
   presentation_requested: "access_request",
   presentation_approved: "access_approved",
   presentation_rejected: "access_rejected",
+  // L1/L2 — map to existing preference columns where appropriate
+  l1_interest_received: "access_request",
+  l1_approved: "access_approved",
+  l1_declined: "access_rejected",
+  l1_reminder: "stage_changed",
+  l1_expired: "stage_changed",
+  l2_request_received: "access_request",
+  l2_docs_uploaded: "document_uploaded",
+  l2_admin_verified: "access_approved",
+  l2_approved: "access_approved",
+  l2_declined: "access_rejected",
+  l2_integration_needed: "stage_changed",
+  deal_in_negotiation: "stage_changed",
+  deal_assigned: "stage_changed",
+  deal_post5_request: "access_request",
+  deal_post5_timeout: "stage_changed",
+  mandate_uploaded: "document_uploaded",
+  duplicate_alert: "declaration_received",
+  ic_alert: "declaration_received",
+  deal_parked_reminder: "stage_changed",
+  deal_integration_reminder: "stage_changed",
+  client_invited: "access_approved",
+  fee_agreement_created: "stage_changed",
 };
 
 export async function sendNotification(

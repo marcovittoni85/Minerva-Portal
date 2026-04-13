@@ -46,7 +46,17 @@ export default async function MyDealsPage() {
     .eq("active", true);
 
   const originatedIds = (originatedDeals ?? []).map((d) => d.id);
-  const allDealIds = [...new Set([...dealIds, ...originatedIds])];
+
+  // Also get deals where user has L1/L2 access via interest requests
+  const { data: interestDeals } = await supabase
+    .from("deal_interest_requests")
+    .select("deal_id")
+    .eq("requester_id", user.id)
+    .eq("l1_status", "approved");
+
+  const interestDealIds = (interestDeals ?? []).map((d) => d.deal_id);
+
+  const allDealIds = [...new Set([...dealIds, ...originatedIds, ...interestDealIds])];
 
   if (allDealIds.length === 0) {
     return (
@@ -84,6 +94,18 @@ export default async function MyDealsPage() {
   const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).single();
   const isAdmin = prof?.role?.toString() === "admin";
 
+  // Get L1/L2 interest request status for each deal
+  const { data: interestRequests } = await supabase
+    .from("deal_interest_requests")
+    .select("deal_id, l1_status, l2_status")
+    .eq("requester_id", user.id)
+    .in("deal_id", allDealIds);
+
+  const interestMap: Record<string, { l1: string; l2: string }> = {};
+  for (const ir of interestRequests ?? []) {
+    interestMap[ir.deal_id] = { l1: ir.l1_status, l2: ir.l2_status };
+  }
+
   // Get originator names (admin only)
   let originatorMap: Record<string, string> = {};
   if (isAdmin) {
@@ -107,6 +129,20 @@ export default async function MyDealsPage() {
           const comments = commentMap[deal.id] || 0;
           const metaLine = [deal.sector, deal.sub_sector, deal.deal_type].filter(Boolean).join(" · ");
           const macro = deal.sector ? getMacroCategory(deal.sector) : null;
+          const interest = interestMap[deal.id];
+
+          // Determine L1/L2 badge
+          let statusBadge: { label: string; classes: string } | null = null;
+          if (interest) {
+            if (interest.l2 === "approved") statusBadge = { label: "In Trattativa", classes: "bg-[#D4AF37]/10 text-[#D4AF37] ring-1 ring-[#D4AF37]/30" };
+            else if (interest.l2 === "pending_originator" || interest.l2 === "pending_admin" || interest.l2 === "pending_docs") statusBadge = { label: "L2 Pending", classes: "bg-yellow-50 text-yellow-700 ring-1 ring-yellow-200" };
+            else if (interest.l2 === "declined") statusBadge = { label: "L2 Negata", classes: "bg-red-50 text-red-600 ring-1 ring-red-200" };
+            else if (interest.l1 === "approved") statusBadge = { label: "L1 Approvata", classes: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200" };
+            else if (interest.l1 === "pending") statusBadge = { label: "L1 Pending", classes: "bg-yellow-50 text-yellow-700 ring-1 ring-yellow-200" };
+          }
+          if (deal.deal_stage === "closing" || deal.deal_stage === "closed") {
+            statusBadge = { label: deal.deal_stage === "closing" ? "Closing" : "Chiuso", classes: deal.deal_stage === "closing" ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-500" };
+          }
 
           return (
             <Link key={deal.id} href={"/portal/deals/" + deal.id} className={"group bg-white border border-slate-100 border-l-[5px] rounded-2xl p-6 hover:shadow-lg transition-all " + getSideBorderColor(deal.side)}>
@@ -122,6 +158,11 @@ export default async function MyDealsPage() {
                       <span className="text-[9px] font-bold uppercase tracking-widest text-[#D4AF37]">Originator</span>
                     ) : (
                       <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Accesso</span>
+                    )}
+                    {statusBadge && (
+                      <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-lg ${statusBadge.classes}`}>
+                        {statusBadge.label}
+                      </span>
                     )}
                   </div>
                 </div>

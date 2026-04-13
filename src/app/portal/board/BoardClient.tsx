@@ -2,7 +2,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Search, Eye, Clock, XCircle, FolderOpen, ChevronRight, MapPin, User } from "lucide-react";
-import { getCategoryConfig, getTypeBadgeConfig, getStageBadgeConfig, CATEGORY_OPTIONS } from "@/lib/deal-config";
+import { getCategoryConfig, getTypeBadgeConfig, getStageBadgeConfig, getBoardStatusConfig, CATEGORY_OPTIONS } from "@/lib/deal-config";
 import { useAccessStatus } from "./useAccessStatus";
 
 const boardVisibleStages = new Set(["board", "in_review", null, undefined, ""]);
@@ -45,9 +45,9 @@ function ActionButton({ dealId, isAdmin, className = "" }: { dealId: string; isA
     );
   }
   return (
-    <Link href={`/portal/deals/${dealId}`}
+    <Link href={`/portal/deals/${dealId}/l1-request`}
       className={"inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-gradient-to-r from-[#F5A623] to-[#E09000] text-white shadow-md shadow-[#F5A623]/30 hover:shadow-lg hover:shadow-[#F5A623]/40 transition-all " + className}>
-      <Eye className="w-3.5 h-3.5" /> Dettagli
+      <Eye className="w-3.5 h-3.5" /> Approfondisci
     </Link>
   );
 }
@@ -221,6 +221,15 @@ function TeaserCard({ deal: d, isAdmin, originatorMap }: { deal: any; isAdmin: b
             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold ${typeBadge.bg} ${typeBadge.color}`}>
               <TypeIcon className="w-3 h-3" /> {typeBadge.label}
             </span>
+            {/* Board status badge */}
+            {d.board_status && d.board_status !== "active" && (() => {
+              const bs = getBoardStatusConfig(d.board_status);
+              return (
+                <span className={`inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold ${bs.classes}`}>
+                  {bs.label}
+                </span>
+              );
+            })()}
             {/* Stage badge (admin only) */}
             {isAdmin && (
               <span className={`inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold capitalize ${stage.classes}`}>

@@ -95,13 +95,21 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   };
 
   const isAdmin = role === "admin";
+  const isClient = role === "client";
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     window.location.href = '/login';
   };
 
-  const menuItems = [
+  // Client role: minimal menu
+  const clientItems = [
+    { name: 'Dashboard', href: '/portal', icon: LayoutDashboard },
+    { name: 'I Miei Deal', href: '/portal/my-deals', icon: ShieldCheck },
+    { name: 'Impostazioni', href: '/portal/settings', icon: Settings },
+  ];
+
+  const menuItems = isClient ? clientItems : [
     { name: 'Dashboard', href: '/portal', icon: LayoutDashboard },
     { name: 'Bacheca Deal', href: '/portal/board', icon: Briefcase },
     { name: 'I Miei Deal', href: '/portal/my-deals', icon: ShieldCheck },
@@ -117,6 +125,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     { name: 'Gestione Deal', href: '/portal/deal-manage', icon: Shield },
     { name: 'Pipeline', href: '/portal/pipeline', icon: Columns3 },
     { name: 'Audit Log', href: '/portal/audit-log', icon: FileText },
+    { name: 'Hub Richieste', href: '/portal/hub/requests', icon: ClipboardList },
     { name: 'Richieste Accesso', href: '/portal/access-requests', icon: ClipboardList },
     { name: 'Proposte Deal', href: '/portal/deal-proposals', icon: Briefcase },
     { name: 'Simulatore Fee', href: '/portal/fee-simulator', icon: Calculator },
@@ -131,7 +140,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   ];
 
   const originatorItems = [
-    { name: 'Richieste Accesso', href: '/portal/access-requests', icon: ClipboardList },
+    { name: 'Richieste L1/L2', href: '/portal/access-requests', icon: ClipboardList },
   ];
 
   return (

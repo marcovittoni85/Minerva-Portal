@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
-import { ArrowLeft, TrendingUp, FileText, MapPin, Clock, Lock, Briefcase } from "lucide-react";
-import RequestAccessButton from "../../board/RequestAccessButton";
+import { ArrowLeft, TrendingUp, FileText, MapPin, Clock, Lock, Briefcase, XCircle, Eye } from "lucide-react";
 
 function getMacroCategory(sector: string) {
   if (sector === "Real estate & hospitality") return "REAL ESTATE";
@@ -26,7 +25,8 @@ function getSideLabelColor(side: string) {
 
 export default function DealPreview({
   deal,
-  accessStatus,
+  interestStatus = "none",
+  declineMessage,
 }: {
   deal: {
     id: string;
@@ -39,8 +39,13 @@ export default function DealPreview({
     ev_range: string;
     geography: string;
     thematic_area: string;
+    blind_description?: string | null;
+    teaser_description?: string | null;
+    asset_class?: string | null;
+    board_status?: string | null;
   };
-  accessStatus: "none" | "pending" | "rejected";
+  interestStatus?: "none" | "l1_pending" | "l1_declined";
+  declineMessage?: string;
 }) {
   const macro = deal.sector ? getMacroCategory(deal.sector) : null;
 
@@ -65,7 +70,19 @@ export default function DealPreview({
           )}
         </div>
 
-        <h1 className="text-2xl font-bold text-slate-900 mb-6">{deal.title}</h1>
+        <h1 className="text-2xl font-bold text-slate-900 mb-3">{deal.title}</h1>
+
+        {/* Blind description */}
+        {(deal.blind_description || deal.teaser_description) && (
+          <p className="text-slate-500 text-sm leading-relaxed mb-6">{deal.blind_description || deal.teaser_description}</p>
+        )}
+
+        {/* Asset class badge */}
+        {deal.asset_class && (
+          <span className="inline-block text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] bg-[#D4AF37]/10 px-3 py-1 rounded-lg mb-4">
+            {deal.asset_class.replace(/_/g, " ")}
+          </span>
+        )}
 
         {/* Key metrics */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
@@ -167,18 +184,55 @@ export default function DealPreview({
         </div>
       </div>
 
-      {/* Access CTA */}
+      {/* L1 Interest CTA */}
       <div className="bg-white border border-slate-100 rounded-2xl p-8 shadow-sm text-center">
-        <div className="w-12 h-12 bg-[#D4AF37]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Lock className="w-5 h-5 text-[#D4AF37]" />
-        </div>
-        <h2 className="text-lg font-bold text-slate-900 mb-2">Richiedi Accesso</h2>
-        <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto">
-          Per visualizzare la descrizione completa, i documenti e partecipare alla discussione è necessario richiedere l&apos;accesso a questa operazione.
-        </p>
-        <div className="flex justify-center">
-          <RequestAccessButton dealId={deal.id} externalStatus={accessStatus} />
-        </div>
+        {interestStatus === "l1_declined" && (
+          <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6 mb-6">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <XCircle className="w-5 h-5 text-red-500" />
+              <span className="text-xs font-bold uppercase tracking-widest text-red-600">Autorizzazione Livello 1 Negata</span>
+            </div>
+            {declineMessage && (
+              <p className="text-sm text-red-700 mt-2">{declineMessage}</p>
+            )}
+          </div>
+        )}
+
+        {interestStatus === "l1_pending" && (
+          <>
+            <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Clock className="w-5 h-5 text-amber-600" />
+            </div>
+            <h2 className="text-lg font-bold text-slate-900 mb-2">Richiesta in Attesa</h2>
+            <p className="text-sm text-slate-500 mb-2">
+              La tua richiesta di interesse è in fase di valutazione dall&apos;originator.
+            </p>
+            <p className="text-xs text-slate-400">Riceverai una notifica con l&apos;esito.</p>
+          </>
+        )}
+
+        {interestStatus === "none" && (
+          <>
+            <div className="w-12 h-12 bg-[#D4AF37]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Eye className="w-5 h-5 text-[#D4AF37]" />
+            </div>
+            <h2 className="text-lg font-bold text-slate-900 mb-2">Richiedi Approfondimento</h2>
+            <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto">
+              Per visualizzare i dati completi dell&apos;operazione, richiedi l&apos;autorizzazione Livello 1. La tua identità resterà anonima per l&apos;originator.
+            </p>
+            {deal.board_status === "in_negotiation" && (
+              <p className="text-xs text-amber-600 font-bold mb-4">
+                Questo deal è in fase di trattativa. Puoi comunque segnalare il tuo interesse.
+              </p>
+            )}
+            <Link
+              href={`/portal/deals/${deal.id}/l1-request`}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-[#F5A623] to-[#E09000] text-white px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest shadow-md shadow-[#F5A623]/30 hover:shadow-lg hover:shadow-[#F5A623]/40 transition-all"
+            >
+              <Eye className="w-4 h-4" /> Richiedi Approfondimento
+            </Link>
+          </>
+        )}
       </div>
     </div>
   );
