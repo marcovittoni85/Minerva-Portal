@@ -2,7 +2,7 @@
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Briefcase, Settings, LogOut, Menu, ShieldCheck, PlusCircle, ClipboardList, Bell, Shield, Columns3, FileText, Key, Users, ArrowRightLeft, CheckCircle, XCircle, Megaphone, Calculator, Activity, ScrollText, CircleDollarSign, HeartHandshake, Gauge, CheckSquare, Calendar, BookOpen, Palette } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Settings, LogOut, Menu, ShieldCheck, PlusCircle, ClipboardList, Bell, Shield, Columns3, FileText, Key, Users, UserPlus, ArrowRightLeft, CheckCircle, XCircle, Megaphone, Calculator, Activity, ScrollText, CircleDollarSign, HeartHandshake, Gauge, CheckSquare, Calendar, BookOpen, Palette } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
@@ -38,8 +38,22 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+          const { data } = await supabase.from("profiles").select("role, must_change_password, onboarding_completed").eq("id", user.id).single();
           setRole(data?.role || "");
+
+          // Onboarding guards — skip for admin users
+          if (data?.role !== "admin") {
+            const isOnboardingPage = pathname === "/portal/change-password" || pathname === "/portal/onboarding";
+            if (data?.must_change_password && pathname !== "/portal/change-password") {
+              router.push("/portal/change-password");
+              return;
+            }
+            if (!data?.must_change_password && data?.onboarding_completed === false && pathname !== "/portal/onboarding" && pathname !== "/portal/change-password") {
+              router.push("/portal/onboarding");
+              return;
+            }
+          }
+
           const { count } = await supabase.from("deals").select("id", { count: "exact", head: true }).eq("originator_id", user.id).eq("active", true);
           setIsOriginator((count ?? 0) > 0);
           const { count: unread } = await supabase.from("notifications").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("is_read", false);
@@ -136,6 +150,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     { name: 'Knowledge Base', href: '/portal/admin/knowledge-base', icon: BookOpen },
     { name: 'Dashboard Builder', href: '/portal/admin/dashboard-editor', icon: Palette },
     { name: 'Gestione Partner', href: '/portal/admin/partners', icon: Users },
+    { name: 'Invita Utente', href: '/portal/admin/invite-user', icon: UserPlus },
     { name: 'Nuovo Deal', href: '/portal/admin/new-deal', icon: PlusCircle },
   ];
 
