@@ -91,7 +91,7 @@ export default function PipelineClient({ deals: initialDeals }: { deals: Deal[] 
     if (!error) {
       setDeals(prev => prev.map(d => d.id === dealId ? { ...d, deal_stage: dbStage } : d));
       // Log activity
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user;
       await supabase.from("deal_activity_log").insert({
         deal_id: dealId,
         user_id: user?.id,

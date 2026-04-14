@@ -1,7 +1,7 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-export async function proxy(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   let res = NextResponse.next({
     request: { headers: req.headers },
   });
@@ -21,9 +21,16 @@ export async function proxy(req: NextRequest) {
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  // Use getSession (reads cookie, no API call) to avoid rate limits
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user ?? null;
 
-  // Protezione cartella /portal
+  // Redirect se non loggato
+  if (!user && req.nextUrl.pathname.startsWith('/portal')) {
+    return NextResponse.redirect(new URL('/login?redirect=' + encodeURIComponent(req.nextUrl.pathname), req.url));
+  }
+
+  // Protezione cartella /portal — trial check
   if (user && req.nextUrl.pathname.startsWith('/portal')) {
     const { data: profile } = await supabase
       .from('profiles')
@@ -31,17 +38,11 @@ export async function proxy(req: NextRequest) {
       .eq('id', user.id)
       .single();
 
-    // Controllo Scadenza 30 giorni
     if (profile && !profile.documents_signed && profile.trial_ends_at) {
       if (new Date() > new Date(profile.trial_ends_at)) {
         return NextResponse.redirect(new URL('/access-expired', req.url));
       }
     }
-  }
-
-  // Redirect se non loggato
-  if (!user && req.nextUrl.pathname.startsWith('/portal')) {
-    return NextResponse.redirect(new URL('/login', req.url));
   }
 
   return res;

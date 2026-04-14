@@ -5,7 +5,7 @@ import PipelineClient from "./PipelineClient";
 
 export default async function PipelinePage() {
   const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession(); const user = session?.user;
   if (!user) redirect("/login");
 
   const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).single();

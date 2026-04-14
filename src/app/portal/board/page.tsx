@@ -3,7 +3,7 @@ import BoardClient from "./BoardClient";
 
 export default async function BoardPage() {
   const supabase = await supabaseServer();
-  const { data: userRes } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession(); const userRes = { user: session?.user };
   const uid = userRes.user?.id;
 
   if (!uid) return <div className="p-6 text-slate-400">Non autenticato.</div>;

@@ -15,7 +15,7 @@ export async function createDeal(formData: FormData) {
 
   const supabase = await supabaseServer();
 
-  const { data: userData } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession(); const userData = { user: session?.user };
   const user = userData.user;
 
   const { error } = await supabase.from("deals").insert({

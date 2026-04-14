@@ -5,7 +5,7 @@ import { supabaseServer } from "@/lib/supabase-server";
 export async function POST(req: Request) {
   const supabase = await supabaseServer();
 
-  const { data: userRes } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession(); const userRes = { user: session?.user };
   const user = userRes.user;
   if (!user) return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
 

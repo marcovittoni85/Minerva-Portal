@@ -6,7 +6,7 @@ import L2ReviewClient from "./L2ReviewClient";
 export default async function L2ReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession(); const user = session?.user;
   if (!user) redirect("/login");
 
   const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).single();

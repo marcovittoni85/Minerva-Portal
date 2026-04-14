@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { WidgetPosition } from '@/types/dashboard-builder';
+import { CockpitDataProvider } from './CockpitDataContext';
 import KpiStripWidget from './widgets/KpiStripWidget';
 import HotDealsWidget from './widgets/HotDealsWidget';
 import DealBoardPreviewWidget from './widgets/DealBoardPreviewWidget';
@@ -67,21 +68,23 @@ export default function DynamicDashboard() {
   const sorted = [...layout].sort((a, b) => a.y !== b.y ? a.y - b.y : a.x - b.x);
 
   return (
-    <div className="grid grid-cols-12 gap-4">
-      {sorted.map(widget => {
-        const Component = WIDGET_COMPONENTS[widget.widget];
-        if (!Component) return null;
+    <CockpitDataProvider>
+      <div className="grid grid-cols-12 gap-4">
+        {sorted.map(widget => {
+          const Component = WIDGET_COMPONENTS[widget.widget];
+          if (!Component) return null;
 
-        return (
-          <div
-            key={widget.id}
-            style={{ gridColumn: `span ${widget.w}` }}
-            className="min-h-0"
-          >
-            <Component config={widget.config} />
-          </div>
-        );
-      })}
-    </div>
+          return (
+            <div
+              key={widget.id}
+              style={{ gridColumn: `span ${widget.w}` }}
+              className="min-h-0"
+            >
+              <Component config={widget.config} />
+            </div>
+          );
+        })}
+      </div>
+    </CockpitDataProvider>
   );
 }

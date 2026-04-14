@@ -15,7 +15,7 @@ export default async function HubRequestsPage() {
   const supabase = await supabaseServer();
 
   // (A) leggi user e ruolo
-  const { data: userRes } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession(); const userRes = { user: session?.user };
   const user = userRes.user;
 
   if (!user) {

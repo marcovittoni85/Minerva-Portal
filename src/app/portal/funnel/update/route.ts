@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Bad request" }, { status: 400 });
   }
 
-  const { data: userRes } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession(); const userRes = { user: session?.user };
   const user = userRes.user;
   if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 

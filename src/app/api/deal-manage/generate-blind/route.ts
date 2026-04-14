@@ -1,12 +1,11 @@
-import { supabaseServer } from "@/lib/supabase-server";
+import { supabaseServer, getAuthUser } from "@/lib/supabase-server";
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
-  const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { supabase, user } = await getAuthUser();
   if (!user) return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
 
   const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).single();

@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
-import { supabaseServer } from "@/lib/supabase-server";
+import { supabaseServer, getAuthUser } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { sendNotification } from "@/lib/notifications";
 
 /** POST — Create a new L1 interest request */
 export async function POST(req: Request) {
-  const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { supabase, user } = await getAuthUser();
   if (!user) return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
 
   const body = await req.json();
@@ -93,8 +92,7 @@ export async function POST(req: Request) {
 
 /** GET — Fetch interest requests for a deal (originator/admin) */
 export async function GET(req: Request) {
-  const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { supabase, user } = await getAuthUser();
   if (!user) return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
 
   const { searchParams } = new URL(req.url);

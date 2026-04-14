@@ -1,11 +1,9 @@
-import { supabaseServer } from "@/lib/supabase-server";
+import { supabaseServer, getAuthUser } from "@/lib/supabase-server";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  const supabase = await supabaseServer();
-
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
+  const { supabase, user } = await getAuthUser();
+    if (!user) return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
 
   const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).single();
   if (prof?.role !== "admin") return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });

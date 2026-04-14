@@ -1,12 +1,10 @@
-import { supabaseServer } from "@/lib/supabase-server";
+import { supabaseServer, getAuthUser } from "@/lib/supabase-server";
 import { sendNotificationBulk } from "@/lib/notifications";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  const supabase = await supabaseServer();
+  const { supabase, user } = await getAuthUser();
   const { dealId } = await req.json();
-
-  const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
 
   const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user.id).single();

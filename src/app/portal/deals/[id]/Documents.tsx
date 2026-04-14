@@ -86,7 +86,7 @@ export default function Documents({
       setUploading(true);
       setUploadProgress(0);
 
-      const { data: userRes } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const userRes = { user: session?.user };
       const user = userRes?.user;
       if (!user) {
         setUploading(false);

@@ -7,16 +7,13 @@
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseServer } from '@/lib/supabase-server';
+import { supabaseServer, getAuthUser } from '@/lib/supabase-server';
 
 // GET — Lista fee streams
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await supabaseServer();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
-    }
+    const { supabase, user } = await getAuthUser();
+    if (!user) return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
 
     const { searchParams } = new URL(request.url);
     const dealId = searchParams.get('deal_id');
@@ -75,11 +72,8 @@ export async function GET(request: NextRequest) {
 // POST — Crea fee stream
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await supabaseServer();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
-    }
+    const { supabase, user } = await getAuthUser();
+    if (!user) return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
 
     // Verifica admin
     const { data: profile } = await supabase
@@ -115,11 +109,8 @@ export async function POST(request: NextRequest) {
 // PATCH — Aggiorna fee stream
 export async function PATCH(request: NextRequest) {
   try {
-    const supabase = await supabaseServer();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
-    }
+    const { supabase, user } = await getAuthUser();
+    if (!user) return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
 
     const { data: profile } = await supabase
       .from('profiles')
@@ -160,11 +151,8 @@ export async function PATCH(request: NextRequest) {
 // DELETE — Elimina fee stream
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = await supabaseServer();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
-    }
+    const { supabase, user } = await getAuthUser();
+    if (!user) return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
 
     const { data: profile } = await supabase
       .from('profiles')

@@ -1,11 +1,10 @@
-import { supabaseServer } from "@/lib/supabase-server";
+import { supabaseServer, getAuthUser } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { NextResponse } from "next/server";
 
 // GET — list documents for a deal
 export async function GET(req: Request) {
-  const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { supabase, user } = await getAuthUser();
   if (!user) return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
@@ -40,8 +39,7 @@ export async function GET(req: Request) {
 
 // POST — upload a new document
 export async function POST(req: Request) {
-  const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { supabase, user } = await getAuthUser();
   if (!user) return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
 
   const formData = await req.formData();
@@ -85,8 +83,7 @@ export async function POST(req: Request) {
 
 // DELETE — soft-delete a document
 export async function DELETE(req: Request) {
-  const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { supabase, user } = await getAuthUser();
   if (!user) return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
 
   // Admin check

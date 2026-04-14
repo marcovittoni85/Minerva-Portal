@@ -4,7 +4,7 @@ export default async function ModerationCommentsPage() {
   const supabase = await supabaseServer();
 
   // 1. Verifica permessi Admin
-  const { data: me } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession(); const me = { user: session?.user };
   const { data: prof } = await supabase
     .from("profiles")
     .select("role")

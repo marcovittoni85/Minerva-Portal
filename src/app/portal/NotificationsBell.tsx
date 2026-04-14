@@ -9,7 +9,7 @@ export default function NotificationsBell() {
   const [count, setCount] = useState(0);
 
   async function refresh() {
-    const { data: me } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession(); const me = { user: session?.user };
     if (!me.user) return;
 
     const { count: c, error } = await supabase
@@ -24,7 +24,7 @@ export default function NotificationsBell() {
     let channel: any;
 
     (async () => {
-      const { data } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const data = { user: session?.user };
       const uid = data.user?.id;
       if (!uid) return;
 

@@ -1,4 +1,4 @@
-import { supabaseServer } from "@/lib/supabase-server";
+import { supabaseServer, getAuthUser } from "@/lib/supabase-server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { sendNotificationEmail } from "@/lib/send-notification-email";
 import { NextResponse } from "next/server";
@@ -13,8 +13,7 @@ function generateTempPassword(): string {
 }
 
 export async function POST(req: Request) {
-  const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { supabase, user } = await getAuthUser();
   if (!user) return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
 
   const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).single();

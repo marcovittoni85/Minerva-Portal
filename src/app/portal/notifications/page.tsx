@@ -66,7 +66,7 @@ export default function NotificationsPage() {
 
   const loadNotifications = useCallback(async (offset = 0, append = false) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user;
       if (!user) { setLoading(false); return; }
       setUserId(user.id);
 
@@ -92,7 +92,7 @@ export default function NotificationsPage() {
     loadNotifications();
     (async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { session } } = await supabase.auth.getSession(); const user = session?.user;
         if (user) {
           await supabase
             .from("notifications")

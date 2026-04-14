@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   if (fetchError || !request) return NextResponse.json({ error: "Richiesta non trovata" }, { status: 404 });
 
   const { data: deal } = await supabase.from("deals").select("title").eq("id", request.deal_id).single();
-  const { data: { user: currentUser } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession(); const currentUser = session?.user;
 
   const { error: updateError } = await supabase
     .from("deal_access_requests")

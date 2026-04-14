@@ -36,9 +36,10 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   useEffect(() => {
     async function load() {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { session } } = await supabase.auth.getSession();
+        const user = session?.user;
         if (user) {
-          const { data } = await supabase.from("profiles").select("role, must_change_password, onboarding_completed").eq("id", user.id).single();
+          const { data, error } = await supabase.from("profiles").select("role, must_change_password, onboarding_completed").eq("id", user.id).single();
           setRole(data?.role || "");
 
           // Onboarding guards — skip for admin users
@@ -64,13 +65,13 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       }
     }
     load();
-  }, [pathname]);
+  }, []); // fetch profile only once on mount
 
   const loadNotifs = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase.from("notifications").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data } = await supabase.from("notifications").select("*").eq("user_id", session.user.id).order("created_at", { ascending: false }).limit(20);
         setNotifs(data ?? []);
       }
     } catch {
@@ -81,9 +82,9 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
   const markAllRead = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase.from("notifications").update({ is_read: true }).eq("user_id", user.id).eq("is_read", false);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await supabase.from("notifications").update({ is_read: true }).eq("user_id", session.user.id).eq("is_read", false);
         setUnreadCount(0);
         setNotifs(prev => prev.map(n => ({ ...n, is_read: true })));
       }

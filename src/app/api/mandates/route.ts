@@ -5,14 +5,13 @@
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseServer } from '@/lib/supabase-server';
+import { supabaseServer, getAuthUser } from '@/lib/supabase-server';
 
 // GET — Lista mandati
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await supabaseServer();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const { supabase, user } = await getAuthUser();
+    if (!user) {
       return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
     }
 
@@ -47,9 +46,8 @@ export async function GET(request: NextRequest) {
 // PATCH — Aggiorna status
 export async function PATCH(request: NextRequest) {
   try {
-    const supabase = await supabaseServer();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const { supabase, user } = await getAuthUser();
+    if (!user) {
       return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
     }
 

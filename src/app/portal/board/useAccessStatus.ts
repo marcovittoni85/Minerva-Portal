@@ -11,7 +11,7 @@ export function useAccessStatus(dealId: string, isAdmin: boolean): AccessStatus 
   useEffect(() => {
     if (isAdmin) { setStatus("approved"); return; }
     async function check() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user;
       if (!user) return;
       const { data: access } = await supabase
         .from("deal_access").select("id").eq("deal_id", dealId).eq("user_id", user.id).maybeSingle();

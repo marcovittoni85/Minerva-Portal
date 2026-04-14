@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { WidgetConfig } from '@/types/dashboard-builder';
+import { useCockpitData } from '../CockpitDataContext';
 import WidgetWrapper from '../WidgetWrapper';
 
 interface Props { config: WidgetConfig; }
@@ -10,40 +11,30 @@ interface Deadline { id: string; label: string; date: string; type: string; }
 
 export default function DeadlinesWidget({ config }: Props) {
   config = config || { title: 'Scadenze Imminenti' };
-  const [deadlines, setDeadlines] = useState<Deadline[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: cockpit, loading } = useCockpitData();
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch('/api/cockpit');
-        if (!res.ok) { setLoading(false); return; }
-        const d = await res.json();
-        const items: Deadline[] = [];
-        (Array.isArray(d.upcoming_deadlines) ? d.upcoming_deadlines : []).forEach((dl: any) => {
-          const date = dl.due_date || dl.end_date;
-          if (date) items.push({ id: dl.id || crypto.randomUUID(), label: dl.title || dl.deal_title || 'Scadenza', date, type: dl.type || 'task' });
-        });
-        // Also include overdue tasks from tasks_today if available
-        (Array.isArray(d.tasks_today) ? d.tasks_today : []).forEach((t: any) => {
-          if (t.due_date && new Date(t.due_date) < new Date()) {
-            items.push({ id: t.id || crypto.randomUUID(), label: t.title || 'Task', date: t.due_date, type: 'task' });
-          }
-        });
-        items.sort((a, b) => {
-          const ta = new Date(a.date).getTime();
-          const tb = new Date(b.date).getTime();
-          if (isNaN(ta) && isNaN(tb)) return 0;
-          if (isNaN(ta)) return 1;
-          if (isNaN(tb)) return -1;
-          return ta - tb;
-        });
-        setDeadlines(items.slice(0, config.limit || 5));
-      } catch { /* silent */ }
-      finally { setLoading(false); }
-    }
-    load();
-  }, []);
+  const deadlines = useMemo(() => {
+    if (!cockpit) return [];
+    const items: Deadline[] = [];
+    (Array.isArray(cockpit.upcoming_deadlines) ? cockpit.upcoming_deadlines : []).forEach((dl: any) => {
+      const date = dl.due_date || dl.end_date;
+      if (date) items.push({ id: dl.id || crypto.randomUUID(), label: dl.title || dl.deal_title || 'Scadenza', date, type: dl.type || 'task' });
+    });
+    (Array.isArray(cockpit.tasks_today) ? cockpit.tasks_today : []).forEach((t: any) => {
+      if (t.due_date && new Date(t.due_date) < new Date()) {
+        items.push({ id: t.id || crypto.randomUUID(), label: t.title || 'Task', date: t.due_date, type: 'task' });
+      }
+    });
+    items.sort((a, b) => {
+      const ta = new Date(a.date).getTime();
+      const tb = new Date(b.date).getTime();
+      if (isNaN(ta) && isNaN(tb)) return 0;
+      if (isNaN(ta)) return 1;
+      if (isNaN(tb)) return -1;
+      return ta - tb;
+    });
+    return items.slice(0, config.limit || 5);
+  }, [cockpit, config.limit]);
 
   function daysUntil(dateStr: string) {
     if (!dateStr) return 999;

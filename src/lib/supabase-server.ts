@@ -25,3 +25,10 @@ export async function supabaseServer() {
     }
   );
 }
+
+/** Get authenticated user from session (no API call, avoids rate limits) */
+export async function getAuthUser() {
+  const supabase = await supabaseServer();
+  const { data: { session } } = await supabase.auth.getSession();
+  return { supabase, user: session?.user ?? null };
+}

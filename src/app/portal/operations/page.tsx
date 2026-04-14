@@ -5,9 +5,8 @@ import OperationsClient from "./OperationsClient";
 
 export default async function OperationsPage() {
   const supabase = await supabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) redirect("/login");
 
   // Get deals where user is in workgroup AND stage is active

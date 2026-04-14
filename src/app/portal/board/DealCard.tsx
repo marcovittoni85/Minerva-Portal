@@ -34,7 +34,7 @@ export default function DealCard({ deal: d, isAdmin }: { deal: any; isAdmin: boo
   useEffect(() => {
     if (isAdmin) { setStatus("approved"); return; }
     async function checkStatus() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user;
       if (!user) return;
       const { data: access } = await supabase.from("deal_access").select("*").eq("deal_id", d.id).eq("user_id", user.id).maybeSingle();
       if (access) { setStatus("approved"); return; }

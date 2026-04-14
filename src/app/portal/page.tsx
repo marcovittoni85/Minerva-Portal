@@ -11,7 +11,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user;
       if (!user) return;
       const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user.id).single();
       setName(profile?.full_name || "Partner");

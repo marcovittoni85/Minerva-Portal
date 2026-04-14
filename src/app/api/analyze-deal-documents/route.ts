@@ -1,4 +1,4 @@
-import { supabaseServer } from "@/lib/supabase-server";
+import { supabaseServer, getAuthUser } from "@/lib/supabase-server";
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import mammoth from "mammoth";
@@ -87,10 +87,8 @@ function isImageType(mime: string): mime is ImageMediaType {
 }
 
 export async function POST(req: Request) {
-  const supabase = await supabaseServer();
-
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) {
+  const { supabase, user } = await getAuthUser();
+    if (!user) {
     return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
   }
 

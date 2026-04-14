@@ -7,7 +7,7 @@ import DeclarationForm from "./DeclarationForm";
 export default async function DeclarationPage({ params }: { params: Promise<{ dealId: string }> }) {
   const { dealId } = await params;
   const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession(); const user = session?.user;
   if (!user) redirect("/login");
 
   // Service-role client to bypass RLS for authorization checks

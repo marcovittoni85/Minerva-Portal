@@ -8,7 +8,7 @@ export async function POST(req: Request, { params }: any) {
   const form = await req.formData();
   const docId = String(form.get("doc_id") ?? "");
 
-  const { data: userRes } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession(); const userRes = { user: session?.user };
   const user = userRes.user;
   if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 

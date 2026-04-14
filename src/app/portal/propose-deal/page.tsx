@@ -117,7 +117,7 @@ export default function ProposeNewDeal() {
     setAnalyzing(true);
     setAnalyzeError(null);
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession(); const user = session?.user;
     if (!user) { setAnalyzeError("Non autenticato"); setAnalyzing(false); return; }
 
     // Upload files to Supabase Storage (temp folder) if not already uploaded
@@ -180,7 +180,7 @@ export default function ProposeNewDeal() {
     setLoading(true);
     setError(null);
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession(); const user = session?.user;
     if (!user) { setError("Non autenticato"); setLoading(false); return; }
 
     // Build checklist_data from asset-specific fields

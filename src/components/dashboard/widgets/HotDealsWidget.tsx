@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { WidgetConfig } from '@/types/dashboard-builder';
+import { useCockpitData } from '../CockpitDataContext';
 import WidgetWrapper from '../WidgetWrapper';
 import Link from 'next/link';
 
@@ -9,22 +9,8 @@ interface Props { config: WidgetConfig; }
 
 export default function HotDealsWidget({ config }: Props) {
   config = config || { title: 'Deal in Corso' };
-  const [deals, setDeals] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch('/api/cockpit');
-        if (!res.ok) { setLoading(false); return; }
-        const d = await res.json();
-        // API returns active_deals (array of deal objects)
-        setDeals(Array.isArray(d.active_deals) ? d.active_deals : []);
-      } catch { /* silent */ }
-      finally { setLoading(false); }
-    }
-    load();
-  }, []);
+  const { data: cockpit, loading } = useCockpitData();
+  const deals = cockpit && Array.isArray(cockpit.active_deals) ? cockpit.active_deals : [];
 
   const limit = config.limit || 5;
 

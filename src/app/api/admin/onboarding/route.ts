@@ -30,9 +30,8 @@ export async function POST(req: Request) {
       }
     );
 
-    const {
-      data: { user },
-    } = await supabaseAuth.auth.getUser();
+    const { data: { session } } = await supabaseAuth.auth.getSession();
+    const user = session?.user;
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });

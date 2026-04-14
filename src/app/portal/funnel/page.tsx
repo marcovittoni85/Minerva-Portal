@@ -16,7 +16,7 @@ const STAGES = [
 export default async function FunnelPage() {
   const supabase = await supabaseServer();
 
-  const { data: userRes } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession(); const userRes = { user: session?.user };
   const user = userRes.user;
 
   if (!user) {

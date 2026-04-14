@@ -13,7 +13,7 @@ export default function NewDealPage() {
   // Recuperiamo il ruolo dell'utente per mostrare i campi corretti
   useEffect(() => {
     async function getProfile() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user;
       if (user) {
         const { data } = await supabase
           .from("profiles")

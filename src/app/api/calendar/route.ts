@@ -7,13 +7,12 @@
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseServer } from '@/lib/supabase-server';
+import { supabaseServer, getAuthUser } from '@/lib/supabase-server';
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await supabaseServer();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
+    const { supabase, user } = await getAuthUser();
+    if (!user) return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
 
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get('start');
@@ -65,9 +64,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await supabaseServer();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
+    const { supabase, user } = await getAuthUser();
+    if (!user) return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
 
     const body = await request.json();
 
@@ -100,9 +98,8 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const supabase = await supabaseServer();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
+    const { supabase, user } = await getAuthUser();
+    if (!user) return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
 
     const { id, ...updates } = await request.json();
     if (!id) return NextResponse.json({ error: 'id richiesto' }, { status: 400 });
@@ -123,9 +120,8 @@ export async function PATCH(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = await supabaseServer();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
+    const { supabase, user } = await getAuthUser();
+    if (!user) return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

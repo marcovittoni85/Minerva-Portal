@@ -2,7 +2,7 @@ import { supabaseServer } from "@/lib/supabase-server";
 
 export default async function WhoAmIPage() {
   const supabase = await supabaseServer();
-  const { data } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession(); const data = { user: session?.user };
 
   return (
     <pre style={{ padding: 16 }}>

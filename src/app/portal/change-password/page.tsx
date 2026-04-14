@@ -37,7 +37,7 @@ export default function ChangePasswordPage() {
     setLoading(true);
 
     // Verify current password by re-signing in
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession(); const user = session?.user;
     if (!user?.email) {
       setError("Sessione non valida. Esci e accedi di nuovo.");
       setLoading(false);

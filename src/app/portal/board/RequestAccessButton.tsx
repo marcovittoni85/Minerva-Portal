@@ -17,7 +17,7 @@ export default function RequestAccessButton({ dealId, isAdmin, externalStatus, p
     if (externalStatus !== undefined) return;
     if (isAdmin) { setInternalStatus("approved"); return; }
     async function checkStatus() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession(); const user = session?.user;
       if (!user) return;
       const { data: access } = await supabase.from("deal_access").select("*").eq("deal_id", dealId).eq("user_id", user.id).maybeSingle();
       if (access) { setInternalStatus("approved"); return; }
@@ -30,7 +30,7 @@ export default function RequestAccessButton({ dealId, isAdmin, externalStatus, p
   const handleRequest = async () => {
     if (!reason.trim()) return;
     setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession(); const user = session?.user;
     const { error } = await supabase.from("deal_access_requests").insert({ deal_id: dealId, user_id: user?.id, status: "pending", reason: reason.trim() });
     if (!error) {
       // Log activity

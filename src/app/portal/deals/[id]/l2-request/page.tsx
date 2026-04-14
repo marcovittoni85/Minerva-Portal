@@ -6,7 +6,7 @@ import L2RequestClient from "./L2RequestClient";
 export default async function L2RequestPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession(); const user = session?.user;
   if (!user) redirect("/login");
 
   const { data: deal } = await supabase

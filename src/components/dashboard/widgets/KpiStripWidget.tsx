@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { WidgetConfig, KPI_ITEMS_CATALOG } from '@/types/dashboard-builder';
+import { useCockpitData } from '../CockpitDataContext';
 import {
   Briefcase, LayoutGrid, Bell, Users, UserCheck, CircleDollarSign,
   Coins, Calendar, Star, Clock, AlertTriangle, BarChart3,
@@ -16,36 +16,26 @@ interface Props { config: WidgetConfig; }
 
 export default function KpiStripWidget({ config }: Props) {
   config = config || { title: 'KPI' };
-  const [data, setData] = useState<Record<string, number>>({});
-  const [loading, setLoading] = useState(true);
+  const { data: cockpit, loading } = useCockpitData();
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch('/api/cockpit');
-        if (!res.ok) return;
-        const d = await res.json();
-        // active_deals is an array of objects — use .length for count
-        const activeDealsCount = Array.isArray(d.active_deals) ? d.active_deals.length : (typeof d.active_deals === 'number' ? d.active_deals : 0);
-        setData({
-          deals_active: activeDealsCount,
-          deals_available: activeDealsCount,
-          deals_involved: typeof d.deals_in_workgroup === 'number' ? d.deals_in_workgroup : 0,
-          requests_pending: typeof d.pending_requests === 'number' ? d.pending_requests : 0,
-          members_total: typeof d.total_members === 'number' ? d.total_members : 0,
-          workgroup_count: typeof d.deals_in_workgroup === 'number' ? d.deals_in_workgroup : 0,
-          fees_collected: typeof d.fees_collected === 'number' ? d.fees_collected : 0,
-          fees_earned: typeof d.fees_collected === 'number' ? d.fees_collected : 0,
-          events_upcoming: typeof d.upcoming_events === 'number' ? d.upcoming_events : 0,
-          contacts_key: typeof d.key_contacts_count === 'number' ? d.key_contacts_count : 0,
-          pending_followups: typeof d.followup_count === 'number' ? d.followup_count : 0,
-          tasks_overdue: typeof d.overdue_count === 'number' ? d.overdue_count : 0,
-        });
-      } catch { /* silent */ }
-      finally { setLoading(false); }
-    }
-    load();
-  }, []);
+  const data: Record<string, number> = {};
+  if (cockpit) {
+    const activeDealsCount = Array.isArray(cockpit.active_deals) ? cockpit.active_deals.length : (typeof cockpit.active_deals === 'number' ? cockpit.active_deals : 0);
+    Object.assign(data, {
+      deals_active: activeDealsCount,
+      deals_available: activeDealsCount,
+      deals_involved: typeof cockpit.deals_in_workgroup === 'number' ? cockpit.deals_in_workgroup : 0,
+      requests_pending: typeof cockpit.pending_requests === 'number' ? cockpit.pending_requests : 0,
+      members_total: typeof cockpit.total_members === 'number' ? cockpit.total_members : 0,
+      workgroup_count: typeof cockpit.deals_in_workgroup === 'number' ? cockpit.deals_in_workgroup : 0,
+      fees_collected: typeof cockpit.fees_collected === 'number' ? cockpit.fees_collected : 0,
+      fees_earned: typeof cockpit.fees_collected === 'number' ? cockpit.fees_collected : 0,
+      events_upcoming: typeof cockpit.upcoming_events === 'number' ? cockpit.upcoming_events : 0,
+      contacts_key: typeof cockpit.key_contacts_count === 'number' ? cockpit.key_contacts_count : 0,
+      pending_followups: typeof cockpit.followup_count === 'number' ? cockpit.followup_count : 0,
+      tasks_overdue: typeof cockpit.overdue_count === 'number' ? cockpit.overdue_count : 0,
+    });
+  }
 
   const items = config.items || ['deals_active'];
 

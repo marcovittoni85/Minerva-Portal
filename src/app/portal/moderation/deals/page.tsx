@@ -2,7 +2,7 @@ import { supabaseServer } from "@/lib/supabase-server";
 
 export default async function DealModerationPage() {
   const supabase = await supabaseServer();
-  const { data: me } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession(); const me = { user: session?.user };
 
   // Controllo Ruolo (Admin/Equity Partner)
   const { data: prof } = await supabase

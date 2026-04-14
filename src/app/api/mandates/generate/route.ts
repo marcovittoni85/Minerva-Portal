@@ -4,17 +4,14 @@
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseServer } from '@/lib/supabase-server';
+import { supabaseServer, getAuthUser } from '@/lib/supabase-server';
 import { generateMandateDocx } from '@/lib/generate-mandate-docx';
 import type { MandateData } from '@/types/mandate';
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await supabaseServer();
-
-    // Verifica auth
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
+    const { supabase, user } = await getAuthUser();
+    if (!user) {
       return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
     }
 

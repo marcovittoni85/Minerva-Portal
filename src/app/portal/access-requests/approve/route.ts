@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   const vdrLink = "https://minervapartners.it/portal/deals/" + request.deal_id;
 
   // Update request
-  const { data: { user: currentUser } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession(); const currentUser = session?.user;
   const { error: updateError } = await supabase
     .from("deal_access_requests")
     .update({ status: "ACCESS_APPROVED", vdr_link: vdrLink, decided_at: new Date().toISOString(), decided_by: currentUser?.id })
