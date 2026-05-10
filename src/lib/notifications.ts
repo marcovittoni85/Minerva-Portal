@@ -1,5 +1,5 @@
 import { SupabaseClient } from "@supabase/supabase-js";
-import { supabaseAdmin } from "./supabase-admin";
+import { supabaseAdmin } from "./supabase/admin";
 import { sendNotificationEmail } from "./send-notification-email";
 
 export type NotificationType =

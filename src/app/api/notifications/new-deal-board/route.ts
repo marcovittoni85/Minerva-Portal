@@ -1,4 +1,4 @@
-import { supabaseServer } from "@/lib/supabase-server";
+import { supabaseServer } from "@/lib/supabase/server";
 import { notifyMatchingUsers } from "@/lib/notifications";
 import { NextResponse } from "next/server";
 

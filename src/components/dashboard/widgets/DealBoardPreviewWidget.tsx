@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { WidgetConfig } from '@/types/dashboard-builder';
 import WidgetWrapper from '../WidgetWrapper';
 import Link from 'next/link';
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 
 interface Props { config: WidgetConfig; }
 

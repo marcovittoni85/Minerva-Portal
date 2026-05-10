@@ -1,5 +1,5 @@
-import { supabaseServer, getAuthUser } from "@/lib/supabase-server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { supabaseServer, getAuthUser } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { sendNotificationEmail } from "@/lib/send-notification-email";
 import { NextResponse } from "next/server";
 

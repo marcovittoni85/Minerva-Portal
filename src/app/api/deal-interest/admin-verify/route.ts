@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { supabaseServer, getAuthUser } from "@/lib/supabase-server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { supabaseServer, getAuthUser } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { sendNotification } from "@/lib/notifications";
 
 /**
@@ -65,12 +65,22 @@ export async function POST(req: Request) {
       dealTitle: deal.title,
     });
 
+    // Notify requester that their L2 docs have been verified
+    await sendNotification(supabase, {
+      userId: interest.requester_id,
+      type: "l2_admin_verified",
+      title: "Documentazione L2 Verificata",
+      body: `La tua documentazione per "${deal.title}" è stata verificata dall'Hub Minerva. In attesa di decisione finale dell'originator.`,
+      link: `/portal/deals/${deal.id}`,
+      dealTitle: deal.title,
+    });
+
     // Audit
     await admin.from("deal_activity_log").insert({
       deal_id: deal.id,
       user_id: user.id,
       action: "l2_admin_verified",
-      details: { request_id: requestId, requester_revealed: requesterProfile?.full_name },
+      details: { request_id: requestId, requester_revealed: requesterProfile?.full_name, nda_pending: true },
     });
   } else if (decision === "rejected") {
     await admin.from("deal_interest_requests").update({

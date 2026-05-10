@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 
 export default function RequestAccessButton({ dealId, isAdmin, externalStatus, presentationStatus }: { dealId: string; isAdmin?: boolean; externalStatus?: "loading" | "none" | "pending" | "approved" | "rejected"; presentationStatus?: "none" | "pending" | "approved" | "rejected" }) {

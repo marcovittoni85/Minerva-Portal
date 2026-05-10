@@ -5,7 +5,7 @@
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseServer, getAuthUser } from '@/lib/supabase-server';
+import { supabaseServer, getAuthUser } from '@/lib/supabase/server';
 
 // GET — Lista mandati
 export async function GET(request: NextRequest) {

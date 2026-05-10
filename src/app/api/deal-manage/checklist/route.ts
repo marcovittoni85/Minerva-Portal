@@ -1,4 +1,4 @@
-import { supabaseServer, getAuthUser } from "@/lib/supabase-server";
+import { supabaseServer, getAuthUser } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function PUT(req: Request) {

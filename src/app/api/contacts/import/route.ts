@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseServer, getAuthUser } from '@/lib/supabase-server';
+import { supabaseServer, getAuthUser } from '@/lib/supabase/server';
 
 // ── Field mapping per diverse sorgenti ──────────────────────
 

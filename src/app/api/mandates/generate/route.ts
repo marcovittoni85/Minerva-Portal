@@ -4,7 +4,7 @@
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseServer, getAuthUser } from '@/lib/supabase-server';
+import { supabaseServer, getAuthUser } from '@/lib/supabase/server';
 import { generateMandateDocx } from '@/lib/generate-mandate-docx';
 import type { MandateData } from '@/types/mandate';
 

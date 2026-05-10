@@ -1,4 +1,4 @@
-import { supabaseServer } from "@/lib/supabase-server";
+import { supabaseServer } from "@/lib/supabase/server";
 import BoardClient from "./BoardClient";
 
 export default async function BoardPage() {

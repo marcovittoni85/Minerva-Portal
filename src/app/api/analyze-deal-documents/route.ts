@@ -1,4 +1,4 @@
-import { supabaseServer, getAuthUser } from "@/lib/supabase-server";
+import { supabaseServer, getAuthUser } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import mammoth from "mammoth";

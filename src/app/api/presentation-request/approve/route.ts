@@ -1,4 +1,4 @@
-import { supabaseServer, getAuthUser } from "@/lib/supabase-server";
+import { supabaseServer, getAuthUser } from "@/lib/supabase/server";
 import { sendNotification } from "@/lib/notifications";
 import { NextResponse } from "next/server";
 

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useMemo, useRef } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Clock, ScrollText, CircleDollarSign, X, Plus, Trash2, LayoutGrid, CheckSquare, Calendar, FileText, Upload, Download, Eye, Sparkles, Send, Ban, ParkingCircle, MessageSquare } from "lucide-react";
@@ -1281,10 +1281,18 @@ export default function DealManageClient({
       <DocumentsChecklistSection deal={deal} adminId={adminId} />
 
       {/* Fee & Revenue */}
-      <div className="bg-white border border-slate-100 rounded-2xl p-6 mt-8">
-        <div className="flex items-center gap-2 mb-6">
-          <CircleDollarSign className="w-4 h-4 text-[#D4AF37]" />
-          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Fee & Revenue</h2>
+      <div className="bg-white border border-slate-100 rounded-2xl p-6 mt-8" id="fee-section">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <CircleDollarSign className="w-4 h-4 text-[#D4AF37]" />
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Fee & Revenue</h2>
+          </div>
+          <Link
+            href={`/portal/deals/${deal.id}/fee-agreement`}
+            className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] hover:underline transition-colors"
+          >
+            Fee Agreement &rarr;
+          </Link>
         </div>
         <FeeTracker
           dealId={deal.id}

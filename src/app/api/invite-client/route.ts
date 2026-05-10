@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { supabaseServer, getAuthUser } from "@/lib/supabase-server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { supabaseServer, getAuthUser } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { sendNotification } from "@/lib/notifications";
 
 /**

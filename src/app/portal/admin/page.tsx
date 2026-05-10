@@ -1,4 +1,4 @@
-import { supabaseServer } from "@/lib/supabase-server";
+import { supabaseServer } from "@/lib/supabase/server";
 import FeeOverviewSection from "./FeeOverviewSection";
 
 export default async function AdminDashboard() {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { createClient } from "@/utils/supabase/client"; // Assicurati che il percorso sia corretto
+import { createClient } from "@/lib/supabase/client"; // Assicurati che il percorso sia corretto
 import { createDeal } from "./actions";
 
 export default function NewDealPage() {
@@ -34,7 +34,7 @@ export default function NewDealPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/portal/deals" className="underline text-slate-500 hover:text-slate-800 transition">
+        <Link href="/portal/board" className="underline text-slate-500 hover:text-slate-800 transition">
           ← Torna alla bacheca
         </Link>
         <h1 className="text-2xl font-semibold mt-3">Nuova Operazione</h1>

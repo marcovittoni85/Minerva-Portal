@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { supabaseBrowser } from "@/lib/supabase-browser";
+import { createClient } from "@/lib/supabase/client";
 
 export default function NotificationsBell() {
-  const supabase = supabaseBrowser();
+  const supabase = createClient();
   const [count, setCount] = useState(0);
 
   async function refresh() {

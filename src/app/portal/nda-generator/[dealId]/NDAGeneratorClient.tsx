@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { ArrowLeft, FileText, Download, Upload, CheckCircle, Loader2 } from "lucide-react";
 

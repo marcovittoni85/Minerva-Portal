@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { UserPlus, RefreshCw, Clock, CheckCircle, XCircle, AlertTriangle, Filter } from "lucide-react";
 

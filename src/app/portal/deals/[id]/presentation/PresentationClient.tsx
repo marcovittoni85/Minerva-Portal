@@ -1,7 +1,9 @@
 "use client";
 import { useState, useRef } from "react";
 import Link from "next/link";
-import { ArrowLeft, Eye, EyeOff, Download, Printer } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Printer, FileText } from "lucide-react";
+import { NDAReminderModal } from "@/components/deals/NDAReminderModal";
+import { formatFileSize } from "@/lib/format";
 
 const ASSET_LABELS: Record<string, string> = {
   m_and_a: "M&A",
@@ -12,16 +14,24 @@ const ASSET_LABELS: Record<string, string> = {
 };
 
 export default function PresentationClient({
-  deal, originatorName,
+  deal,
+  originatorName,
+  canSeeFull = true,
+  ndaRequired = false,
 }: {
   deal: any;
   originatorName: string;
+  canSeeFull?: boolean;
+  ndaRequired?: boolean;
 }) {
   const [mode, setMode] = useState<"blind" | "full">("blind");
+  const [ndaConfirmed, setNdaConfirmed] = useState(!ndaRequired);
   const printRef = useRef<HTMLDivElement>(null);
 
   const checklist = deal.checklist_data || {};
   const assetLabel = ASSET_LABELS[deal.asset_class] || deal.asset_class || "N/A";
+
+  const showActualFull = canSeeFull && mode === "full" && ndaConfirmed;
 
   const handlePrint = () => {
     if (printRef.current) {
@@ -36,14 +46,7 @@ export default function PresentationClient({
           h1, h2, h3 { font-family: 'Cormorant Garamond', serif; }
           h1 { font-size: 36px; color: #D4AF37; margin-bottom: 8px; }
           h2 { font-size: 24px; color: #D4AF37; margin-top: 40px; }
-          .subtitle { color: #94a3b8; font-size: 14px; }
-          .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
-          .card { background: rgba(255,255,255,0.05); border: 1px solid rgba(212,175,55,0.2); border-radius: 12px; padding: 20px; }
-          .card-label { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #D4AF37; margin-bottom: 4px; }
-          .card-value { font-size: 16px; font-weight: 700; }
           .footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid rgba(212,175,55,0.3); display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #64748b; }
-          .logo { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: #D4AF37; font-weight: 700; }
-          .badge { display: inline-block; background: rgba(212,175,55,0.15); color: #D4AF37; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
           @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
         </style></head><body>
         ${printRef.current.innerHTML}
@@ -56,6 +59,15 @@ export default function PresentationClient({
 
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto">
+      {/* NDA Reminder Modal */}
+      {ndaRequired && !ndaConfirmed && (
+        <NDAReminderModal
+          dealId={deal.id}
+          dealCode={deal.code}
+          onAccepted={() => setNdaConfirmed(true)}
+        />
+      )}
+
       <Link href={`/portal/deals/${deal.id}`} className="inline-flex items-center gap-2 text-slate-400 hover:text-slate-900 text-sm mb-8 transition-colors">
         <ArrowLeft className="w-4 h-4" /> Torna al Deal
       </Link>
@@ -66,15 +78,16 @@ export default function PresentationClient({
           <h1 className="text-2xl font-bold text-slate-900">Presentazione <span className="text-[#D4AF37]">Deal</span></h1>
         </div>
         <div className="flex items-center gap-3">
-          {/* Toggle */}
-          <div className="flex bg-slate-100 rounded-xl p-1">
-            <button onClick={() => setMode("blind")} className={"px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all " + (mode === "blind" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500")}>
-              <EyeOff className="w-3.5 h-3.5 inline mr-1" /> Blind
-            </button>
-            <button onClick={() => setMode("full")} className={"px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all " + (mode === "full" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500")}>
-              <Eye className="w-3.5 h-3.5 inline mr-1" /> Full
-            </button>
-          </div>
+          {canSeeFull && (
+            <div className="flex bg-slate-100 rounded-xl p-1">
+              <button onClick={() => setMode("blind")} className={"px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all " + (mode === "blind" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500")}>
+                <EyeOff className="w-3.5 h-3.5 inline mr-1" /> Blind
+              </button>
+              <button onClick={() => setMode("full")} className={"px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all " + (mode === "full" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500")}>
+                <Eye className="w-3.5 h-3.5 inline mr-1" /> Full
+              </button>
+            </div>
+          )}
           <button onClick={handlePrint} className="bg-[#D4AF37] text-white px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-[#b8962d] transition-colors flex items-center gap-2">
             <Printer className="w-3.5 h-3.5" /> Stampa / PDF
           </button>
@@ -84,14 +97,13 @@ export default function PresentationClient({
       {/* Preview */}
       <div ref={printRef}>
         <div className="page" style={{ background: "#001220", color: "#f8fafc", borderRadius: "16px", padding: "48px", minHeight: "600px", fontFamily: "'DM Sans', sans-serif" }}>
-          {/* Header */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "32px" }}>
             <div>
               <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "14px", color: "#D4AF37", letterSpacing: "4px", textTransform: "uppercase", marginBottom: "8px" }}>
                 Minerva Partners
               </p>
               <p style={{ fontSize: "11px", color: "#64748b", letterSpacing: "2px", textTransform: "uppercase" }}>
-                {mode === "blind" ? "Blind Profile" : "Full Presentation"}
+                {showActualFull ? "Full Presentation" : "Blind Profile"}
               </p>
             </div>
             <div style={{ background: "rgba(212,175,55,0.15)", color: "#D4AF37", padding: "6px 16px", borderRadius: "8px", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px" }}>
@@ -99,29 +111,27 @@ export default function PresentationClient({
             </div>
           </div>
 
-          {/* Title */}
           <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "32px", color: "#D4AF37", marginBottom: "8px", lineHeight: 1.2 }}>
             {deal.title}
           </h1>
 
-          {mode === "blind" && (
+          {!showActualFull && (
             <p style={{ fontSize: "14px", color: "#94a3b8", marginBottom: "32px", lineHeight: 1.6, maxWidth: "600px" }}>
               {deal.blind_description || deal.teaser_description || deal.description || ""}
             </p>
           )}
 
-          {mode === "full" && (
+          {showActualFull && (
             <p style={{ fontSize: "14px", color: "#cbd5e1", marginBottom: "32px", lineHeight: 1.6 }}>
               {deal.description || ""}
             </p>
           )}
 
-          {/* Key metrics grid */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", marginTop: "24px" }}>
-            <MetricCard label="Settore" value={mode === "blind" ? (deal.sector || "Confidenziale") : (deal.sector || "N/A")} />
+            <MetricCard label="Settore" value={!showActualFull ? (deal.sector || "Confidenziale") : (deal.sector || "N/A")} />
             <MetricCard label="EV Range" value={deal.ev_range || deal.estimated_ev || "N/A"} />
             <MetricCard label="Side" value={deal.side || "N/A"} />
-            {mode === "full" && (
+            {showActualFull && (
               <>
                 <MetricCard label="Geografia" value={deal.geography || deal.location || "N/A"} />
                 <MetricCard label="Tipo Operazione" value={deal.deal_type || "N/A"} />
@@ -147,8 +157,7 @@ export default function PresentationClient({
             )}
           </div>
 
-          {/* Blind-specific: generic rationale */}
-          {mode === "blind" && deal.asset_class === "m_and_a" && checklist.sell_reason && (
+          {!showActualFull && deal.asset_class === "m_and_a" && checklist.sell_reason && (
             <div style={{ marginTop: "32px" }}>
               <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "20px", color: "#D4AF37", marginBottom: "12px" }}>
                 Razionale Strategico
@@ -157,8 +166,7 @@ export default function PresentationClient({
             </div>
           )}
 
-          {/* Full-specific: all checklist data */}
-          {mode === "full" && Object.keys(checklist).length > 0 && (
+          {showActualFull && Object.keys(checklist).length > 0 && (
             <div style={{ marginTop: "32px" }}>
               <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "20px", color: "#D4AF37", marginBottom: "16px" }}>
                 Dettagli Operazione
@@ -176,8 +184,24 @@ export default function PresentationClient({
             </div>
           )}
 
-          {/* Full: originator */}
-          {mode === "full" && originatorName && (
+          {showActualFull && deal.deal_documents && deal.deal_documents.length > 0 && (
+            <div style={{ marginTop: "32px" }}>
+              <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "20px", color: "#D4AF37", marginBottom: "16px" }}>
+                Documenti Allegati
+              </h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {deal.deal_documents.map((doc: any) => (
+                  <div key={doc.id} style={{ display: "flex", alignItems: "center", gap: "12px", background: "rgba(255,255,255,0.03)", borderRadius: "8px", padding: "12px" }}>
+                    <FileText style={{ width: "16px", height: "16px", color: "#64748b" }} />
+                    <span style={{ flex: 1, fontSize: "13px", color: "#e2e8f0" }}>{doc.file_name}</span>
+                    <span style={{ fontSize: "11px", color: "#64748b" }}>{formatFileSize(doc.file_size)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {showActualFull && originatorName && (
             <div style={{ marginTop: "32px" }}>
               <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "20px", color: "#D4AF37", marginBottom: "8px" }}>
                 Team Minerva
@@ -186,13 +210,12 @@ export default function PresentationClient({
             </div>
           )}
 
-          {/* Footer */}
           <div style={{ marginTop: "60px", paddingTop: "20px", borderTop: "1px solid rgba(212,175,55,0.3)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "18px", color: "#D4AF37", fontWeight: 700 }}>
               Minerva Partners
             </p>
             <div style={{ textAlign: "right", fontSize: "10px", color: "#64748b" }}>
-              {mode === "blind" ? (
+              {!showActualFull ? (
                 <p>Opportunità riservata — Per accedere al dossier completo contattare il proprio referente Minerva</p>
               ) : (
                 <p>Documento riservato — Distribuzione non autorizzata</p>

@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import { supabaseServer } from "@/lib/supabase-server";
+import { supabaseServer } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import DeclarationForm from "./DeclarationForm";

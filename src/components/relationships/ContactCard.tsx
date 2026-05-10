@@ -1,23 +1,7 @@
 'use client';
 
 import { Contact, STRENGTH_CONFIG, RELATIONSHIP_TYPE_CONFIG } from '@/types/relationship';
-
-function timeAgo(dateStr: string | null | undefined): string {
-  if (!dateStr) return 'Mai';
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins}m fa`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h fa`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}g fa`;
-  const months = Math.floor(days / 30);
-  return `${months} mesi fa`;
-}
-
-function getInitials(name: string): string {
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-}
+import { timeAgo, getInitials } from '@/lib/format';
 
 interface ContactCardProps {
   contact: Contact;

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useRef, useMemo, useCallback } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { Search } from "lucide-react";
 
 const actionOptions = [

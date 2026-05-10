@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { supabaseServer } from "@/lib/supabase-server";
+import { supabaseServer } from "@/lib/supabase/server";
 
 type ReqRow = {
   id: string;
