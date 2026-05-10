@@ -1,8 +1,9 @@
 "use client";
 import { useState } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Users } from "lucide-react";
+import { EmptyPipeline } from "@/components/ui/EmptyStatePresets";
 
 type Deal = {
   id: string;
@@ -124,6 +125,8 @@ export default function PipelineClient({ deals: initialDeals }: { deals: Deal[] 
         <h1 className="text-3xl font-bold text-slate-900">Pipeline <span className="text-[#D4AF37]">Deal</span></h1>
         <p className="text-slate-500 text-sm mt-2">{deals.length} deal attivi</p>
       </header>
+
+      {deals.length === 0 && <EmptyPipeline />}
 
       <div className="flex gap-4 overflow-x-auto pb-4">
         {columns.map(col => (

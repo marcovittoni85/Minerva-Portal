@@ -1,9 +1,12 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
-import { ArrowLeft, Send, FileText, MapPin, TrendingUp, Users, Clock, Shield, FolderOpen, X, Presentation, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, Send, FileText, MapPin, TrendingUp, Users, Clock, Shield, FolderOpen, X, Presentation, CheckCircle, AlertCircle, Sparkles } from "lucide-react";
 import Documents, { type DocRow } from "./Documents";
+import { AnimatedStatusBadge } from "@/components/deals/AnimatedStatusBadge";
+import { ChallengingVistaModal } from "@/components/deals/ChallengingVistaModal";
+import { InlineLoader } from "@/components/ui/Loader";
 
 interface Comment {
   id: string;
@@ -41,6 +44,7 @@ export default function DealDetailClient({
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<"commenti" | "documenti">("commenti");
   const [presentationStatus, setPresentationStatus] = useState(initialPresentationStatus);
+  const [showChallenging, setShowChallenging] = useState(false);
   const [showPresentationModal, setShowPresentationModal] = useState(false);
   const [presentationForm, setPresentationForm] = useState({
     counterparty_name: "",
@@ -184,7 +188,7 @@ const { data, error } = await supabase.from("deal_comments").insert({
           <span className={"text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded " + (sectorColors[deal.sector] || "bg-slate-50 text-slate-600")}>{deal.sector}</span>
           {deal.sub_sector && <span className="text-[10px] font-bold text-slate-500 bg-slate-50 px-2 py-0.5 rounded">{deal.sub_sector}</span>}
           {deal.deal_stage && deal.deal_stage !== "board" && (
-            <span className="text-[10px] font-bold text-white bg-[#D4AF37] px-2 py-0.5 rounded capitalize">{deal.deal_stage.replace("_", " ")}</span>
+            <AnimatedStatusBadge status={deal.deal_stage} dealId={deal.id} />
           )}
         </div>
 
@@ -195,6 +199,13 @@ const { data, error } = await supabase.from("deal_comments").insert({
             <Shield className="w-3 h-3 text-[#D4AF37]" />
             <p className="text-sm text-[#D4AF37] font-bold">Originator: {originatorName}</p>
           </div>
+        )}
+
+        {isAdmin && (
+          <button onClick={() => setShowChallenging(true)} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-colors mb-3">
+            <Sparkles className="w-4 h-4" />
+            Apri Challenging Vista
+          </button>
         )}
 
         <p className="text-slate-600 text-sm mb-6 leading-relaxed">{deal.description}</p>
@@ -479,13 +490,20 @@ const { data, error } = await supabase.from("deal_comments").insert({
                 disabled={submittingPresentation || !presentationForm.counterparty_name.trim()}
                 className="bg-[#D4AF37] text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-[#b8962d] transition-colors disabled:opacity-50 flex items-center gap-2"
               >
-                {submittingPresentation && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                {submittingPresentation && <InlineLoader />}
                 Invia Richiesta
               </button>
             </div>
           </div>
         </div>
       )}
+
+      {/* Challenging Vista Modal */}
+      <ChallengingVistaModal
+        dealId={deal.id}
+        open={showChallenging}
+        onClose={() => setShowChallenging(false)}
+      />
     </div>
   );
 }

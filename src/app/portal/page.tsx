@@ -1,8 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
 import DynamicDashboard from "@/components/dashboard/DynamicDashboard";
+import { WelcomeOverlay } from "@/components/welcome/WelcomeOverlay";
+import { PattoStatusWidget } from "@/components/dashboard/widgets/PattoStatusWidget";
+import { DashboardWidgetSkeleton } from "@/components/ui/Skeleton";
 
 export default function DashboardPage() {
   const supabase = createClient();
@@ -22,12 +25,10 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="p-4 md:p-8 max-w-7xl mx-auto">
-        <div className="animate-pulse space-y-6">
-          <div className="h-48 bg-slate-100 rounded-2xl" />
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[1,2,3,4].map(i => <div key={i} className="h-24 bg-slate-50 rounded-2xl" />)}
-          </div>
+      <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
+        <DashboardWidgetSkeleton />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[1,2,3,4].map(i => <DashboardWidgetSkeleton key={i} />)}
         </div>
       </div>
     );
@@ -35,6 +36,11 @@ export default function DashboardPage() {
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
+      <WelcomeOverlay userName={name?.split(' ')[0]} />
+
+      {/* Patto/Onboarding Status Widget */}
+      <PattoStatusWidget />
+
       {/* Hero Banner */}
       <div className="relative rounded-2xl overflow-hidden">
         <div className="absolute inset-0">

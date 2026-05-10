@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Search, Eye, Clock, XCircle, FolderOpen, ChevronRight, MapPin, User } from "lucide-react";
 import { getCategoryConfig, getTypeBadgeConfig, getStageBadgeConfig, getBoardStatusConfig, CATEGORY_OPTIONS } from "@/lib/deal-config";
 import { useAccessStatus } from "./useAccessStatus";
+import { EmptyDealBoard } from "@/components/ui/EmptyStatePresets";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 const boardVisibleStages = new Set(["board", "in_review", null, undefined, ""]);
 
@@ -12,7 +14,7 @@ const boardVisibleStages = new Set(["board", "in_review", null, undefined, ""]);
 function ActionButton({ dealId, isAdmin, className = "" }: { dealId: string; isAdmin: boolean; className?: string }) {
   const status = useAccessStatus(dealId, isAdmin);
 
-  if (status === "loading") return <div className={"h-9 w-24 bg-slate-100 animate-pulse rounded-lg " + className} />;
+  if (status === "loading") return <Skeleton className={"h-9 w-24 rounded-lg " + className} />;
 
   if (isAdmin) {
     return (
@@ -179,7 +181,8 @@ export default function BoardClient({
         {processed.map(d => (
           <TeaserCard key={d.id} deal={d} isAdmin={isAdmin} originatorMap={originatorMap} />
         ))}
-        {processed.length === 0 && (
+        {processed.length === 0 && !hasFilters && <EmptyDealBoard />}
+        {processed.length === 0 && hasFilters && (
           <div className="text-center py-20 text-slate-400">Nessuna opportunità con questi filtri.</div>
         )}
       </div>

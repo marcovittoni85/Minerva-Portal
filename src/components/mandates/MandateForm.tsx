@@ -9,13 +9,15 @@
 import { useState, useCallback } from 'react';
 import {
   Building2, FileText, Coins, Scale, ClipboardList, Eye,
-  ChevronRight, ChevronLeft, Plus, Trash2, Download, Loader2,
+  ChevronRight, ChevronLeft, Plus, Trash2, Download,
   Check, AlertCircle,
 } from 'lucide-react';
+import { InlineLoader } from '@/components/ui/Loader';
 import type { MandateData, MandateFeeType, ScopeSection } from '@/types/mandate';
 import {
   MANDATE_FORM_STEPS, FEE_TYPE_LABELS, DEFAULT_MANDATE,
 } from '@/types/mandate';
+import { inputClass, labelClass, buttonPrimary, buttonSecondary, buttonGold } from '@/components/ui/form';
 
 // ── Props ────────────────────────────────────────────────────
 interface MandateFormProps {
@@ -34,35 +36,6 @@ const ICONS: Record<string, React.ElementType> = {
 // ── Styling constants ────────────────────────────────────────
 const NAVY = '#001220';
 const GOLD = '#D4AF37';
-
-const inputClass = `
-  w-full px-4 py-3 rounded-lg border border-slate-200
-  bg-white text-slate-800 placeholder:text-slate-400
-  focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/40 focus:border-[#D4AF37]
-  transition-all duration-200
-`.trim();
-
-const labelClass = 'block text-sm font-medium text-slate-600 mb-1.5';
-
-const buttonPrimary = `
-  inline-flex items-center gap-2 px-6 py-3 rounded-lg
-  bg-[#001220] text-white font-medium
-  hover:bg-[#001220]/90 transition-all duration-200
-  disabled:opacity-50 disabled:cursor-not-allowed
-`.trim();
-
-const buttonSecondary = `
-  inline-flex items-center gap-2 px-6 py-3 rounded-lg
-  border border-slate-200 text-slate-600 font-medium
-  hover:bg-slate-50 transition-all duration-200
-`.trim();
-
-const buttonGold = `
-  inline-flex items-center gap-2 px-8 py-3.5 rounded-lg
-  bg-gradient-to-r from-[#D4AF37] to-[#b8962d] text-white font-semibold
-  hover:shadow-lg hover:shadow-[#D4AF37]/25 transition-all duration-200
-  disabled:opacity-50 disabled:cursor-not-allowed
-`.trim();
 
 // ── Component ────────────────────────────────────────────────
 
@@ -716,7 +689,7 @@ export default function MandateForm({
           className={buttonGold}
         >
           {loading ? (
-            <><Loader2 size={20} className="animate-spin" /> Generazione in corso...</>
+            <><InlineLoader /> Generazione in corso...</>
           ) : generatedUrl ? (
             <><Download size={20} /> Rigenera Mandato</>
           ) : (

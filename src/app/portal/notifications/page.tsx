@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
+import { timeAgo } from '@/lib/format';
 import {
   Key,
   Briefcase,
@@ -13,9 +14,10 @@ import {
   Megaphone,
   Bell,
   Trash2,
-  Loader2,
   Presentation,
 } from "lucide-react";
+import { Loader, InlineLoader } from "@/components/ui/Loader";
+import { EmptyNotifications } from "@/components/ui/EmptyStatePresets";
 
 const PAGE_SIZE = 20;
 
@@ -44,16 +46,6 @@ const tabs = [
   { key: "dichiarazioni", label: "Dichiarazioni" },
 ];
 
-function timeAgo(dateStr: string): string {
-  const now = Date.now();
-  const d = new Date(dateStr).getTime();
-  const diff = Math.floor((now - d) / 1000);
-  if (diff < 60) return "Adesso";
-  if (diff < 3600) return `${Math.floor(diff / 60)} min fa`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)} ore fa`;
-  if (diff < 604800) return `${Math.floor(diff / 86400)} giorni fa`;
-  return new Date(dateStr).toLocaleDateString("it-IT", { day: "numeric", month: "short", year: "numeric" });
-}
 
 export default function NotificationsPage() {
   const supabase = createClient();
@@ -176,13 +168,10 @@ export default function NotificationsPage() {
 
       {loading ? (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+          <Loader size="lg" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-white border border-slate-100 rounded-2xl p-12 text-center">
-          <Bell className="w-8 h-8 text-slate-200 mx-auto mb-3" />
-          <p className="text-sm text-slate-400">Nessuna notifica{activeTab !== "tutte" ? " in questa categoria" : ""}.</p>
-        </div>
+        <EmptyNotifications />
       ) : (
         <div className="space-y-2">
           {filtered.map(n => {
@@ -234,7 +223,7 @@ export default function NotificationsPage() {
                 className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] hover:text-[#b8962d] transition-colors disabled:opacity-50"
               >
                 {loadingMore ? (
-                  <Loader2 className="w-4 h-4 animate-spin mx-auto" />
+                  <InlineLoader className="mx-auto" />
                 ) : (
                   "Carica altre"
                 )}

@@ -11,6 +11,8 @@ import {
   PenLine, XCircle, MoreHorizontal, Filter,
 } from 'lucide-react';
 import { MANDATE_STATUS_CONFIG, type MandateStatus } from '@/types/mandate';
+import { EmptyMandates } from '@/components/ui/EmptyStatePresets';
+import { Loader } from '@/components/ui/Loader';
 
 interface MandateListItem {
   id: string;
@@ -98,7 +100,7 @@ export default function MandateList({ dealId, onEdit, onNew }: MandateListProps)
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full" />
+        <Loader size="md" />
       </div>
     );
   }
@@ -135,10 +137,7 @@ export default function MandateList({ dealId, onEdit, onNew }: MandateListProps)
 
       {/* Mandate cards */}
       {filtered.length === 0 ? (
-        <div className="text-center py-12 text-slate-400">
-          <FileText size={48} className="mx-auto mb-3 opacity-30" />
-          <p>Nessun mandato trovato</p>
-        </div>
+        <EmptyMandates />
       ) : (
         <div className="space-y-3">
           {filtered.map(mandate => {

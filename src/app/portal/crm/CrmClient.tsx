@@ -1,14 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import {
   Search,
   ChevronDown,
   ChevronRight,
   Plus,
   X,
-  Loader2,
   Users,
   Mail,
   Phone,
@@ -16,6 +15,7 @@ import {
   Tag,
   Briefcase,
 } from "lucide-react";
+import { Loader, InlineLoader } from '@/components/ui/Loader';
 
 interface Contact {
   id: string;
@@ -265,7 +265,7 @@ export default function CrmClient() {
       <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+            <Loader size="md" />
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-16">
@@ -399,7 +399,7 @@ export default function CrmClient() {
                         <div>
                           <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold mb-2">Deal Collegati</p>
                           {!deals ? (
-                            <Loader2 className="w-4 h-4 animate-spin text-slate-300" />
+                            <InlineLoader />
                           ) : deals.length === 0 ? (
                             <p className="text-xs text-slate-400 italic">Nessun deal collegato</p>
                           ) : (
@@ -575,7 +575,7 @@ export default function CrmClient() {
                     disabled={saving}
                     className="bg-[#D4AF37] text-white px-6 py-2.5 rounded-lg text-[10px] font-bold tracking-widest uppercase hover:bg-[#b8962d] transition-colors disabled:opacity-50 flex items-center gap-2"
                   >
-                    {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    {saving && <InlineLoader />}
                     Salva
                   </button>
                 </div>

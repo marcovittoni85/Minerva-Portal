@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import {
   Upload,
   FileText,
@@ -13,8 +13,8 @@ import {
   Trash2,
   X,
   CheckCircle,
-  Loader2,
 } from "lucide-react";
+import { InlineLoader } from '@/components/ui/Loader';
 
 const CATEGORIES = [
   { value: "nda", label: "NDA" },
@@ -279,7 +279,7 @@ export default function Documents({
         {uploading && (
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs text-slate-500">
-              <Loader2 className="w-3 h-3 animate-spin text-[#D4AF37]" />
+              <InlineLoader />
               <span>Caricamento in corso… {uploadProgress}%</span>
             </div>
             <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">

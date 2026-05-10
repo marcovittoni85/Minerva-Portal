@@ -7,6 +7,8 @@ import {
   CheckSquare, Plus, ArrowUpDown, Filter, Square,
   Check, Trash2,
 } from 'lucide-react';
+import { Loader } from '@/components/ui/Loader';
+import { EmptyTasks } from '@/components/ui/EmptyStatePresets';
 
 function daysUntil(dateStr: string | null | undefined): number | null {
   if (!dateStr) return null;
@@ -158,13 +160,10 @@ export default function TaskListFull() {
       {/* Task List */}
       {loading ? (
         <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+          <Loader size="lg" />
         </div>
       ) : tasks.length === 0 ? (
-        <div className="bg-white border border-slate-100 rounded-2xl p-12 text-center">
-          <CheckSquare size={40} className="mx-auto text-slate-300 mb-4" />
-          <p className="text-slate-500 text-sm">{showCompleted ? 'Nessun task completato' : 'Nessun task aperto'}</p>
-        </div>
+        <EmptyTasks />
       ) : (
         <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden">
           {/* Header row */}

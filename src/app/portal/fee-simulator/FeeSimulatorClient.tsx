@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { Plus, Trash2, Save, Loader2, Check, X } from "lucide-react";
-import { createClient } from "@/utils/supabase/client";
+import { Plus, Trash2, Save, Check, X } from "lucide-react";
+import { InlineLoader } from '@/components/ui/Loader';
+import { createClient } from "@/lib/supabase/client";
 
 /* ─── Types ─────────────────────────────────────────────────── */
 
@@ -842,7 +843,7 @@ function SaveFeeStreamModal({
                 disabled={saving || !selectedDeal}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#b8962d] text-white text-sm font-medium hover:shadow-lg hover:shadow-[#D4AF37]/25 transition-all disabled:opacity-50"
               >
-                {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                {saving ? <InlineLoader /> : <Save size={14} />}
                 Salva
               </button>
             </div>

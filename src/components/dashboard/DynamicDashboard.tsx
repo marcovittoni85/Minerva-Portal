@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { WidgetPosition } from '@/types/dashboard-builder';
 import { CockpitDataProvider } from './CockpitDataContext';
+import { Loader } from '@/components/ui/Loader';
 import KpiStripWidget from './widgets/KpiStripWidget';
 import HotDealsWidget from './widgets/HotDealsWidget';
 import DealBoardPreviewWidget from './widgets/DealBoardPreviewWidget';
@@ -50,7 +51,7 @@ export default function DynamicDashboard() {
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+        <Loader size="lg" />
       </div>
     );
   }

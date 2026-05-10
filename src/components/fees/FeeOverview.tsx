@@ -10,19 +10,15 @@ import { useState, useEffect } from 'react';
 import {
   TrendingUp, BarChart3, Receipt, CircleDollarSign,
   ArrowUpRight, ArrowDownRight, AlertTriangle,
-  ChevronRight, Loader2,
+  ChevronRight,
 } from 'lucide-react';
+import { Loader } from '@/components/ui/Loader';
 import type { FeeStream, FeeDashboardSummary } from '@/types/fee-stream';
 import { FEE_STATUS_CONFIG, FEE_TYPE_CONFIG } from '@/types/fee-stream';
+import { formatCurrency } from '@/lib/format';
 
 const NAVY = '#001220';
 const GOLD = '#D4AF37';
-
-function formatEuro(amount: number): string {
-  return new Intl.NumberFormat('it-IT', {
-    style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0,
-  }).format(amount);
-}
 
 interface FeeOverviewProps {
   onNavigateToDeal?: (dealId: string) => void;
@@ -58,7 +54,7 @@ export default function FeeOverview({ onNavigateToDeal }: FeeOverviewProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 size={32} className="animate-spin text-[#D4AF37]" />
+        <Loader size="lg" />
       </div>
     );
   }
@@ -109,32 +105,32 @@ export default function FeeOverview({ onNavigateToDeal }: FeeOverviewProps) {
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <KpiCard
           label="Pipeline Fee"
-          value={formatEuro(globalProjected)}
+          value={formatCurrency(globalProjected)}
           icon={<TrendingUp size={20} />}
           color="text-slate-700" bgIcon="bg-slate-100"
         />
         <KpiCard
           label="Maturate"
-          value={formatEuro(globalAccrued)}
+          value={formatCurrency(globalAccrued)}
           icon={<BarChart3 size={20} />}
           color="text-blue-600" bgIcon="bg-blue-50"
         />
         <KpiCard
           label="Fatturate"
-          value={formatEuro(globalInvoiced)}
+          value={formatCurrency(globalInvoiced)}
           icon={<Receipt size={20} />}
           color="text-purple-600" bgIcon="bg-purple-50"
         />
         <KpiCard
           label="Incassate"
-          value={formatEuro(globalCollected)}
+          value={formatCurrency(globalCollected)}
           icon={<CircleDollarSign size={20} />}
           color="text-emerald-600" bgIcon="bg-emerald-50"
           sub={`${collectionRate.toFixed(0)}% collection rate`}
         />
         <KpiCard
           label="Da Incassare"
-          value={formatEuro(globalPending)}
+          value={formatCurrency(globalPending)}
           icon={<AlertTriangle size={20} />}
           color={globalPending > 0 ? 'text-amber-600' : 'text-slate-400'}
           bgIcon={globalPending > 0 ? 'bg-amber-50' : 'bg-slate-50'}
@@ -212,7 +208,7 @@ export default function FeeOverview({ onNavigateToDeal }: FeeOverviewProps) {
                     </div>
                     <div className="text-right min-w-[90px]">
                       <span className="text-sm font-semibold text-slate-700">
-                        {formatEuro(data.projected)}
+                        {formatCurrency(data.projected)}
                       </span>
                     </div>
                     <span className="text-xs text-slate-300 w-8">{data.count}</span>
@@ -245,7 +241,7 @@ export default function FeeOverview({ onNavigateToDeal }: FeeOverviewProps) {
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-semibold text-[#001220]">
-                      {formatEuro(ds.total_projected)}
+                      {formatCurrency(ds.total_projected)}
                     </p>
                     <div className="w-16 h-1.5 bg-slate-100 rounded-full mt-1">
                       <div
@@ -282,7 +278,7 @@ export default function FeeOverview({ onNavigateToDeal }: FeeOverviewProps) {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-red-600 font-semibold">
-                    {formatEuro(s.accrued_amount || s.projected_amount || 0)}
+                    {formatCurrency(s.accrued_amount || s.projected_amount || 0)}
                   </span>
                   <span className="text-xs text-red-400">
                     Scad. {s.due_date ? new Date(s.due_date).toLocaleDateString('it-IT') : ''}

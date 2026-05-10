@@ -2,6 +2,7 @@
 
 import { WidgetConfig, KPI_ITEMS_CATALOG } from '@/types/dashboard-builder';
 import { useCockpitData } from '../CockpitDataContext';
+import { Loader } from '@/components/ui/Loader';
 import {
   Briefcase, LayoutGrid, Bell, Users, UserCheck, CircleDollarSign,
   Coins, Calendar, Star, Clock, AlertTriangle, BarChart3,
@@ -42,7 +43,7 @@ export default function KpiStripWidget({ config }: Props) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-4">
-        <div className="w-5 h-5 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+        <Loader size="md" />
       </div>
     );
   }

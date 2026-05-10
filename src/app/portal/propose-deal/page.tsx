@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { ASSET_CLASS_OPTIONS, type AssetClass } from "@/lib/deal-config";
 

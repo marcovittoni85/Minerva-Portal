@@ -11,6 +11,7 @@ import {
   Flame, LayoutGrid, ListTodo, MessageSquare, Clock, Star, UserMinus,
   Coins, CalendarDays, AlertTriangle, BookOpen, Type, Bell, GitBranch,
 } from 'lucide-react';
+import { Loader } from '@/components/ui/Loader';
 
 const ICON_MAP: Record<string, React.ElementType> = {
   BarChart3, Briefcase, CheckSquare, Users, CircleDollarSign, Calendar, FileText,
@@ -134,7 +135,7 @@ export default function DashboardEditor() {
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+        <Loader size="lg" />
       </div>
     );
   }

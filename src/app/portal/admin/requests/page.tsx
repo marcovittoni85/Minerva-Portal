@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabaseBrowser } from '@/lib/supabase-browser';
-import { Check, X, Loader2, Shield } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+import { Check, X, Shield } from 'lucide-react';
+import { Loader } from '@/components/ui/Loader';
 
 export default function AdminRequestsPage() {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const supabase = supabaseBrowser();
+  const supabase = createClient();
 
   const loadRequests = async () => {
     setLoading(true);
@@ -51,7 +52,7 @@ export default function AdminRequestsPage() {
       </header>
 
       <div className="max-w-5xl mx-auto space-y-4">
-        {loading ? <Loader2 className="animate-spin text-[#D4AF37] mx-auto" /> : 
+        {loading ? <div className="flex justify-center"><Loader size="md" /></div> :
          requests.length === 0 ? <p className="text-slate-500 text-center text-xs uppercase tracking-widest py-20 border border-white/5 rounded-xl">Nessuna richiesta pendente</p> :
          requests.map((req) => (
           <div key={req.id} className="bg-[#001c30] border border-white/5 p-6 rounded-xl flex items-center justify-between">

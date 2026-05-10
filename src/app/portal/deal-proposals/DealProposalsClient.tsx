@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
+import { InlineLoader } from '@/components/ui/Loader';
 
 interface Proposal {
   id: string;
@@ -183,7 +184,7 @@ export default function DealProposalsClient({
                 disabled={!internalNote.trim() || (rejectionType === "pending_integration" && !externalNote.trim()) || !!acting}
                 className="bg-red-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
               >
-                {acting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                {acting ? <InlineLoader /> : null}
                 Conferma Rifiuto
               </button>
             </div>
@@ -257,7 +258,7 @@ function ProposalCard({
             className="bg-[#D4AF37] text-white px-6 py-2.5 rounded-lg text-[10px] font-bold tracking-widest uppercase hover:bg-[#b8962d] transition-colors disabled:opacity-50"
             title={deal.asset_class && completeness < 100 ? "Completezza checklist < 100%" : undefined}
           >
-            {acting === deal.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Approva"}
+            {acting === deal.id ? <InlineLoader /> : "Approva"}
           </button>
           <button
             onClick={() => onReject(deal.id)}

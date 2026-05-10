@@ -1,0 +1,66 @@
+import { z } from 'zod'
+
+export const ReclassificationSchema = z.object({
+  metadata: z.object({
+    company_name: z.string(),
+    fiscal_year: z.number(),
+    currency: z.string().default('EUR'),
+    extraction_confidence: z.enum(['high', 'medium', 'low']),
+  }),
+  conto_economico: z.object({
+    ricavi_vendite: z.number(),
+    altri_ricavi: z.number().optional().default(0),
+    valore_produzione: z.number(),
+    costi_materiali: z.number(),
+    costi_servizi: z.number(),
+    costo_personale: z.number(),
+    altri_costi_operativi: z.number().optional().default(0),
+    ebitda: z.number(),
+    ammortamenti: z.number(),
+    accantonamenti: z.number().optional().default(0),
+    ebit: z.number(),
+    oneri_finanziari: z.number(),
+    proventi_finanziari: z.number().optional().default(0),
+    risultato_ante_imposte: z.number(),
+    imposte: z.number(),
+    utile_netto: z.number(),
+  }),
+  stato_patrimoniale: z.object({
+    attivo_immobilizzato: z.number(),
+    capitale_circolante_netto: z.number(),
+    crediti_commerciali: z.number(),
+    debiti_commerciali: z.number(),
+    rimanenze: z.number(),
+    pfn: z.number(),
+    debiti_finanziari: z.number(),
+    cassa_e_liquidita: z.number(),
+    patrimonio_netto: z.number(),
+    capitale_sociale: z.number().optional(),
+  }),
+  cash_flow: z.object({
+    cfo: z.number(),
+    cfi: z.number(),
+    cff: z.number(),
+    variazione_cassa: z.number(),
+  }),
+  kpi: z.object({
+    ebitda_margin_pct: z.number(),
+    ebit_margin_pct: z.number(),
+    net_margin_pct: z.number(),
+    dscr: z.number(),
+    debt_to_ebitda: z.number(),
+    working_capital_days: z.number(),
+    roic_pct: z.number(),
+    quick_ratio: z.number().optional(),
+  }),
+  rettifiche_ebitda_suggerite: z.array(z.object({
+    descrizione: z.string(),
+    impatto_eur: z.number(),
+    tipo: z.enum(['one_off', 'normalizzazione', 'extra_ordinaria', 'related_party']),
+    rationale: z.string(),
+  })),
+  ebitda_adjusted: z.number(),
+  notes: z.array(z.string()),
+})
+
+export type Reclassification = z.infer<typeof ReclassificationSchema>

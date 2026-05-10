@@ -12,6 +12,8 @@ import AddInteractionForm from './AddInteractionForm';
 import AddTaskModal from '@/components/cockpit/AddTaskModal';
 import EventForm from '@/components/calendar/EventForm';
 import { CalendarEvent, EVENT_TYPE_CONFIG } from '@/types/calendar';
+import { timeAgo, getInitials, formatDateShort } from '@/lib/format';
+import { Loader } from '@/components/ui/Loader';
 import {
   ArrowLeft, Mail, Phone, Linkedin, MapPin, ExternalLink,
   Users, Video, Send, StickyNote, UserPlus, Calendar as CalendarIcon,
@@ -26,26 +28,6 @@ const ICON_MAP: Record<string, React.ElementType> = {
   Calendar: CalendarIcon, Briefcase, FileText, Clock, MoreHorizontal,
 };
 
-function timeAgo(dateStr: string | null | undefined): string {
-  if (!dateStr) return 'Mai';
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins}m fa`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h fa`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}g fa`;
-  const months = Math.floor(days / 30);
-  return `${months} mesi fa`;
-}
-
-function getInitials(name: string): string {
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-}
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' });
-}
 
 interface ContactDetailProps {
   contactId: string;
@@ -116,7 +98,7 @@ export default function ContactDetail({ contactId }: ContactDetailProps) {
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+        <Loader size="lg" />
       </div>
     );
   }
@@ -320,7 +302,7 @@ export default function ContactDetail({ contactId }: ContactDetailProps) {
                   <div key={fu.id} className="p-4 flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">
-                        {formatDate(fu.follow_up_date)}
+                        {formatDateShort(fu.follow_up_date)}
                       </p>
                       <p className="text-sm font-medium text-slate-800 mt-0.5">{fu.title}</p>
                       {fu.follow_up_notes && (
@@ -404,7 +386,7 @@ export default function ContactDetail({ contactId }: ContactDetailProps) {
 
                           <div className="flex items-center gap-3 mt-2 text-[10px] text-slate-400 uppercase tracking-widest">
                             <span>{cfg.label}</span>
-                            <span>{formatDate(interaction.interaction_date)}</span>
+                            <span>{formatDateShort(interaction.interaction_date)}</span>
                             {interaction.duration_minutes && <span>{interaction.duration_minutes} min</span>}
                             {interaction.deal && (
                               <span className="text-blue-600 font-medium">{interaction.deal.title}</span>

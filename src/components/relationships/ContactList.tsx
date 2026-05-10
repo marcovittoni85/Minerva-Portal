@@ -13,28 +13,14 @@ import {
 } from '@/types/relationship';
 import AddInteractionForm from './AddInteractionForm';
 import ContactImporter from './ContactImporter';
+import { timeAgo, getInitials } from '@/lib/format';
 import {
   Search, Plus, ArrowUpDown, X, Filter, ChevronDown, Upload,
   Users, Phone, Video, Send, Mail, StickyNote, UserPlus,
   Calendar, Briefcase, FileText, Clock, MoreHorizontal, Tag,
 } from 'lucide-react';
-
-function timeAgo(dateStr: string | null | undefined): string {
-  if (!dateStr) return 'Mai';
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins}m fa`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h fa`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}g fa`;
-  const months = Math.floor(days / 30);
-  return `${months} mesi fa`;
-}
-
-function getInitials(name: string): string {
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-}
+import { Loader } from '@/components/ui/Loader';
+import { EmptyCRM } from '@/components/ui/EmptyStatePresets';
 
 const ICON_MAP: Record<string, React.ElementType> = {
   Users, Phone, Video, Send, Mail, StickyNote, UserPlus,
@@ -321,13 +307,10 @@ export default function ContactList() {
       {/* Contact List */}
       {loading ? (
         <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+          <Loader size="lg" />
         </div>
       ) : contacts.length === 0 ? (
-        <div className="bg-white border border-slate-100 rounded-2xl p-12 text-center">
-          <Users size={40} className="mx-auto text-slate-300 mb-4" />
-          <p className="text-slate-500 text-sm">Nessun contatto trovato</p>
-        </div>
+        <EmptyCRM />
       ) : (
         <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden divide-y divide-slate-50">
           {contacts.map(contact => {

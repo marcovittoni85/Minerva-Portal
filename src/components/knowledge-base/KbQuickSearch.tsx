@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search } from 'lucide-react';
 import { KbItem, KB_CATEGORY_CONFIG } from '@/types/knowledge-base';
+import { Loader } from '@/components/ui/Loader';
 import {
   FileText, BarChart3, TrendingUp, Scale, Calculator, Presentation,
   Target, ClipboardCheck, Coins, Shield, File,
@@ -63,7 +64,7 @@ export default function KbQuickSearch({ onSelect, className }: KbQuickSearchProp
         />
         {loading && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
-            <div className="w-3.5 h-3.5 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+            <Loader size="sm" />
           </div>
         )}
       </div>

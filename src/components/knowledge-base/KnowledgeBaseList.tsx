@@ -6,6 +6,8 @@ import {
 } from '@/types/knowledge-base';
 import KbItemDetail from './KbItemDetail';
 import KbItemForm from './KbItemForm';
+import { Loader } from '@/components/ui/Loader';
+import { EmptyKnowledgeBase } from '@/components/ui/EmptyStatePresets';
 import {
   Search, Plus, Eye, Download, Star,
   FileText, BarChart3, TrendingUp, Scale, Calculator, Presentation,
@@ -200,14 +202,10 @@ export default function KnowledgeBaseList() {
       {/* Items grid */}
       {loading ? (
         <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+          <Loader size="lg" />
         </div>
       ) : items.length === 0 ? (
-        <div className="text-center py-20">
-          <FileText size={40} className="text-slate-200 mx-auto mb-4" />
-          <p className="text-lg font-bold text-slate-400">Nessun documento trovato</p>
-          <p className="text-sm text-slate-400 mt-1">Crea il primo documento nella Knowledge Base</p>
-        </div>
+        <EmptyKnowledgeBase />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {items.map(item => {

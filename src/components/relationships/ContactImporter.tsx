@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { X, Upload, FileText, Check, AlertTriangle, Plus, Linkedin } from 'lucide-react';
 import { RELATIONSHIP_TYPE_CONFIG } from '@/types/relationship';
+import { Loader } from '@/components/ui/Loader';
 
 type ImportSource = 'linkedin' | 'apollo' | 'generic' | null;
 type Step = 1 | 2 | 3;
@@ -451,7 +452,7 @@ export default function ContactImporter({ open, onClose, onImported }: ContactIm
               <div className="space-y-6 text-center">
                 {importing ? (
                   <div className="py-12">
-                    <div className="w-12 h-12 border-3 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                    <div className="mx-auto mb-4 flex justify-center"><Loader size="xl" /></div>
                     <p className="text-sm font-bold text-slate-700">Importazione in corso...</p>
                     <p className="text-xs text-slate-400 mt-1">Elaborazione di {preview?.totalRows} righe</p>
                   </div>

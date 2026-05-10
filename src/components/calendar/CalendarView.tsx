@@ -9,6 +9,7 @@ import {
   ChevronLeft, ChevronRight, Plus,
   Users, Phone, Video, Calendar, Clock, Bell,
 } from 'lucide-react';
+import { Loader } from '@/components/ui/Loader';
 
 const ICON_MAP: Record<string, React.ElementType> = { Users, Phone, Video, Calendar, Clock, Bell };
 const DAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
@@ -196,7 +197,7 @@ export default function CalendarView() {
 
       {loading ? (
         <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+          <Loader size="lg" />
         </div>
       ) : (
         <>

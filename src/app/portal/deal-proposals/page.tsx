@@ -1,4 +1,4 @@
-import { supabaseServer } from "@/lib/supabase-server";
+import { supabaseServer } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import DealProposalsClient from "./DealProposalsClient";
 

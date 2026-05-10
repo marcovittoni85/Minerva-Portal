@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { createClient } from '@/utils/supabase/client';
-import { Lock, CheckCircle, AlertCircle, Loader2, Bell, SlidersHorizontal } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+import { Lock, CheckCircle, AlertCircle, Bell, SlidersHorizontal } from 'lucide-react';
+import { Loader, InlineLoader } from '@/components/ui/Loader';
 
 const notificationTypes = [
   { key: "access_approved", label: "Accesso approvato" },
@@ -172,7 +173,7 @@ export default function SettingsPage() {
 
         {dealPrefsLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+            <Loader size="md" />
           </div>
         ) : (
           <div className="space-y-6">
@@ -293,7 +294,7 @@ export default function SettingsPage() {
           </div>
 
           <button disabled={loading} className="bg-[#D4AF37] text-white px-6 py-3 rounded-lg text-[10px] font-bold tracking-widest uppercase hover:bg-[#b8962d] transition-colors disabled:opacity-50 flex items-center">
-            {loading ? <Loader2 className="animate-spin mr-2 w-4 h-4" /> : 'Aggiorna Password'}
+            {loading ? <><InlineLoader className="mr-2" /> Aggiorna Password</> : 'Aggiorna Password'}
           </button>
         </form>
 
@@ -314,7 +315,7 @@ export default function SettingsPage() {
 
         {prefsLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+            <Loader size="md" />
           </div>
         ) : (
           <div className="space-y-1">

@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
+import { Loader } from '@/components/ui/Loader';
 
 interface WidgetWrapperProps {
   title: string;
@@ -28,7 +29,7 @@ export default function WidgetWrapper({
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex justify-center items-center py-10">
-            <div className="w-5 h-5 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+            <Loader size="sm" />
           </div>
         ) : error ? (
           <div className="p-5 text-center">

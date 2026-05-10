@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import RequestAccessButton from "./RequestAccessButton";
 
@@ -50,7 +50,21 @@ export default function DealCard({ deal: d, isAdmin }: { deal: any; isAdmin: boo
   const macro = d.sector ? getMacroCategory(d.sector) : null;
 
   return (
-    <div className={"bg-white border border-slate-100 border-l-[5px] rounded-2xl p-6 hover:shadow-lg hover:border-slate-100 hover:border-l-[5px] transition-all " + getSideBorderColor(d.side)}>
+    <div className={"bg-white border border-slate-100 border-l-[5px] rounded-2xl overflow-hidden hover:shadow-lg hover:border-slate-100 hover:border-l-[5px] transition-all group " + getSideBorderColor(d.side)}>
+      {/* Cover image */}
+      {d.cover_url && (
+        <div className="relative w-full h-32 overflow-hidden">
+          <img
+            src={d.cover_url}
+            alt={d.code}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
+        </div>
+      )}
+
+      <div className="p-6">
       {/* Top row: side + code on left, macro category on right */}
       <div className="flex items-start justify-between mb-3">
         <div>
@@ -88,6 +102,7 @@ export default function DealCard({ deal: d, isAdmin }: { deal: any; isAdmin: boo
           </div>
         </div>
         <RequestAccessButton dealId={d.id} isAdmin={isAdmin} externalStatus={status} />
+      </div>
       </div>
     </div>
   );

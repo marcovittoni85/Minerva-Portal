@@ -14,21 +14,13 @@ import {
   MoreHorizontal,
 } from 'lucide-react';
 
+import { timeAgo } from '@/lib/format';
+import { Loader } from '@/components/ui/Loader';
+
 const INTERACTION_ICON_MAP: Record<string, React.ElementType> = {
   Users, Phone, Video, Send, Mail, StickyNote, UserPlus,
   Calendar, Briefcase, FileText, Clock, MoreHorizontal,
 };
-
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins}m fa`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h fa`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}g fa`;
-  return `${Math.floor(days / 30)} mesi fa`;
-}
 
 function daysUntil(dateStr: string): number {
   const target = new Date(dateStr + 'T00:00:00');
@@ -137,7 +129,7 @@ export default function CockpitDashboard() {
   if (loading || !data) {
     return (
       <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+        <Loader size="lg" />
       </div>
     );
   }

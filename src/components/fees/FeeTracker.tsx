@@ -10,9 +10,10 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Wallet, Trophy, Briefcase, Plus, Download as DownloadIcon,
   ChevronDown, ChevronUp, CreditCard, Users, ArrowRight,
-  Loader2, AlertCircle, FileText, TrendingUp, BarChart3,
+  AlertCircle, FileText, TrendingUp, BarChart3,
   Receipt, CircleDollarSign, PieChart, Check, Clock, X,
 } from 'lucide-react';
+import { Loader, InlineLoader } from '@/components/ui/Loader';
 import type {
   FeeStream, FeePayment, FeeDistribution, FeeDashboardSummary,
   FeeStreamType, FeeStreamStatus, FeePaymentStatus,
@@ -20,6 +21,8 @@ import type {
 import {
   FEE_TYPE_CONFIG, FEE_STATUS_CONFIG, PAYMENT_STATUS_CONFIG, DISTRIBUTION_ROLES,
 } from '@/types/fee-stream';
+import { formatCurrency, formatCurrencyFull, formatDateShort } from '@/lib/format';
+import { inputClass, labelClass, buttonPrimary, buttonGold, buttonSecondary, cardClass } from '@/components/ui/form';
 
 // ── Props ────────────────────────────────────────────────────
 interface FeeTrackerProps {
@@ -31,49 +34,6 @@ interface FeeTrackerProps {
 // ── Styling ──────────────────────────────────────────────────
 const NAVY = '#001220';
 const GOLD = '#D4AF37';
-
-const cardClass = 'bg-white rounded-2xl border border-slate-100 shadow-sm';
-const inputClass = `
-  w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-white text-sm
-  text-slate-800 placeholder:text-slate-400
-  focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/40 focus:border-[#D4AF37]
-  transition-all
-`.trim();
-const labelClass = 'block text-xs font-medium text-slate-500 mb-1';
-const btnPrimary = `
-  inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-  bg-[#001220] text-white hover:bg-[#001220]/90 transition-all
-  disabled:opacity-50 disabled:cursor-not-allowed
-`.trim();
-const btnGold = `
-  inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-  bg-gradient-to-r from-[#D4AF37] to-[#b8962d] text-white
-  hover:shadow-md hover:shadow-[#D4AF37]/20 transition-all
-  disabled:opacity-50
-`.trim();
-const btnSecondary = `
-  inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-  border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all
-`.trim();
-
-function formatEuro(amount: number | null | undefined): string {
-  if (!amount && amount !== 0) return '—';
-  return new Intl.NumberFormat('it-IT', {
-    style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-function formatEuroFull(amount: number | null | undefined): string {
-  if (!amount && amount !== 0) return '—';
-  return new Intl.NumberFormat('it-IT', {
-    style: 'currency', currency: 'EUR',
-  }).format(amount);
-}
-
-function formatDate(date: string | null | undefined): string {
-  if (!date) return '—';
-  return new Date(date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' });
-}
 
 // ── Main Component ───────────────────────────────────────────
 
@@ -128,7 +88,7 @@ export default function FeeTracker({ dealId, dealTitle, mandateId }: FeeTrackerP
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 size={32} className="animate-spin text-[#D4AF37]" />
+        <Loader size="lg" />
       </div>
     );
   }
@@ -143,12 +103,12 @@ export default function FeeTracker({ dealId, dealTitle, mandateId }: FeeTrackerP
         </div>
         <div className="flex items-center gap-3">
           {mandateId && feeStreams.length === 0 && (
-            <button onClick={handleImportFromMandate} disabled={importing} className={btnGold}>
-              {importing ? <Loader2 size={16} className="animate-spin" /> : <FileText size={16} />}
+            <button onClick={handleImportFromMandate} disabled={importing} className={buttonGold}>
+              {importing ? <InlineLoader /> : <FileText size={16} />}
               Importa da Mandato
             </button>
           )}
-          <button onClick={() => setShowAddForm(true)} className={btnPrimary}>
+          <button onClick={() => setShowAddForm(true)} className={buttonPrimary}>
             <Plus size={16} /> Aggiungi Fee
           </button>
         </div>
@@ -160,28 +120,28 @@ export default function FeeTracker({ dealId, dealTitle, mandateId }: FeeTrackerP
           <SummaryCard
             icon={<TrendingUp size={20} />}
             label="Previste"
-            value={formatEuro(summary.total_projected)}
+            value={formatCurrency(summary.total_projected)}
             color="text-slate-600"
             bgIcon="bg-slate-100"
           />
           <SummaryCard
             icon={<BarChart3 size={20} />}
             label="Maturate"
-            value={formatEuro(summary.total_accrued)}
+            value={formatCurrency(summary.total_accrued)}
             color="text-blue-600"
             bgIcon="bg-blue-50"
           />
           <SummaryCard
             icon={<Receipt size={20} />}
             label="Fatturate"
-            value={formatEuro(summary.total_invoiced)}
+            value={formatCurrency(summary.total_invoiced)}
             color="text-purple-600"
             bgIcon="bg-purple-50"
           />
           <SummaryCard
             icon={<CircleDollarSign size={20} />}
             label="Incassate"
-            value={formatEuro(summary.total_collected)}
+            value={formatCurrency(summary.total_collected)}
             color="text-emerald-600"
             bgIcon="bg-emerald-50"
             extra={
@@ -342,7 +302,7 @@ function FeeStreamCard({
               )}
               {stream.deduction_amount > 0 && (
                 <span className="text-amber-500">
-                  Deduzione: {formatEuro(stream.deduction_amount)}
+                  Deduzione: {formatCurrency(stream.deduction_amount)}
                 </span>
               )}
             </div>
@@ -351,11 +311,11 @@ function FeeStreamCard({
           {/* Amounts */}
           <div className="text-right mr-4">
             <p className="text-lg font-bold" style={{ color: NAVY }}>
-              {formatEuro(stream.accrued_amount || stream.projected_amount)}
+              {formatCurrency(stream.accrued_amount || stream.projected_amount)}
             </p>
             {stream.collected_amount > 0 && (
               <p className="text-xs text-emerald-600">
-                Incassato: {formatEuro(stream.collected_amount)}
+                Incassato: {formatCurrency(stream.collected_amount)}
               </p>
             )}
           </div>
@@ -400,7 +360,7 @@ function FeeStreamCard({
                     />
                   ) : (
                     <p className="text-lg font-semibold text-[#001220]">
-                      {stream.base_amount ? formatEuro(stream.base_amount) : 'Da definire'}
+                      {stream.base_amount ? formatCurrency(stream.base_amount) : 'Da definire'}
                     </p>
                   )}
                 </div>
@@ -411,11 +371,11 @@ function FeeStreamCard({
                 <div>
                   <label className={labelClass}>Fee Maturata</label>
                   <p className="text-lg font-bold text-emerald-600">
-                    {stream.accrued_amount ? formatEuroFull(stream.accrued_amount) : '—'}
+                    {stream.accrued_amount ? formatCurrencyFull(stream.accrued_amount) : '—'}
                   </p>
                   {stream.deduction_amount > 0 && (
                     <p className="text-xs text-amber-500">
-                      - {formatEuro(stream.deduction_amount)} (retainer dedotto)
+                      - {formatCurrency(stream.deduction_amount)} (retainer dedotto)
                     </p>
                   )}
                 </div>
@@ -423,15 +383,15 @@ function FeeStreamCard({
               <div className="mt-3 flex justify-end">
                 {editingBase ? (
                   <div className="flex gap-2">
-                    <button onClick={() => setEditingBase(false)} className={btnSecondary}>
+                    <button onClick={() => setEditingBase(false)} className={buttonSecondary}>
                       <X size={14} /> Annulla
                     </button>
-                    <button onClick={handleUpdateBase} className={btnGold}>
+                    <button onClick={handleUpdateBase} className={buttonGold}>
                       <Check size={14} /> Calcola e Salva
                     </button>
                   </div>
                 ) : (
-                  <button onClick={() => setEditingBase(true)} className={btnSecondary}>
+                  <button onClick={() => setEditingBase(true)} className={buttonSecondary}>
                     Inserisci {stream.calculation_base}
                   </button>
                 )}
@@ -548,10 +508,10 @@ function PaymentRow({ payment, onUpdate }: { payment: FeePayment; onUpdate: () =
         {payment.invoice_number && (
           <span className="text-slate-500">Fatt. {payment.invoice_number}</span>
         )}
-        <span className="text-slate-400">{formatDate(payment.invoice_date || payment.created_at)}</span>
+        <span className="text-slate-400">{formatDateShort(payment.invoice_date || payment.created_at)}</span>
       </div>
       <div className="flex items-center gap-3">
-        <span className="font-semibold text-[#001220]">{formatEuroFull(payment.total_amount)}</span>
+        <span className="font-semibold text-[#001220]">{formatCurrencyFull(payment.total_amount)}</span>
         {payment.status === 'pending' && (
           <button
             onClick={markAsPaid}
@@ -584,7 +544,7 @@ function DistributionRow({ distribution }: { distribution: FeeDistribution }) {
       <div className="flex items-center gap-4 text-right">
         <span className="text-[#D4AF37] font-semibold">{distribution.percentage}%</span>
         <span className="text-slate-600 font-medium min-w-[80px]">
-          {formatEuro(distribution.calculated_amount)}
+          {formatCurrency(distribution.calculated_amount)}
         </span>
         {distribution.is_paid ? (
           <span className="text-emerald-500 text-xs flex items-center gap-1">
@@ -654,11 +614,11 @@ function PaymentForm({
         </div>
         <div>
           <label className={labelClass}>IVA ({vatRate}%)</label>
-          <input className={inputClass} type="text" value={formatEuroFull(vatAmount)} disabled />
+          <input className={inputClass} type="text" value={formatCurrencyFull(vatAmount)} disabled />
         </div>
         <div>
           <label className={labelClass}>Totale</label>
-          <input className={`${inputClass} font-semibold`} type="text" value={formatEuroFull(totalAmount)} disabled />
+          <input className={`${inputClass} font-semibold`} type="text" value={formatCurrencyFull(totalAmount)} disabled />
         </div>
         <div>
           <label className={labelClass}>N. Fattura</label>
@@ -679,9 +639,9 @@ function PaymentForm({
         </div>
       </div>
       <div className="flex justify-end gap-2">
-        <button onClick={onClose} className={btnSecondary}>Annulla</button>
-        <button onClick={handleSubmit} disabled={saving || !numAmount} className={btnGold}>
-          {saving ? <Loader2 size={14} className="animate-spin" /> : <Receipt size={14} />}
+        <button onClick={onClose} className={buttonSecondary}>Annulla</button>
+        <button onClick={handleSubmit} disabled={saving || !numAmount} className={buttonGold}>
+          {saving ? <InlineLoader /> : <Receipt size={14} />}
           Registra
         </button>
       </div>
@@ -745,9 +705,9 @@ function DistributionForm({
         </div>
       </div>
       <div className="flex justify-end gap-2">
-        <button onClick={onClose} className={btnSecondary}>Annulla</button>
-        <button onClick={handleSubmit} disabled={saving || !recipientName || !percentage} className={btnGold}>
-          {saving ? <Loader2 size={14} className="animate-spin" /> : <Users size={14} />}
+        <button onClick={onClose} className={buttonSecondary}>Annulla</button>
+        <button onClick={handleSubmit} disabled={saving || !recipientName || !percentage} className={buttonGold}>
+          {saving ? <InlineLoader /> : <Users size={14} />}
           Aggiungi
         </button>
       </div>
@@ -869,9 +829,9 @@ function AddFeeStreamModal({
         )}
 
         <div className="flex justify-end gap-3 pt-2">
-          <button onClick={onClose} className={btnSecondary}>Annulla</button>
-          <button onClick={handleSubmit} disabled={saving} className={btnGold}>
-            {saving ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+          <button onClick={onClose} className={buttonSecondary}>Annulla</button>
+          <button onClick={handleSubmit} disabled={saving} className={buttonGold}>
+            {saving ? <InlineLoader /> : <Plus size={14} />}
             Crea Fee Stream
           </button>
         </div>

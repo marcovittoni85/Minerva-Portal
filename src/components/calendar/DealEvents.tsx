@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { CalendarEvent, EVENT_TYPE_CONFIG } from '@/types/calendar';
 import { Users, Phone, Video, Calendar, Clock, Bell } from 'lucide-react';
+import { Loader } from '@/components/ui/Loader';
 
 const ICON_MAP: Record<string, React.ElementType> = { Users, Phone, Video, Calendar, Clock, Bell };
 
@@ -31,7 +32,7 @@ export default function DealEvents({ dealId, refresh }: DealEventsProps) {
   if (loading) {
     return (
       <div className="flex justify-center py-6">
-        <div className="w-5 h-5 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+        <Loader size="md" />
       </div>
     );
   }
