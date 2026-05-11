@@ -21,26 +21,39 @@ export async function middleware(req: NextRequest) {
     }
   );
 
-  // Use getSession (reads cookie, no API call) to avoid rate limits
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user ?? null;
+  const path = req.nextUrl.pathname;
 
-  // Redirect se non loggato
-  if (!user && req.nextUrl.pathname.startsWith('/portal')) {
-    return NextResponse.redirect(new URL('/login?redirect=' + encodeURIComponent(req.nextUrl.pathname), req.url));
+  // 1. Non autenticato + path /portal → login
+  if (!user && path.startsWith('/portal')) {
+    return NextResponse.redirect(new URL('/login', req.url));
   }
 
-  // Protezione cartella /portal — trial check
-  if (user && req.nextUrl.pathname.startsWith('/portal')) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('trial_ends_at, documents_signed')
-      .eq('id', user.id)
-      .single();
+  // 2. Autenticato: gate onboarding via profile flags
+  //    Skip su /portal/onboarding/* e /portal/change-password per evitare loop
+  if (user && path.startsWith('/portal')) {
+    const isOnboardingPath = path.startsWith('/portal/onboarding') || path === '/portal/change-password';
 
-    if (profile && !profile.documents_signed && profile.trial_ends_at) {
-      if (new Date() > new Date(profile.trial_ends_at)) {
-        return NextResponse.redirect(new URL('/access-expired', req.url));
+    if (!isOnboardingPath) {
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role, must_change_password, onboarding_completed')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        // Solo se profile esiste E utente non è admin
+        if (profile && profile.role !== 'admin') {
+          if (profile.must_change_password === true) {
+            return NextResponse.redirect(new URL('/portal/change-password', req.url));
+          }
+          if (profile.onboarding_completed === false) {
+            return NextResponse.redirect(new URL('/portal/onboarding', req.url));
+          }
+        }
+      } catch {
+        // Se la query fallisce, lascia passare per evitare lockout
       }
     }
   }
@@ -49,5 +62,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|api).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api|login|signup|access-expired).*)"],
 };

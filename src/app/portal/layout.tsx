@@ -1,8 +1,8 @@
 'use client';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Briefcase, Settings, LogOut, Menu, ShieldCheck, PlusCircle, ClipboardList, Shield, Columns3, FileText, Users, UserPlus, ArrowRightLeft, Calculator, Activity, ScrollText, CircleDollarSign, HeartHandshake, Gauge, CheckSquare, Calendar, BookOpen, Palette, ChevronDown, Search, DollarSign } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { LayoutDashboard, Briefcase, Settings, LogOut, Menu, ShieldCheck, PlusCircle, ClipboardList, Shield, Columns3, FileText, Users, UserPlus, Calculator, Activity, ScrollText, CircleDollarSign, HeartHandshake, Gauge, CheckSquare, Calendar, BookOpen, Palette, ChevronDown, DollarSign, User, Network } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { NotificationCenter } from '@/components/topbar/NotificationCenter';
@@ -23,17 +23,18 @@ const ADMIN_GROUPS: AdminGroup[] = [
     icon: Briefcase,
     items: [
       { name: 'Gestione Deal', href: '/portal/deal-manage', icon: Shield },
-      { name: 'Pipeline', href: '/portal/pipeline', icon: Columns3 },
+      { name: 'Pipeline', href: '/portal/admin/pipeline', icon: Columns3 },
       { name: 'Nuovo Deal', href: '/portal/admin/new-deal', icon: PlusCircle },
       { name: 'Proposte Deal', href: '/portal/deal-proposals', icon: Briefcase },
     ],
   },
-  {
+ {
     id: 'operations',
     label: 'Operations',
     icon: Activity,
     items: [
       { name: 'Cockpit', href: '/portal/admin/cockpit', icon: Gauge },
+      { name: 'Approvazioni Onboarding', href: '/portal/admin/onboarding-approvals', icon: CheckSquare },
       { name: 'Task', href: '/portal/admin/tasks', icon: CheckSquare },
       { name: 'Calendario', href: '/portal/admin/calendar', icon: Calendar },
     ],
@@ -74,7 +75,6 @@ const ADMIN_GROUPS: AdminGroup[] = [
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [role, setRole] = useState<string>("");
   const [userId, setUserId] = useState<string>("");
@@ -87,34 +87,26 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       try {
         const { data: { session } } = await supabase.auth.getSession();
         const user = session?.user;
-        if (user) {
-          setUserId(user.id);
-          const { data } = await supabase.from("profiles").select("role, must_change_password, onboarding_completed").eq("id", user.id).single();
-          setRole(data?.role || "");
+        if (!user) return;
 
-          if (data?.role !== "admin") {
-            if (data?.must_change_password && pathname !== "/portal/change-password") {
-              router.push("/portal/change-password");
-              return;
-            }
-            if (!data?.must_change_password && data?.onboarding_completed === false && pathname !== "/portal/onboarding" && pathname !== "/portal/change-password") {
-              router.push("/portal/onboarding");
-              return;
-            }
-          }
+        setUserId(user.id);
+        const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+        setRole(data?.role || "");
 
-          const { count } = await supabase.from("deals").select("id", { count: "exact", head: true }).eq("originator_id", user.id).eq("active", true);
-          setIsOriginator((count ?? 0) > 0);
+        // ONBOARDING GATE: spostato nel middleware. Qui leggiamo solo i metadata UI.
+        // Il middleware (src/middleware.ts) si occupa di redirezionare i non firmatari.
 
-          // Auto-expand the group that contains the current path
-          for (const group of ADMIN_GROUPS) {
-            if (group.items.some(item => pathname.startsWith(item.href))) {
-              setOpenGroups(prev => ({ ...prev, [group.id]: true }));
-            }
+        const { count } = await supabase.from("deals").select("id", { count: "exact", head: true }).eq("originator_id", user.id).eq("active", true);
+        setIsOriginator((count ?? 0) > 0);
+
+        // Auto-expand admin group based on pathname
+        for (const group of ADMIN_GROUPS) {
+          if (group.items.some(item => pathname.startsWith(item.href))) {
+            setOpenGroups(prev => ({ ...prev, [group.id]: true }));
           }
         }
       } catch {
-        // Auth or data fetch failed
+        // Auth or data fetch failed - silently fall through
       }
     }
     load();
@@ -122,6 +114,12 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
   const isAdmin = role === "admin";
   const isClient = role === "client";
+  const isOnboarding = pathname?.startsWith("/portal/onboarding") || pathname === "/portal/change-password";
+
+  // Onboarding/change-password: full-screen, no sidebar
+  if (isOnboarding) {
+    return <>{children}</>;
+  }
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -138,14 +136,35 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     { name: 'Impostazioni', href: '/portal/settings', icon: Settings },
   ];
 
-  const menuItems = isClient ? clientItems : [
+  interface MenuItem {
+    name: string; href: string; icon: any;
+    submenu?: { name: string; href: string }[];
+  }
+
+  const partnerItems: MenuItem[] = [
     { name: 'Dashboard', href: '/portal', icon: LayoutDashboard },
-    { name: 'Bacheca Deal', href: '/portal/board', icon: Briefcase },
+    { name: 'Bacheca Deal', href: '/portal/board', icon: Briefcase, submenu: [
+      { name: 'M&A / Cessioni', href: '/portal/board?cat=ma' },
+      { name: 'Real Estate Off-Market', href: '/portal/board?cat=re' },
+      { name: 'Special Situations', href: '/portal/board?cat=ss' },
+      { name: 'Energy Transition', href: '/portal/board?cat=energy' },
+    ]},
     { name: 'I Miei Deal', href: '/portal/my-deals', icon: ShieldCheck },
-    { name: 'Operazioni', href: '/portal/operations', icon: Activity },
-    { name: 'Proponi Deal', href: '/portal/propose-deal', icon: PlusCircle },
-    { name: 'Impostazioni', href: '/portal/settings', icon: Settings },
+    { name: 'Proponi Deal', href: '/portal/propose-deal', icon: PlusCircle, submenu: [
+      { name: 'Azienda (M&A)', href: '/portal/propose-deal?type=ma' },
+      { name: 'Immobile Off-Market', href: '/portal/propose-deal?type=re' },
+      { name: 'Cliente UHNW (Wealth)', href: '/portal/propose-deal?type=wealth' },
+      { name: 'Family Advisory', href: '/portal/propose-deal?type=family' },
+      { name: 'Protection (Insurance)', href: '/portal/propose-deal?type=protection' },
+      { name: 'Altro', href: '/portal/propose-deal?type=other' },
+    ]},
+    { name: 'Knowledge Base', href: '/portal/knowledge-base', icon: BookOpen },
+    { name: 'Network', href: '/portal/admin/relationships', icon: Network },
+    { name: 'Calendario', href: '/portal/admin/calendar', icon: Calendar },
+    { name: 'Profilo', href: '/portal/settings', icon: User },
   ];
+
+  const menuItems: MenuItem[] = isClient ? clientItems : partnerItems;
 
   const originatorItems = [
     { name: 'Richieste L1/L2', href: '/portal/access-requests', icon: ClipboardList },
@@ -193,11 +212,48 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         </div>
 
         <nav className="flex-1 px-4 space-y-1">
-          {menuItems.map((item) => (
-            <Link key={item.href} href={item.href} onClick={() => setIsMobileMenuOpen(false)} className={"flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all " + (pathname === item.href ? "bg-slate-50 text-[#D4AF37]" : "text-slate-400 hover:text-slate-900")}>
-              <item.icon className="w-4 h-4" /> <span>{item.name}</span>
-            </Link>
-          ))}
+          {menuItems.map((item) => {
+            const isActive = pathname === item.href || pathname?.startsWith(item.href + '/') || pathname?.startsWith(item.href + '?')
+            const hasSubmenu = item.submenu && item.submenu.length > 0
+            const isSubmenuOpen = openGroups[item.href]
+            const isSubmenuActive = hasSubmenu && item.submenu!.some(s => pathname?.startsWith(s.href.split('?')[0]))
+
+            return (
+              <div key={item.href}>
+                <div className="flex items-center">
+                  <Link
+                    href={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={"flex-1 flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all " + ((isActive || isSubmenuActive) ? "bg-slate-50 text-[#D4AF37]" : "text-slate-400 hover:text-slate-900")}
+                  >
+                    <item.icon className="w-4 h-4" /> <span>{item.name}</span>
+                  </Link>
+                  {hasSubmenu && (
+                    <button
+                      onClick={() => setOpenGroups(prev => ({ ...prev, [item.href]: !prev[item.href] }))}
+                      className="p-2 text-slate-400 hover:text-slate-600"
+                    >
+                      <ChevronDown className={cn("w-3 h-3 transition-transform", isSubmenuOpen && "rotate-180")} />
+                    </button>
+                  )}
+                </div>
+                {hasSubmenu && isSubmenuOpen && (
+                  <div className="ml-7 space-y-0.5 mt-0.5">
+                    {item.submenu!.map(sub => (
+                      <Link
+                        key={sub.href}
+                        href={sub.href}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="block px-4 py-1.5 rounded-lg text-[10px] font-medium text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-all"
+                      >
+                        {sub.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
 
           {isAdmin && (
             <>
@@ -273,7 +329,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
       {isMobileMenuOpen && <div className="fixed inset-0 bg-black/50 z-30 md:hidden" onClick={() => setIsMobileMenuOpen(false)} />}
 
-      <main className={"flex-1 bg-white " + (isMobileMenuOpen ? "overflow-hidden max-h-screen" : "")}>{children}</main>
+      <main className={"flex-1 min-w-0 bg-white " + (isMobileMenuOpen ? "overflow-hidden max-h-screen" : "")}>{children}</main>
     </div>
   );
 }

@@ -1,0 +1,42 @@
+=== Seed Embeddings (REAL PDF) ===
+
+Clearing existing...
+
+--- Codice Etico ---
+  Download: codici/v3.0/Codice_Etico_VERITAS_v3.0.pdf
+  194 KB
+  63423 chars extracted
+  51 chunks
+  [20/51]  [40/51]  [51/51]  51 chunks done.          
+
+--- Codice Operativo ---
+  Download: codici/v3.0/Codice_Operativo_v3.0.pdf
+  179 KB
+  56992 chars extracted
+  45 chunks
+  [20/45]  [40/45]  [45/45]  45 chunks done.          
+
+--- Codice Retributivo ---
+  Download: codici/v3.0/Codice_Retributivo_v3.0.pdf
+  167 KB
+  45673 chars extracted
+  37 chunks
+  [20/37]  [37/37]  37 chunks done.          
+
+--- Patto di Ingresso ---
+  Download: patti/v1.1/Patto_di_Ingresso_v1.1.pdf
+  158 KB
+  4055 chars extracted
+  5 chunks
+  [5/5]  5 chunks done.          
+
+--- Company Profile ---
+  Download: company-profile/Minerva_Company_Profile_2026.pdf
+  SKIP (download failed: {})
+
+=== DONE: 138 total chunks ===
+
+  Codice Etico: 51
+  Codice Operativo: 45
+  Codice Retributivo: 37
+  Patto di Ingresso: 5

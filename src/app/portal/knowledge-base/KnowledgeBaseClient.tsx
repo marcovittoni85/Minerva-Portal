@@ -1,14 +1,18 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { BookOpen, Send, Loader2, Sparkles } from 'lucide-react'
+import { BookOpen, Send, Sparkles, FileText, ArrowRight, Library } from 'lucide-react'
+import Image from 'next/image'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
 interface Citation {
   index: number
-  entityId: string
-  entityType: string
-  similarity: number
+  sourceLabel: string
+  chapter: number | null
+  similarityPct: number
   excerpt: string
 }
 
@@ -27,6 +31,34 @@ const SUGGESTED_QUESTIONS = [
   'Quali sono i diritti di un Friend originator?',
 ]
 
+function TypingDots() {
+  return (
+    <span className="inline-flex items-center gap-1">
+      <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-[bounce_1.4s_ease-in-out_0s_infinite]" />
+      <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-[bounce_1.4s_ease-in-out_0.2s_infinite]" />
+      <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-[bounce_1.4s_ease-in-out_0.4s_infinite]" />
+    </span>
+  )
+}
+
+function MinervaAvatarBubble() {
+  return (
+    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#001220] flex items-center justify-center overflow-hidden">
+      <Image src="/icon.webp" alt="Minerva" width={20} height={20} unoptimized />
+    </div>
+  )
+}
+
+function processInlineCitations(content: string, citations: Citation[]): string {
+  if (!citations || citations.length === 0) return content
+  return content.replace(/\[FONTE (\d+)\]/g, (match, num) => {
+    const idx = parseInt(num) - 1
+    const cit = citations[idx]
+    if (!cit) return match
+    return `**[${cit.sourceLabel}]**`
+  })
+}
+
 export default function KnowledgeBaseClient() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -43,7 +75,6 @@ export default function KnowledgeBaseClient() {
     scrollToBottom()
   }, [messages, scrollToBottom])
 
-  // Auto-resize textarea
   useEffect(() => {
     const ta = textareaRef.current
     if (ta) {
@@ -61,7 +92,6 @@ export default function KnowledgeBaseClient() {
       setInput('')
       setIsLoading(true)
 
-      // Add placeholder assistant message
       const assistantIndex = messages.length + 1
       setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
 
@@ -80,7 +110,6 @@ export default function KnowledgeBaseClient() {
         const contentType = res.headers.get('content-type') || ''
 
         if (contentType.includes('application/json')) {
-          // Non-streaming response (no results found)
           const data = await res.json()
           setMessages((prev) => {
             const updated = [...prev]
@@ -92,7 +121,6 @@ export default function KnowledgeBaseClient() {
             return updated
           })
         } else {
-          // Streaming NDJSON response
           const reader = res.body?.getReader()
           if (!reader) throw new Error('No response body')
 
@@ -117,10 +145,7 @@ export default function KnowledgeBaseClient() {
                     const updated = [...prev]
                     const msg = updated[assistantIndex]
                     if (msg) {
-                      updated[assistantIndex] = {
-                        ...msg,
-                        content: msg.content + event.text,
-                      }
+                      updated[assistantIndex] = { ...msg, content: msg.content + event.text }
                     }
                     return updated
                   })
@@ -129,20 +154,14 @@ export default function KnowledgeBaseClient() {
                     const updated = [...prev]
                     const msg = updated[assistantIndex]
                     if (msg) {
-                      updated[assistantIndex] = {
-                        ...msg,
-                        citations: event.citations,
-                      }
+                      updated[assistantIndex] = { ...msg, citations: event.citations }
                     }
                     return updated
                   })
                 } else if (event.type === 'error') {
                   setMessages((prev) => {
                     const updated = [...prev]
-                    updated[assistantIndex] = {
-                      role: 'assistant',
-                      content: event.error,
-                    }
+                    updated[assistantIndex] = { role: 'assistant', content: event.error }
                     return updated
                   })
                 }
@@ -153,13 +172,12 @@ export default function KnowledgeBaseClient() {
           }
         }
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Errore sconosciuto'
+        const errorMessage = err instanceof Error ? err.message : 'Errore sconosciuto'
         setMessages((prev) => {
           const updated = [...prev]
           updated[assistantIndex] = {
             role: 'assistant',
-            content: `Si è verificato un errore: ${errorMessage}`,
+            content: `Si \u00e8 verificato un errore: ${errorMessage}`,
           }
           return updated
         })
@@ -180,18 +198,28 @@ export default function KnowledgeBaseClient() {
   return (
     <div className="flex flex-col h-[calc(100vh-64px)] max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex items-center gap-3 px-6 py-4 border-b border-[#D4AF37]/20">
-        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-[#D4AF37] to-[#b8962d] shadow-md shadow-[#D4AF37]/20">
-          <BookOpen className="w-5 h-5 text-[#001220]" />
+      <div className="flex items-center justify-between px-6 py-4 border-b border-[#D4AF37]/20">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-[#D4AF37] to-[#b8962d] shadow-md shadow-[#D4AF37]/20">
+            <BookOpen className="w-5 h-5 text-[#001220]" />
+          </div>
+          <div>
+            <h1 className="text-lg font-semibold text-[#001220] font-[family-name:var(--font-cormorant)]">
+              Chiedi a Minerva
+            </h1>
+            <p className="text-xs text-slate-500">
+              Knowledge Base Q&A — Codici e regolamenti
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-lg font-semibold text-[#001220] font-[family-name:var(--font-cormorant)]">
-            Chiedi a Minerva
-          </h1>
-          <p className="text-xs text-slate-500">
-            Knowledge Base Q&A — Codici e regolamenti
-          </p>
-        </div>
+        <Link
+          href="/portal/admin/knowledge-base"
+          className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-[#D4AF37] transition-colors"
+        >
+          <FileText className="w-3.5 h-3.5" />
+          Tutti i documenti
+          <ArrowRight className="w-3 h-3" />
+        </Link>
       </div>
 
       {/* Messages area */}
@@ -207,8 +235,7 @@ export default function KnowledgeBaseClient() {
               </h2>
               <p className="text-sm text-slate-500 max-w-md">
                 Fai una domanda sui Codici, regolamenti e procedure di Minerva
-                Partners. Le risposte sono basate esclusivamente sui documenti
-                ufficiali.
+                Partners. Le risposte sono basate esclusivamente sui documenti ufficiali.
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-lg">
@@ -234,54 +261,60 @@ export default function KnowledgeBaseClient() {
               <div
                 key={i}
                 className={cn(
-                  'flex',
+                  'flex gap-3',
                   msg.role === 'user' ? 'justify-end' : 'justify-start'
                 )}
               >
+                {/* Minerva avatar for assistant */}
+                {msg.role === 'assistant' && <MinervaAvatarBubble />}
+
                 <div
                   className={cn(
-                    'max-w-[80%] rounded-2xl px-4 py-3',
+                    'max-w-[75%] rounded-2xl px-4 py-3',
                     msg.role === 'user'
-                      ? 'bg-[#D4AF37] text-[#001220]'
-                      : 'bg-[#001220] text-white border border-[#D4AF37]/30'
+                      ? 'bg-[#D4AF37] text-[#001220] rounded-br-md'
+                      : 'bg-[#001220] text-white border border-[#D4AF37]/30 rounded-bl-md'
                   )}
                 >
                   {/* Message content */}
                   {msg.content ? (
-                    <div className="text-sm whitespace-pre-wrap leading-relaxed">
-                      {msg.content}
-                    </div>
+                    msg.role === 'assistant' ? (
+                      <div className="prose prose-invert prose-sm max-w-none prose-headings:font-[family-name:var(--font-cormorant)] prose-headings:text-[#D4AF37] prose-headings:mt-4 prose-headings:mb-2 prose-strong:text-[#D4AF37] prose-strong:font-medium prose-code:text-[#D4AF37]/90 prose-code:bg-[#001220]/40 prose-code:px-1 prose-code:rounded prose-a:text-[#D4AF37] prose-a:underline prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-p:leading-relaxed">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {processInlineCitations(msg.content, msg.citations ?? [])}
+                        </ReactMarkdown>
+                      </div>
+                    ) : (
+                      <div className="text-sm whitespace-pre-wrap leading-relaxed">
+                        {msg.content}
+                      </div>
+                    )
                   ) : isLoading && msg.role === 'assistant' ? (
-                    <div className="flex items-center gap-2 text-sm text-[#D4AF37]">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Sto cercando nei Codici...
+                    <div className="flex items-center gap-2 text-sm text-[#D4AF37] py-1">
+                      <TypingDots />
+                      <span className="text-xs text-white/60">Sto pensando...</span>
                     </div>
                   ) : null}
 
-                  {/* Citations */}
+                  {/* Citations as branded pills */}
                   {msg.citations && msg.citations.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-[#D4AF37]/20 space-y-2">
-                      <p className="text-xs font-medium text-[#D4AF37]">
-                        Fonti utilizzate:
-                      </p>
-                      {msg.citations.map((c) => (
-                        <div
-                          key={c.index}
-                          className="text-xs rounded-lg bg-white/10 px-3 py-2"
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="font-medium text-[#D4AF37]">
-                              [FONTE {c.index}]
-                            </span>
-                            <span className="text-[#D4AF37]/70">
-                              {(c.similarity * 100).toFixed(1)}%
-                            </span>
+                    <div className="mt-3 pt-3 border-t border-[#D4AF37]/20">
+                      <div className="text-[10px] text-[#D4AF37]/60 mb-2 uppercase tracking-wider font-bold">
+                        Fonti consultate
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {msg.citations.map((c) => (
+                          <div
+                            key={c.index}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#001220]/40 border border-[#D4AF37]/20 rounded-md text-[10px] hover:bg-[#D4AF37]/5 hover:border-[#D4AF37]/40 transition-colors cursor-default"
+                            title={c.excerpt}
+                          >
+                            <BookOpen className="w-3 h-3 text-[#D4AF37]/60 flex-shrink-0" />
+                            <span className="text-[#D4AF37]/80 font-medium">{c.sourceLabel}</span>
+                            <span className="text-[#D4AF37]/40 font-mono ml-0.5">{c.similarityPct}%</span>
                           </div>
-                          <p className="text-white/70 line-clamp-2">
-                            {c.entityId}
-                          </p>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -321,11 +354,7 @@ export default function KnowledgeBaseClient() {
               input.trim() && !isLoading && 'shadow-md shadow-[#001220]/20'
             )}
           >
-            {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <Send className="w-5 h-5" />
-            )}
+            <Send className="w-5 h-5" />
           </button>
         </div>
         <p className="text-center text-[10px] text-slate-400 mt-2">

@@ -119,7 +119,7 @@ export default function PipelineClient({ deals: initialDeals }: { deals: Deal[] 
   }));
 
   return (
-    <div className="p-8">
+    <div className="p-8 min-w-0 overflow-hidden">
       <header className="mb-8 pb-8 border-b border-slate-100">
         <p className="text-[#D4AF37] text-[10px] uppercase tracking-[0.5em] font-medium mb-2">Amministrazione</p>
         <h1 className="text-3xl font-bold text-slate-900">Pipeline <span className="text-[#D4AF37]">Deal</span></h1>
@@ -128,11 +128,11 @@ export default function PipelineClient({ deals: initialDeals }: { deals: Deal[] 
 
       {deals.length === 0 && <EmptyPipeline />}
 
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div className="flex gap-4 overflow-x-auto pb-4 min-w-0 max-h-[calc(100vh-220px)] overflow-y-auto">
         {columns.map(col => (
           <div key={col.key} className="flex-shrink-0 w-52">
-            {/* Column header */}
-            <div className={`border-t-[3px] ${columnColors[col.key]} pt-3 pb-3 px-1 flex items-center justify-between`}>
+            {/* Column header — sticky */}
+            <div className={`border-t-[3px] ${columnColors[col.key]} pt-3 pb-3 px-1 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-sm z-10`}>
               <h3 className="text-xs font-bold uppercase tracking-widest text-slate-700">{col.label}</h3>
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${countBg[col.key]}`}>{col.deals.length}</span>
             </div>

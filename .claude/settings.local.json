@@ -61,7 +61,30 @@
       "Bash(mkdir -p \"C:/Minerva-Portal/src/app/api/deals/[id]/generate-pitch\")",
       "Bash(mkdir -p \"C:/Minerva-Portal/src/app/portal/deals/[id]/pitch\")",
       "Bash(mkdir -p \"C:/Minerva-Portal/src/app/api/deals/[id]/generate-tva\")",
-      "Bash(mkdir -p \"C:/Minerva-Portal/src/app/portal/deals/[id]/valuation\")"
+      "Bash(mkdir -p \"C:/Minerva-Portal/src/app/portal/deals/[id]/valuation\")",
+      "Bash(rm -f .git/index)",
+      "Bash(git reset:*)",
+      "Bash(git status:*)",
+      "mcp__claude_ai_Supabase__list_projects",
+      "mcp__claude_ai_Supabase__list_tables",
+      "Bash(npx -y node -e \" const chunks = []; process.stdin.on\\('data', d => chunks.push\\(d\\)\\); process.stdin.on\\('end', \\(\\) => { const data = JSON.parse\\(chunks.join\\(''\\)\\); const text = data[0].text; const tables = JSON.parse\\(text\\); const targets = ['access_requests','deal_activity','deal_access']; for \\(const t of tables\\) { if \\(targets.includes\\(t.name\\)\\) { console.log\\('--- ' + t.name + ' ---'\\); console.log\\('Columns:', t.columns.map\\(c => c.name\\).join\\(', '\\)\\); } } }\\); \")",
+      "mcp__claude_ai_Supabase__execute_sql",
+      "mcp__claude_ai_Supabase__apply_migration",
+      "mcp__claude_ai_Supabase__get_advisors",
+      "Bash(findstr \":3000\")",
+      "Bash(findstr \":300\")",
+      "Bash(npx tsx:*)",
+      "Bash(findstr \":3001\")",
+      "Bash(xargs cat:*)",
+      "Bash(tee seed-output.log)",
+      "Bash(npm ls:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(NODE_OPTIONS=\"--max-old-space-size=512\" npx tsx src/scripts/seed-embeddings.ts)",
+      "Bash(NODE_OPTIONS=\"--max-old-space-size=2048\" npx tsx src/scripts/seed-embeddings.ts)",
+      "Bash(NODE_OPTIONS=\"--max-old-space-size=4096\" npx tsx src/scripts/seed-embeddings.ts)",
+      "Bash(cmd:*)",
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__take_screenshot"
     ]
   }
 }

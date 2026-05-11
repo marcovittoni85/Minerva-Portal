@@ -19,12 +19,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Semantic search across codice documents
+    console.log('[KB Ask] Query:', question)
     const results = await similaritySearch({
       query: question,
       entityTypes: ['codice'],
       limit: 5,
-      threshold: 0.6,
+      threshold: 0.4,
     })
+    console.log('[KB Ask] Found chunks:', results.length)
+    if (results.length > 0) {
+      console.log('[KB Ask] Top similarity:', results[0].similarity)
+      console.log('[KB Ask] Top preview:', results[0].content?.slice(0, 150))
+    }
 
     // No results found
     if (!results || results.length === 0) {
@@ -40,14 +46,20 @@ export async function POST(request: NextRequest) {
     })
     const context = contextParts.join('\n\n---\n\n')
 
-    // Build citations array
-    const citations = results.map((r, i) => ({
-      index: i + 1,
-      entityId: r.entity_id,
-      entityType: r.entity_type,
-      similarity: r.similarity,
-      excerpt: r.content.slice(0, 200),
-    }))
+    // Build citations array — expose human-readable labels, never raw entity_id
+    const citations = results.map((r, i) => {
+      const meta = r.metadata as { document?: string; title?: string; chapter?: number } | undefined
+      const sourceLabel = meta?.document && meta?.title
+        ? `${meta.document} — ${meta.title}`
+        : meta?.document ?? r.entity_id.replace(/-/g, ' ').replace(/ch(\d)/, 'Cap. $1')
+      return {
+        index: i + 1,
+        sourceLabel,
+        chapter: meta?.chapter ?? null,
+        similarityPct: Math.round(r.similarity * 100),
+        excerpt: r.content.slice(0, 200),
+      }
+    })
 
     const systemPrompt = `Sei Minerva Intelligence, l'assistente AI di Minerva Partners specializzato nella Knowledge Base normativa e regolamentare.
 

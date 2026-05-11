@@ -15,9 +15,11 @@ export async function GET() {
   if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   // Fetch nodes (profiles)
-  const { data: profiles } = await supabase
+  const { data: profiles, error: profilesError } = await supabase
     .from('profiles')
     .select('id, full_name, email, role, partner_line, ruolo_enumerato')
+
+  console.log('Profiles count:', profiles?.length, 'Error:', profilesError?.message ?? 'none')
 
   // Auto-generate edges from deal co-participation
   const autoEdges: Array<{
